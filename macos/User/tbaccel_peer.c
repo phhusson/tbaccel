@@ -32,6 +32,13 @@
 
 #include "TbAccelUAPI.h"
 
+/*
+ * Control blobs are 48 bytes in practice.  Keeping the receive buffer small
+ * matters: the kernel reports structureOutputSize as 0 when input + output
+ * exceed a page (24 + 4096 did), which made recv_ctrl fail its size guard.
+ */
+#define RX_BLOB_MAX 1024
+
 #define TBX_MAGIC 0x31584254u /* "TBX1" */
 
 enum tbx_type {
@@ -181,7 +188,7 @@ static int recv_ctrl(io_connect_t conn, struct tbx_msg *m, uint64_t *slot)
 {
     struct {
         tbaccel_recv_ctrl rc;
-        char blob[TBACCEL_MAX_CTRL];
+        char blob[RX_BLOB_MAX];
     } out;
     tbaccel_recv_ctrl in = { .len = TBACCEL_MAX_CTRL };
     size_t outSize = sizeof(out);

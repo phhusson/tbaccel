@@ -25,6 +25,13 @@
 
 #include "TbAccelUAPI.h"
 
+/*
+ * Control blobs are 48 bytes in practice.  Keeping the receive buffer small
+ * matters: the kernel reports structureOutputSize as 0 when input + output
+ * exceed a page (24 + 4096 did), which made recv_ctrl fail its size guard.
+ */
+#define RX_BLOB_MAX 1024
+
 static io_connect_t open_client(void)
 {
     io_service_t svc = IOServiceGetMatchingService(kIOMainPortDefault,
@@ -115,8 +122,8 @@ static int cmd_recv(size_t size)
     fflush(stdout);
 
     /* wait for a control blob */
-    char ctrl[TBACCEL_MAX_CTRL];
-    struct { tbaccel_recv_ctrl rc; char blob[TBACCEL_MAX_CTRL]; } out;
+    char ctrl[RX_BLOB_MAX];
+    struct { tbaccel_recv_ctrl rc; char blob[RX_BLOB_MAX]; } out;
     tbaccel_recv_ctrl in = { .len = sizeof(ctrl) };
     outSize = sizeof(out);
     kr = IOConnectCallStructMethod(conn, kTbAccelMethodRecvCtrl, &in, sizeof(in), &out, &outSize);

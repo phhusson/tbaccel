@@ -990,3 +990,28 @@ Two related details worth keeping:
   a separate module parameter from `chunk`.
 * 4096-byte frames still split, because the wire limit is 4092: `3844 + 248`.
   Use 3840 for full-size frames.
+
+### 27.0.18 UserClient: input + output must stay within a page
+
+`recv_ctrl` always failed with `kIOReturnBadArgument` from its size guard, even
+though userspace passed a 24-byte `tbaccel_recv_ctrl` and a 4096-byte blob
+buffer.  `TbAccelUcArgs` (recorded in `TbAccelUserClient::externalMethod`)
+showed the reason:
+
+```
+sel6 in24 out0          <- what the kernel received
+```
+
+The kernel reports `structureOutputSize` as **0** when the structure input and
+output together exceed a page (24 + 4096 = 4120).  Every other selector was
+under that: `get_info` is output-only (24), `import`/`region`/`submit` are
+small, so only `recv_ctrl` - the one call with a large output - was affected,
+which is why it looked like a marshalling problem rather than a size limit.
+
+Fix: keep the receive buffer modest (1024 bytes is far more than the 48-byte
+TBX1 messages need).  With that the same call reports `in24 out1048` and blocks
+in `opRecvCtrl` as intended.
+
+Worth remembering for the event/IOSurface work: anything that returns a large
+structure through `externalMethod` will hit this, so large payloads belong in
+mapped memory (`clientMemoryForType`) rather than in the structure output.

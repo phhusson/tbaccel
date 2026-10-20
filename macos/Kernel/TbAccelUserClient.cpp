@@ -49,6 +49,18 @@ IOReturn TbAccelUserClient::externalMethod(uint32_t selector, IOExternalMethodAr
     if (!gate)
         return kIOReturnNotReady;
 
+    /* What the kernel actually received for this call.  Every selector that
+     * takes structure input works except recv_ctrl, which fails its size guard,
+     * so record the real numbers instead of inferring them. */
+    {
+        char v[96];
+        snprintf(v, sizeof v, "sel%u in%u out%u",
+                 (unsigned)selector,
+                 (unsigned)args->structureInputSize,
+                 (unsigned)args->structureOutputSize);
+        fOwner->setProperty("TbAccelUcArgs", v);
+    }
+
     switch (selector) {
     case kTbAccelMethodGetInfo:
         if (args->structureOutputSize < sizeof(tbaccel_info))
