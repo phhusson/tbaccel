@@ -43,6 +43,9 @@ public:
     IOReturn opMapBuffer(uint64_t handle, IOMemoryDescriptor **md);
     IOReturn opImportSurface(tbaccel_import_surface *req);
     IOReturn opEvent(tbaccel_event *req);
+    /* Wait until every transmit command queued at 'fence' has completed. */
+    IOReturn opDrainWait(uint64_t fence, uint32_t timeoutMs, uint64_t *drained);
+    uint64_t drainFence() const { return fTxSubmitted; }
 
     /* With a user client attached the TBX1 operations are delivered through
      * recv_ctrl instead of being executed in-kernel. */
@@ -65,6 +68,7 @@ public:
     static IOReturn sMapBuffer(OSObject *, void *, void *, void *, void *);
     static IOReturn sImportSurface(OSObject *, void *, void *, void *, void *);
     static IOReturn sEvent(OSObject *, void *, void *, void *, void *);
+    static IOReturn sDrain(OSObject *, void *, void *, void *, void *);
 
 private:
     /* setup */
@@ -183,6 +187,17 @@ private:
     /* Wire diagnostics: distinguish "the NHI never drained our TX ring" from
      * "the frame went out but the peer never answered". */
     uint32_t fTxSub, fTxDone, fTxSt, fTxLastType;
+    /*
+     * Drain fence: every transmit command (control or data frame) bumps
+     * fTxSubmitted when it is queued and fTxCompleted when the NHI reports it
+     * done.  A submit returns fTxSubmitted as its fence, so waiting for
+     * fTxCompleted >= fence means the source buffer is no longer being read by
+     * the DMA engine and may be reused or freed.  This is deliberately a
+     * counter rather than per-buffer bookkeeping: it makes the guarantee
+     * ordered and cheap, and it is the shape a shared-memory event will take.
+     */
+    volatile uint64_t fTxSubmitted;
+    volatile uint64_t fTxCompleted;
     uint32_t fRxAll, fRxOk, fRxBad, fRxLastType, fRxLastLen;
     uint32_t fRxData;      /* completed data transfers (peer slots + streams) */
     uint32_t fRxCtlMax;    /* largest control frame delivered intact */

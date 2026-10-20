@@ -117,7 +117,15 @@ IOReturn TbAccelUserClient::externalMethod(uint32_t selector, IOExternalMethodAr
         memcpy(&a.req, args->structureInput, sizeof(tbaccel_submit));
         a.blob    = (const uint8_t *)args->structureInput + sizeof(tbaccel_submit);
         a.blobLen = args->structureInputSize - sizeof(tbaccel_submit);
-        return gate->runAction(TbAccelClient::sSubmit, &a);
+        a.fence   = 0;
+        IOReturn r = gate->runAction(TbAccelClient::sSubmit, &a);
+        /* The fence is the number of transmit commands queued by this submit;
+         * kTbAccelMethodDrain waits for them to complete. */
+        if (r == kIOReturnSuccess && args->scalarOutput && args->scalarOutputCount >= 1) {
+            args->scalarOutput[0] = a.fence;
+            args->scalarOutputCount = 1;
+        }
+        return r;
     }
 
     case kTbAccelMethodRecvCtrl: {
@@ -141,6 +149,21 @@ IOReturn TbAccelUserClient::externalMethod(uint32_t selector, IOExternalMethodAr
         memcpy(&a.req, args->structureInput, sizeof(tbaccel_send_ctrl));
         a.blob = (const uint8_t *)args->structureInput + sizeof(tbaccel_send_ctrl);
         return gate->runAction(TbAccelClient::sSendCtrl, &a);
+    }
+
+    case kTbAccelMethodDrain: {
+        TbAccelDrainArgs a;
+        if (args->scalarInputCount < 1)
+            return kIOReturnBadArgument;
+        a.fence   = args->scalarInput[0];
+        a.timeout = args->scalarInputCount > 1 ? (uint32_t)args->scalarInput[1] : 2000;
+        a.drained = 0;
+        IOReturn r = gate->runAction(TbAccelClient::sDrain, &a);
+        if (r == kIOReturnSuccess && args->scalarOutput && args->scalarOutputCount >= 1) {
+            args->scalarOutput[0] = a.drained;
+            args->scalarOutputCount = 1;
+        }
+        return r;
     }
 
     case kTbAccelMethodWaitSlot: {

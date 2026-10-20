@@ -361,6 +361,7 @@ void TbAccelClient::attemptBringup()
 
     fReady = true;
     fTxSub = fTxDone = fTxSt = fTxLastType = 0;
+    fTxSubmitted = fTxCompleted = 0;
     fRxAll = fRxOk = fRxBad = fRxLastType = fRxLastLen = 0;
     fRxData = 0;
     fRxDataFrames = 0;
@@ -1492,6 +1493,7 @@ IOReturn TbAccelClient::sendCtl(uint16_t type, uint64_t slot, uint32_t len,
         return kIOReturnError;
     }
     fTxSub++;
+    fTxSubmitted++;
     fTxLastType = type;
     wireStat();
     return kIOReturnSuccess;
@@ -1505,6 +1507,9 @@ void TbAccelClient::ctlTxComplete(void *target, void *refcon, IOReturn status,
     if (me) {
         me->fTxDone++;
         me->fTxSt = (uint32_t)status;
+        me->fTxCompleted++;
+        if (me->fGate)
+            me->fGate->commandWakeup((void *)&me->fTxCompleted);
         me->wireStat();
     }
     if (md) md->release();
@@ -1861,6 +1866,7 @@ IOReturn TbAccelClient::streamRegion(TbAccelRegion *region, uint64_t total)
             xfer->release();
             return kIOReturnError;
         }
+        fTxSubmitted++;
         sent += chunk;
     }
     return kIOReturnSuccess;
@@ -1871,6 +1877,11 @@ void TbAccelClient::dataTxComplete(void *target, void *refcon, IOReturn status,
 {
     TbAccelClient *me = (TbAccelClient *)target;
     TbAccelXfer *xfer = (TbAccelXfer *)refcon;
+    if (me) {
+        me->fTxCompleted++;
+        if (me->fGate)
+            me->fGate->commandWakeup((void *)&me->fTxCompleted);
+    }
     if (cmd) cmd->release();
     if (!xfer) return;
     if (status != kIOReturnSuccess) xfer->status = (uint32_t)status;
@@ -2587,6 +2598,42 @@ IOReturn TbAccelClient::opWaitSlot(uint64_t slot, uint32_t timeoutMs)
     return ok ? kIOReturnSuccess : ret;
 }
 
+/*
+ * Block until the transmit commands queued at 'fence' (0 = everything queued
+ * right now) have completed.  The sleep is released by the TX completion, so a
+ * peer can start the next compute before the previous result has left the wire
+ * and only block when it actually wants to reuse the buffer.
+ */
+IOReturn TbAccelClient::opDrainWait(uint64_t fence, uint32_t timeoutMs, uint64_t *drained)
+{
+    if (!fGate)
+        return kIOReturnNotReady;
+
+    uint64_t target = fence ? fence : fTxSubmitted;
+    AbsoluteTime deadline;
+    clock_interval_to_deadline(timeoutMs ? timeoutMs : 2000, kMillisecondScale, &deadline);
+
+    while (fTxCompleted < target) {
+        if (fGate->commandSleep((void *)&fTxCompleted, deadline, THREAD_UNINT) == THREAD_TIMED_OUT) {
+            char v[64];
+            snprintf(v, sizeof v, "timeout%llu/%llu", (unsigned long long)target,
+                     (unsigned long long)fTxCompleted);
+            setProperty("TbAccelFence", v);
+            return kIOReturnTimeout;
+        }
+    }
+
+    if (drained)
+        *drained = fTxCompleted;
+    {
+        char v[64];
+        snprintf(v, sizeof v, "%llu/%llu", (unsigned long long)target,
+                 (unsigned long long)fTxCompleted);
+        setProperty("TbAccelFence", v);
+    }
+    return kIOReturnSuccess;
+}
+
 IOReturn TbAccelClient::opMapBuffer(uint64_t handle, IOMemoryDescriptor **md)
 {
     LOCK(); TbAccelBuffer *b = findBuffer(handle); UNLOCK();
@@ -2667,7 +2714,9 @@ IOReturn TbAccelClient::sPostRecv(OSObject *o, void *a, void *, void *, void *)
 IOReturn TbAccelClient::sSubmit(OSObject *o, void *a, void *, void *, void *)
 {
     TbAccelSubmitArgs *p = (TbAccelSubmitArgs *)a;
-    return ((TbAccelClient *)o)->opSubmit(&p->req, p->blob, p->blobLen);
+    IOReturn r = ((TbAccelClient *)o)->opSubmit(&p->req, p->blob, p->blobLen);
+    p->fence = (r == kIOReturnSuccess) ? ((TbAccelClient *)o)->drainFence() : 0;
+    return r;
 }
 IOReturn TbAccelClient::sRecvCtrl(OSObject *o, void *a, void *, void *, void *)
 {
@@ -2693,3 +2742,8 @@ IOReturn TbAccelClient::sImportSurface(OSObject *o, void *a, void *, void *, voi
 { return ((TbAccelClient *)o)->opImportSurface((tbaccel_import_surface *)a); }
 IOReturn TbAccelClient::sEvent(OSObject *o, void *a, void *, void *, void *)
 { return ((TbAccelClient *)o)->opEvent((tbaccel_event *)a); }
+IOReturn TbAccelClient::sDrain(OSObject *o, void *a, void *, void *, void *)
+{
+    TbAccelDrainArgs *p = (TbAccelDrainArgs *)a;
+    return ((TbAccelClient *)o)->opDrainWait(p->fence, p->timeout, &p->drained);
+}

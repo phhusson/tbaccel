@@ -120,6 +120,7 @@ enum {
     /* macOS extensions for the ANE/MTL coop path (see docs). */
     kTbAccelMethodImportSurface = 0x40, /* import an IOSurface-backed region */
     kTbAccelMethodEvent         = 0x41, /* create/signal/wait/destroy an event  */
+    kTbAccelMethodDrain         = 0x42, /* macOS-only: wait until TX has drained */
 };
 
 /*

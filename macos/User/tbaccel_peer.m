@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <mach/mach.h>
 #include <sys/mman.h>
+#include <time.h>
 
 #include <IOKit/IOKitLib.h>
 #import <Foundation/Foundation.h>
@@ -77,6 +78,7 @@ struct pbuf {
     size_t   size;
     IOSurfaceRef surf;
     id<MTLBuffer> mtl;
+    uint64_t fence;      /* last TX fence that wrote into this buffer */
 };
 
 static struct pbuf bufs[MAX_BUFS];
@@ -324,6 +326,36 @@ static int recv_ctrl(io_connect_t conn, struct tbx_msg *m, uint64_t *slot)
     return 0;
 }
 
+/*
+ * The submit's fence is the number of transmit commands queued when it
+ * returned; the driver reports each completion.  Waiting on it is what makes
+ * a buffer reusable: until then the DMA engine may still be reading it.
+ */
+static int drain_wait(io_connect_t conn, uint64_t fence, uint32_t timeout_ms,
+                      uint64_t *drained)
+{
+    uint64_t in[2] = { fence, timeout_ms };
+    uint64_t out = 0;
+    uint32_t outCnt = 1;
+    kern_return_t kr = IOConnectCallMethod(conn, kTbAccelMethodDrain,
+                                           in, 2, NULL, 0, &out, &outCnt,
+                                           NULL, NULL);
+    if (kr != KERN_SUCCESS) {
+        fprintf(stderr, "Drain(%llu): 0x%x\n", (unsigned long long) fence, kr);
+        return (int) kr;
+    }
+    if (drained)
+        *drained = out;
+    return 0;
+}
+
+static uint64_t now_us(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64_t) ts.tv_sec * 1000000u + (uint64_t) ts.tv_nsec / 1000u;
+}
+
 static struct pbuf *find_id(uint64_t id)
 {
     for (int i = 0; i < nbufs; i++)
@@ -416,6 +448,22 @@ static void peer_matmul(io_connect_t conn, const struct tbx_msg *op, uint64_t in
             (unsigned long long) in_slot, x ? "found" : "MISSING");
         return;
     }
+    if (ybuf.ptr && ybuf.fence) {
+        uint64_t t0 = now_us(), drained = 0;
+
+        if (drain_wait(conn, ybuf.fence, 2000, &drained) == 0) {
+            uint64_t dt = now_us() - t0;
+
+            if (dt >= 50)
+                LOG(1, "drain fence %llu done (%llu us)\n",
+                    (unsigned long long) ybuf.fence, (unsigned long long) dt);
+            else
+                LOG(2, "drain fence %llu already done (%llu us)\n",
+                    (unsigned long long) ybuf.fence, (unsigned long long) dt);
+        }
+        ybuf.fence = 0;
+    }
+
     if (!ybuf.ptr || ybuf.size < need) {
         free_buffer(&ybuf);
         memset(&ybuf, 0, sizeof(ybuf));
@@ -443,13 +491,19 @@ static void peer_matmul(io_connect_t conn, const struct tbx_msg *op, uint64_t in
         in.sub.in_fence_fd = -1;
         memcpy(&in.msg, &res, sizeof(res));
 
-        kern_return_t kr = IOConnectCallStructMethod(conn, kTbAccelMethodSubmit,
-                                                     &in, sizeof(in), NULL, NULL);
-        if (kr != KERN_SUCCESS)
+        uint64_t fence = 0;
+        uint32_t fenceCnt = 1;
+        kern_return_t kr = IOConnectCallMethod(conn, kTbAccelMethodSubmit,
+                                               NULL, 0, &in, sizeof(in),
+                                               &fence, &fenceCnt, NULL, NULL);
+        if (kr != KERN_SUCCESS) {
             LOG(0, "matmul: result SUBMIT failed: 0x%x\n", kr);
-        else
-            LOG(1, "matmul %ux%ux%u done (metal), RESULT -> slot %llu\n",
-                op->m, op->n, op->k, (unsigned long long) op->b);
+        } else {
+            ybuf.fence = fence;
+            LOG(1, "matmul %ux%ux%u done (metal), RESULT -> slot %llu (fence %llu)\n",
+                op->m, op->n, op->k, (unsigned long long) op->b,
+                (unsigned long long) fence);
+        }
     }
 }
 
