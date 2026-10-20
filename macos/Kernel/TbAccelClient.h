@@ -44,6 +44,11 @@ public:
     IOReturn opImportSurface(tbaccel_import_surface *req);
     IOReturn opEvent(tbaccel_event *req);
 
+    /* With a user client attached the TBX1 operations are delivered through
+     * recv_ctrl instead of being executed in-kernel. */
+    void setUserPeer(bool on) { fUserPeer = on; }
+    bool userPeer() const { return fUserPeer; }
+
     IOCommandGate *getGate()       const { return fGate; }
     IOWorkLoop    *getWorkLoopG()  const { return fWorkLoop; }
 
@@ -202,6 +207,7 @@ private:
      * the completion runs on. */
     thread_call_t fPeerTC;
     volatile bool fPeerBusy;
+    volatile bool fUserPeer;
     uint32_t fPeerRuns, fPeerSkips;   /* thread_call accounting */
     uint32_t fPeerSched, fPeerEnterFail;
     TbAccelRegion *fPeerY;          /* result buffer, grown on demand */

@@ -268,6 +268,7 @@ bool TbAccelClient::start(IOService *provider)
     fPeerTC = thread_call_allocate(&TbAccelClient::peerThread, this);
     setProperty("TbAccelPeerTC", fPeerTC ? kOSBooleanTrue : kOSBooleanFalse);
     fPeerBusy = false;
+    fUserPeer = false;
     fPeerY = nullptr;
     fPeerOps = fPeerErrs = 0;
     fPeerRuns = fPeerSkips = 0;
@@ -1701,8 +1702,10 @@ void TbAccelClient::handleCtl(const TbAccelWire *w, const uint8_t *payload, uint
         IOLockUnlock(fTableLock);
         if (fGate) fGate->commandWakeup(fBlobs);
         /* A peer receives its requests this way: PREPARE arrives as a blob and
-         * is answered with a PREPARED blob. */
-        if (blen >= sizeof(TbxMsg))
+         * is answered with a PREPARED blob.  With a user client attached the
+         * blob has already been queued above for recv_ctrl, and the user-space
+         * peer owns the buffers, so the in-kernel peer must stay out of it. */
+        if (!fUserPeer && blen >= sizeof(TbxMsg))
             peerOnBlob(payload, blen);
         break;
     }
@@ -1791,10 +1794,28 @@ void TbAccelClient::dataRxComplete(void *target, void *refcon, IOReturn status,
             me->fRxData++;
             me->wireStat();
             me->wakeSlots();
-            /* Peer work runs off this work loop: handling a MATMUL means
-             * waiting for the client's ACK, which arrives here. */
-            if (slot->isPeer)
+            if (slot->isPeer && !me->fUserPeer) {
+                /* Peer work runs off this work loop: handling a MATMUL means
+                 * waiting for the client's ACK, which arrives here. */
                 me->peerSchedule();
+            } else if (slot->opLen) {
+                /* User-space peer (or a plain posted slot): hand the operation
+                 * that rode the ARM to recv_ctrl, tagged with its slot. */
+                TbAccelBlob *blob = OSTypeAlloc(TbAccelBlob);
+
+                if (blob) {
+                    uint32_t n = slot->opLen < TBACCEL_CTRL_PAYLOAD
+                               ? slot->opLen : TBACCEL_CTRL_PAYLOAD;
+                    blob->slot = slot->id;
+                    blob->len = n;
+                    memcpy(blob->data, slot->op, n);
+                    IOLockLock(me->fTableLock);
+                    me->fBlobs->setObject(blob);
+                    IOLockUnlock(me->fTableLock);
+                    blob->release();
+                    if (me->fGate) me->fGate->commandWakeup(me->fBlobs);
+                }
+            }
         }
     }
 }
@@ -2322,6 +2343,23 @@ void TbAccelClient::peerDispatch(TbAccelSlot *slot)
     TbxMsg op;
     memcpy(&op, slot->op, sizeof op);
     slot->opLen = 0;                 /* consumed */
+
+    if (fUserPeer) {
+        /* Deliver the operation, and the slot it landed in, to the user-space
+         * peer through recv_ctrl.  It answers by submitting the result into the
+         * slot the op names, exactly as the in-kernel peer does. */
+        TbAccelBlob *blob = OSTypeAlloc(TbAccelBlob);
+
+        if (blob) {
+            blob->slot = slot->id;
+            blob->len = sizeof op;
+            memcpy(blob->data, &op, sizeof op);
+            LOCK(); fBlobs->setObject(blob); UNLOCK();
+            blob->release();
+            if (fGate) fGate->commandWakeup(fBlobs);
+        }
+        return;
+    }
 
     {
         char v[96];

@@ -26,11 +26,15 @@ bool TbAccelUserClient::start(IOService *provider)
     if (!super::start(provider))
         return false;
     fOwner = OSDynamicCast(TbAccelClient, provider);
+    if (fOwner)
+        fOwner->setUserPeer(true);
     return fOwner != nullptr;
 }
 
 void TbAccelUserClient::stop(IOService *provider)
 {
+    if (fOwner)
+        fOwner->setUserPeer(false);
     fOwner = nullptr;
     super::stop(provider);
 }
