@@ -941,3 +941,52 @@ ignored.
 4. **Do not trust `[ -z "$(ioreg ...)" ]`-style "did the new build load"
    checks.** Compare `TbAccelBuildTag` (compiled from `TBACCEL_BUILD_TAG`) and
    the version from `kmutil dumpstate`.
+
+### 27.0.17 SOLVED: the frame-size cliff was SOF == EOF
+
+Every frame above ~192 bytes failed with a signature that looked like a hardware
+size limit: the NHI delivered `frame_size - 256` bytes, then 252, with
+`kIOReturnIOError` and no payload at all.  It was not a size limit.  It was the
+SOF/EOF codepoints.
+
+A Thunderbolt packet carries at most 256 bytes, so a larger frame is a *packet
+sequence* delimited by the start-of-frame and end-of-frame codepoints in the NHI
+header.  tbaccel stamped both with codepoint 1 (`TBACCEL_PDF` used for
+`frame.sof` and `frame.eof`), so every 256-byte packet was simultaneously the
+start and the end of a frame: the hardware could never join packets, and a frame
+of N > ~192 bytes could only arrive as fragments.
+
+`AppleThunderboltIP` uses distinct codepoints (`TBIP_PDF_FRAME_START = 1`,
+`TBIP_PDF_FRAME_END = 2`), which is why its receive queue is configured with
+masks 2 and 12 rather than 2 and 2.
+
+The fix, both ends:
+
+```
+SOF codepoint 1 -> mask 1 << 1 = 2        (queue SOF bitmask, command setSOF)
+EOF codepoint 2 -> mask 1 << 2 = 4        (queue EOF bitmask, command setEOF)
+```
+
+Also fixed by the same change: a 512-byte *control* frame (a blob) now arrives
+intact (`TbAccelCtlMax = 536`), where before it was cut like data frames - the
+"data frames fail, control frames work" asymmetry only ever held because control
+frames are small.
+
+Measured effect (64x64x64 f32, 16 KB per tensor):
+
+| configuration | round trip | compute |
+|---|---|---|
+| 64-byte frames (single packet) | 12.6 ms | 0.37 ms |
+| 192-byte frames | 2.1 ms | 0.37 ms |
+| 1024/2048-byte requests, 3840-byte results | **0.96 ms** | 0.37 ms |
+
+Two related details worth keeping:
+
+* The sender must transmit frames no larger than the receiver arms for: Linux's
+  `tbaccel_arm_one()` arms descriptors of `rx_chunk` bytes and advances
+  `armed_off` by that amount regardless of the frame it just received, so a
+  sender chunk that differs from the receiver's `rx_chunk` desynchronises the
+  offsets even when the frames themselves are accepted.  `rx_chunk` is therefore
+  a separate module parameter from `chunk`.
+* 4096-byte frames still split, because the wire limit is 4092: `3844 + 248`.
+  Use 3840 for full-size frames.

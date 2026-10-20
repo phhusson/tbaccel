@@ -286,6 +286,7 @@ public:
     void setEOFPDFBitmask(uint16_t mask);
     void setTxE2EHopID(uint16_t hopID);
     void setFlags(uint32_t flags);
+    bool enableRawMode(bool enable);
     bool enableE2EFlowControl(bool enable);
 
     /* Raw IOReturn (the ABI return type; bool would truncate the code). */

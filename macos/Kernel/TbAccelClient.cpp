@@ -344,6 +344,7 @@ void TbAccelClient::attemptBringup()
     fRxAll = fRxOk = fRxBad = fRxLastType = fRxLastLen = 0;
     fRxData = 0;
     fRxDataFrames = 0;
+    fRxCtlMax = 0;
     wireStat();
 
     /* One-shot TX probe. Type 0x7f is not in Linux's rx_control switch, so the
@@ -919,10 +920,15 @@ static IOThunderboltReceiveQueue *newRxQueue(TbAccelClient *me, IOThunderboltCon
      * data frame comes back kIOReturnIOError with no payload written. */
     q->setFlags(0);
     q->setQueueType(2);
-    q->setRingSize(TBACCEL_NHI_RING_SIZE);
+    /* IP asks its receive queue for tens of entries, we asked for 4096. The ring
+     * manager builds a per-hop mapper sized from this, and with a huge ring every
+     * frame above ~256 bytes comes back as (size - 256) + 252 with
+     * kIOReturnIOError and no payload - as if the mapper granule were
+     * TB_FRAME_SIZE. Try an IP-sized ring first and fall back, so a mapper that
+     * refuses a small ring cannot break bring-up. */
     q->setMaxFrameSize(TB_MAX_FRAME_SIZE);
-    q->setSOFPDFBitmask((uint16_t)(1u << TBACCEL_PDF));
-    q->setEOFPDFBitmask((uint16_t)(1u << TBACCEL_PDF));
+    q->setSOFPDFBitmask((uint16_t)(1u << TBACCEL_PDF_SOF));
+    q->setEOFPDFBitmask((uint16_t)(1u << TBACCEL_PDF_EOF));
     /* End-to-end (hop counter) flow control, matching
      * AppleThunderboltIPConnection::createRxPath: it sets the hop that credit
      * returns go to - the transmit path's hop, which is why net->tx_ring->hop is
@@ -932,10 +938,27 @@ static IOThunderboltReceiveQueue *newRxQueue(TbAccelClient *me, IOThunderboltCon
      * the accounting, frames arriving on the counter-enabled hop are dropped by
      * the NHI before any completion is generated (RxStat stays all0 entirely).
      * Non-E2E peers work either way, as the reverse direction shows. */
+    /* IP disables raw mode explicitly (vt+0x1d0). Leaving it at the default
+     * puts the ring in raw mode, where the NHI delivers 256-byte pieces
+     * (TB_FRAME_SIZE) and drops 4 bytes at each split: a 512-byte frame arrives
+     * as 256+252 with kIOReturnIOError and no payload, and only frames <= 64
+     * bytes (which fit one piece whole) were ever received intact. */
+    q->enableRawMode(false);
     q->setTxE2EHopID(e2eHop);
     q->enableE2EFlowControl(e2eHop != 0);
+    uint32_t rxRingUsed = 0;
     {
-        uint32_t rc = q->allocate();
+        static const uint32_t ringSizes[] = { 64, 256, TBACCEL_NHI_RING_SIZE };
+        uint32_t rc = kIOReturnError;
+        uint32_t used = 0;
+
+        for (unsigned i = 0; i < sizeof(ringSizes) / sizeof(ringSizes[0]); i++) {
+            q->setRingSize(ringSizes[i]);
+            rc = q->allocate();
+            if (rc == 0) { used = ringSizes[i]; break; }
+        }
+        rxRingUsed = used;
+        me->setProperty("RxRingSize", (unsigned long long)used);
         me->setProperty("RxAllocRc", (unsigned long long)rc);
         if (rc != 0) {
             TBLOG2("rx allocate -> 0x%08x\n", (unsigned)rc);
@@ -969,8 +992,8 @@ static IOThunderboltReceiveQueue *newRxQueue(TbAccelClient *me, IOThunderboltCon
     {
         char v[128];
         snprintf(v, sizeof v, "flags0 type2 ring%u max%u sof%u eof%u e2e1 hop%u",
-                 (unsigned)TBACCEL_NHI_RING_SIZE, (unsigned)TB_MAX_FRAME_SIZE,
-                 (unsigned)(1u << TBACCEL_PDF), (unsigned)(1u << TBACCEL_PDF),
+                 (unsigned)rxRingUsed, (unsigned)TB_MAX_FRAME_SIZE,
+                 (unsigned)(1u << TBACCEL_PDF_SOF), (unsigned)(1u << TBACCEL_PDF_EOF),
                  (unsigned)e2eHop);
         me->setProperty("TbAccelRxCfg", v);
     }
@@ -1300,8 +1323,8 @@ bool TbAccelClient::startControlRx()
         cmd->setMemoryDescriptor(md);
         cmd->setOffset(0);
         cmd->setLength(TB_MAX_FRAME_SIZE);
-        cmd->setSOF(TBACCEL_PDF);
-        cmd->setEOF(TBACCEL_PDF);
+        cmd->setSOF(TBACCEL_PDF_SOF);
+        cmd->setEOF(TBACCEL_PDF_EOF);
         cmd->setCompletion({this, &TbAccelClient::ctlRxComplete, rx});
         cmd->setRefcon(rx);
         /* submit() reports whether the command actually made it onto the NHI
@@ -1376,11 +1399,12 @@ void TbAccelClient::ctlRxComplete(void *target, void *refcon, IOReturn status,
 
         if (isCtl) {
             me->fRxOk++;
+            if ((uint32_t)got > me->fRxCtlMax) me->fRxCtlMax = (uint32_t)got;
             me->fRxLastType = w->type;
             me->fRxLastLen = (uint32_t)got;
             me->rxTrace((uint32_t)cmd->getLength(), (uint32_t)cmd->getOffset(), (uint32_t)got, status, p);
             me->handleCtl(w, p + sizeof(*w), (uint32_t)(got - sizeof(*w)));
-        } else if (me->peerDataChunk(p)) {
+        } else if (status == kIOReturnSuccess && me->peerDataChunk(p, (uint32_t)got)) {
             me->fRxDataFrames++;
             me->rxTrace((uint32_t)cmd->getLength(), (uint32_t)cmd->getOffset(), (uint32_t)got, status, p);
         } else {
@@ -1438,8 +1462,8 @@ IOReturn TbAccelClient::sendCtl(uint16_t type, uint64_t slot, uint32_t len,
     cmd->setMemoryDescriptor(md);
     cmd->setOffset(0);
     cmd->setLength(frameLen);
-    cmd->setSOF(TBACCEL_PDF);
-    cmd->setEOF(TBACCEL_PDF);
+    cmd->setSOF(TBACCEL_PDF_SOF);
+    cmd->setEOF(TBACCEL_PDF_EOF);
     cmd->setRefcon(md);
     cmd->setCompletion({this, &TbAccelClient::ctlTxComplete, md});
     if (fTxQ->submit(cmd) != 0) {
@@ -1475,10 +1499,10 @@ void TbAccelClient::wireStat()
     snprintf(v, sizeof v, "sub%u done%u st0x%08x last%u",
              (unsigned)fTxSub, (unsigned)fTxDone, (unsigned)fTxSt, (unsigned)fTxLastType);
     setProperty("TbAccelTxStat", v);
-    snprintf(v, sizeof v, "all%u ok%u bad%u type%u len%u data%u dfr%u",
+    snprintf(v, sizeof v, "all%u ok%u bad%u type%u len%u ctlmax%u data%u dfr%u",
              (unsigned)fRxAll, (unsigned)fRxOk, (unsigned)fRxBad,
-             (unsigned)fRxLastType, (unsigned)fRxLastLen, (unsigned)fRxData,
-             (unsigned)fRxDataFrames);
+             (unsigned)fRxLastType, (unsigned)fRxLastLen, (unsigned)fRxCtlMax,
+             (unsigned)fRxData, (unsigned)fRxDataFrames);
     setProperty("TbAccelRxStat", v);
 }
 
@@ -1708,8 +1732,8 @@ IOReturn TbAccelClient::armOne(TbAccelSlot *slot, uint64_t off)
     cmd->setMemoryDescriptor(region->buffer->md);
     cmd->setOffset(region->offset + off);
     cmd->setLength(chunk);
-    cmd->setSOF(TBACCEL_PDF);
-    cmd->setEOF(TBACCEL_PDF);
+    cmd->setSOF(TBACCEL_PDF_SOF);
+    cmd->setEOF(TBACCEL_PDF_EOF);
     cmd->setRefcon(slot);
     cmd->setCompletion({this, &TbAccelClient::dataRxComplete, slot});
     if (fRxQ->submit(cmd) != 0) {
@@ -1809,8 +1833,8 @@ IOReturn TbAccelClient::streamRegion(TbAccelRegion *region, uint64_t total)
         cmd->setMemoryDescriptor(region->buffer->md);
         cmd->setOffset(region->offset + sent);
         cmd->setLength(chunk);
-        cmd->setSOF(TBACCEL_PDF);
-        cmd->setEOF(TBACCEL_PDF);
+        cmd->setSOF(TBACCEL_PDF_SOF);
+        cmd->setEOF(TBACCEL_PDF_EOF);
         cmd->setRefcon(xfer);
         cmd->setCompletion({this, &TbAccelClient::dataTxComplete, xfer});
         if (fTxQ->submit(cmd) != 0) {
@@ -2164,21 +2188,25 @@ void TbAccelClient::peerPrepare(const TbxMsg *m)
  * reports: the NHI returns a non-success status and an unusable length for
  * received data frames (Linux ignores the status entirely), so trusting it
  * would either drop the transfer or desynchronise the offsets. */
-bool TbAccelClient::peerDataChunk(const uint8_t *data)
+bool TbAccelClient::peerDataChunk(const uint8_t *data, uint32_t len)
 {
     bool done = false;
     TbAccelSlot *slot;
 
     IOLockLock(fTableLock);
     slot = fRxStreamSlot;
-    if (!slot || !data || !slot->total || fRxStreamOff >= slot->total) {
+    if (!slot || !data || !len || !slot->total || fRxStreamOff >= slot->total) {
         IOLockUnlock(fTableLock);
         return false;
     }
 
+    /* The frame size is whatever the sender chose: on a successful completion
+     * the NHI reports it exactly, so the receiver no longer needs to be built
+     * with a chunk that matches the sender. (Only failed completions report
+     * unusable lengths, and those are rejected before reaching here.) */
     uint64_t take = slot->total - fRxStreamOff;
-    if (take > TBACCEL_DATA_CHUNK)
-        take = TBACCEL_DATA_CHUNK;
+    if (take > len)
+        take = len;
 
     uint8_t *dst = (uint8_t *)slot->region->buffer->md->getBytesNoCopy();
     if (!dst) {

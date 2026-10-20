@@ -109,7 +109,7 @@ private:
     void     peerMatmul(TbAccelSlot *inSlot, const TbxMsg *op);
     /* The stream opened by an ARM: payload frames land in whichever receive
      * buffer is at the head of the ring, so they are copied into the slot here. */
-    bool     peerDataChunk(const uint8_t *data);
+    bool     peerDataChunk(const uint8_t *data, uint32_t len);
     void     peerSchedule();
     static void peerThread(void *arg, thread_call_param_t param);
     void     peerStats(uint64_t t0, uint64_t t1, uint64_t computeNs);
@@ -178,6 +178,7 @@ private:
     uint32_t fTxSub, fTxDone, fTxSt, fTxLastType;
     uint32_t fRxAll, fRxOk, fRxBad, fRxLastType, fRxLastLen;
     uint32_t fRxData;      /* completed data transfers (peer slots + streams) */
+    uint32_t fRxCtlMax;    /* largest control frame delivered intact */
     uint32_t fRxDataFrames;/* payload frames consumed into the open stream */
     TbAccelSlot *fRxStreamSlot;  /* slot the current ARM opened, or null */
     uint64_t     fRxStreamOff;

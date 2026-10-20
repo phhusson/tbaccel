@@ -42,10 +42,19 @@ struct TbAccelWire {
 #define TBACCEL_RING_SIZE    64
 #define TBACCEL_WINDOW       (TBACCEL_RING_SIZE - 2)
 
-/* Protocol Defined Frame id used for sof/eof on every tbaccel frame (matches
- * Linux TBACCEL_PDF). Control and data share it; the receiver tells them apart
- * by which buffer it posted, not by the sof/eof value. */
-#define TBACCEL_PDF          1
+/* Protocol Defined Frame codepoints.
+ *
+ * A Thunderbolt packet carries at most 256 bytes; a larger frame is a sequence
+ * of packets delimited by the start-of-frame and end-of-frame codepoints in the
+ * NHI header. Using the *same* codepoint for both (as tbaccel originally did,
+ * SOF == EOF == 1) makes every 256-byte packet look like a complete frame, so
+ * the hardware never reassembles multi-packet frames: frames above ~192 bytes
+ * arrived as 256-byte pieces, 4 bytes short at the boundary, with
+ * kIOReturnIOError. AppleThunderboltIP uses distinct values (1 and 2) and these
+ * masks are what its receive queue is configured with. */
+#define TBACCEL_PDF_SOF      1
+#define TBACCEL_PDF_EOF      2
+#define TBACCEL_PDF          TBACCEL_PDF_SOF   /* compatibility for frame stamping */
 
 /* Payload bytes per data frame.
  *
@@ -62,7 +71,7 @@ struct TbAccelWire {
  * now uses its `chunk` parameter, so both directions run with the same proven
  * frame size. Kept as a separate name because the two directions can diverge
  * again once the frame-size ceiling is understood. */
-#define TBACCEL_TX_CHUNK      TBACCEL_DATA_CHUNK
+#define TBACCEL_TX_CHUNK      3840u
 
 /* NHI ring size used for setRingSize(). AppleThunderboltIP uses 0x1000
  * (4096) here; the HAL creates a per-hop mapper sized by this, and a small
@@ -85,7 +94,7 @@ struct TbAccelWire {
 #define TBACCEL_PATH_HOP 9
 
 /* Shown as TbAccelBuildTag so the running build is identifiable from ioreg. */
-#define TBACCEL_BUILD_TAG "peer-credit"
+#define TBACCEL_BUILD_TAG "peer-pdf"
 
 /* NHI ring flags (mirror of Linux RING_FLAG_*; the family's ring manager
  * branches on bit0 = frame mode, bit1 = E2E). */

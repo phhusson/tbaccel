@@ -64,8 +64,15 @@ MODULE_IMPORT_NS("DMA_BUF");
 #define TBACCEL_MSG_BLOB	0x13	/* pad2=len, payload=opaque */
 #define TBACCEL_MSG_CREDIT	0x14	/* len=credited bytes */
 
-/* one PDF value for every frame; the RX callback dispatches on the wrapper */
-#define TBACCEL_PDF		1
+/*
+ * PDF codepoints. A Thunderbolt packet holds at most 256 bytes, so a frame
+ * larger than that is a packet sequence delimited by these values. Using one
+ * value for both (SOF == EOF) makes every packet look like a whole frame and
+ * nothing above ~192 bytes can be reassembled; AppleThunderboltIP uses 1 and 2.
+ */
+#define TBACCEL_PDF_SOF		1
+#define TBACCEL_PDF_EOF		2
+#define TBACCEL_PDF		TBACCEL_PDF_SOF
 
 /*
  * Payload bytes per data frame. TB_MAX_FRAME_SIZE is the ring's frame capacity,
@@ -86,9 +93,19 @@ static bool bounce;
 module_param(bounce, bool, 0644);
 MODULE_PARM_DESC(bounce, "copy data frames through a DMA page (default 0)");
 
-static unsigned int chunk_size = 64;
+static unsigned int chunk_size = 1024;
 module_param_named(chunk, chunk_size, uint, 0644);
-MODULE_PARM_DESC(chunk, "payload bytes per data frame (default 2048)");
+MODULE_PARM_DESC(chunk, "payload bytes per transmitted data frame (default 1024)");
+
+/*
+ * Size of the descriptors this side arms for *incoming* data - i.e. the frame
+ * size the peer must transmit with. Kept separate from `chunk` because the two
+ * directions have different limits: this host can receive large frames from the
+ * Mac, while the Mac's receive path tops out around 192 bytes.
+ */
+static unsigned int rx_chunk = 3840;
+module_param_named(rx_chunk, rx_chunk, uint, 0644);
+MODULE_PARM_DESC(rx_chunk, "descriptor size for received data frames (default 3840)");
 
 static unsigned int ring_size = 64;
 module_param(ring_size, uint, 0644);
@@ -331,8 +348,8 @@ static void tbaccel_rx_post_ctrl(struct tbaccel_dev *dev)
 	fr->slot = NULL;
 	fr->frame.buffer_phy = fr->page_phy;
 	fr->frame.size = 0;
-	fr->frame.sof = TBACCEL_PDF;
-	fr->frame.eof = TBACCEL_PDF;
+	fr->frame.sof = TBACCEL_PDF_SOF;
+	fr->frame.eof = TBACCEL_PDF_EOF;
 	fr->frame.callback = tbaccel_rx_callback;
 	tb_ring_rx(dev->rx, &fr->frame);
 }
@@ -346,7 +363,7 @@ static u32 tbaccel_arm_one(struct tbaccel_dev *dev, struct tbaccel_slot *slot, u
 
 	if (off >= slot->total)
 		return 0;
-	chunk = min_t(u64, chunk_size, slot->total - off);
+	chunk = min_t(u64, rx_chunk, slot->total - off);
 	addr = tbaccel_sg_addr(slot->region->buf->sgt, slot->region->offset + off, &avail);
 	if (!addr || avail < chunk)
 		return 0;
@@ -364,8 +381,8 @@ static u32 tbaccel_arm_one(struct tbaccel_dev *dev, struct tbaccel_slot *slot, u
 	fr->off = off;
 	fr->frame.buffer_phy = addr;
 	fr->frame.size = 0;
-	fr->frame.sof = TBACCEL_PDF;
-	fr->frame.eof = TBACCEL_PDF;
+	fr->frame.sof = TBACCEL_PDF_SOF;
+	fr->frame.eof = TBACCEL_PDF_EOF;
 	fr->frame.callback = tbaccel_rx_callback;
 	tb_ring_rx(dev->rx, &fr->frame);
 	return chunk;
@@ -407,8 +424,8 @@ static int tbaccel_send_ctl(struct tbaccel_dev *dev, u16 type, u64 slot,
 		memcpy((u8 *)w + sizeof(*w), payload, payload_len);
 	tf->frame.size = (sizeof(*w) + payload_len) < TB_MAX_FRAME_SIZE
 			 ? (sizeof(*w) + payload_len) : 0;
-	tf->frame.sof = TBACCEL_PDF;
-	tf->frame.eof = TBACCEL_PDF;
+	tf->frame.sof = TBACCEL_PDF_SOF;
+	tf->frame.eof = TBACCEL_PDF_EOF;
 	return tb_ring_tx(dev->tx, &tf->frame);
 }
 
@@ -794,7 +811,7 @@ static int tbaccel_start(struct tbaccel_dev *dev)
 	dev->dma_dev = tb_ring_dma_device(dev->tx);
 
 	dev->rx = tb_ring_alloc_rx(xd->tb->nhi, -1, ring_size, flags, dev->tx->hop,
-				   BIT(TBACCEL_PDF), BIT(TBACCEL_PDF), NULL, NULL);
+				   BIT(TBACCEL_PDF_SOF), BIT(TBACCEL_PDF_EOF), NULL, NULL);
 	if (!dev->rx) {
 		ret = -ENOMEM;
 		goto err_tx;
@@ -970,8 +987,8 @@ static int tbaccel_stream(struct tbaccel_dev *dev, struct tbaccel_reg *region,
 			}
 			tf->frame.buffer_phy = tf->page_phy;
 		}
-		tf->frame.sof = TBACCEL_PDF;
-		tf->frame.eof = TBACCEL_PDF;
+		tf->frame.sof = TBACCEL_PDF_SOF;
+		tf->frame.eof = TBACCEL_PDF_EOF;
 		tf->frame.callback = tbaccel_tx_callback;
 		ret = tb_ring_tx(dev->tx, &tf->frame);
 		if (ret)
