@@ -1,3 +1,5 @@
+Completely vibe-coded slop that currently doesn't work
+
 # tbaccel
 
 A Thunderbolt/USB4 accelerator-offload protocol, with implementations for Linux
