@@ -118,6 +118,10 @@ IOReturn TbAccelUserClient::externalMethod(uint32_t selector, IOExternalMethodAr
         a.blob    = (const uint8_t *)args->structureInput + sizeof(tbaccel_submit);
         a.blobLen = args->structureInputSize - sizeof(tbaccel_submit);
         a.fence   = 0;
+        /* Optional GPU fence: scalarInput = { event page handle, value, ms }. */
+        a.wait_handle = args->scalarInputCount > 0 ? args->scalarInput[0] : 0;
+        a.wait_value  = args->scalarInputCount > 1 ? args->scalarInput[1] : 0;
+        a.wait_ms     = args->scalarInputCount > 2 ? (uint32_t)args->scalarInput[2] : 0;
         IOReturn r = gate->runAction(TbAccelClient::sSubmit, &a);
         /* The fence is the number of transmit commands queued by this submit;
          * kTbAccelMethodDrain waits for them to complete. */

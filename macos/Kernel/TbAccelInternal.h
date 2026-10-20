@@ -94,7 +94,7 @@ struct TbAccelWire {
 #define TBACCEL_PATH_HOP 9
 
 /* Shown as TbAccelBuildTag so the running build is identifiable from ioreg. */
-#define TBACCEL_BUILD_TAG "drain"
+#define TBACCEL_BUILD_TAG "gpufence"
 
 /* NHI ring flags (mirror of Linux RING_FLAG_*; the family's ring manager
  * branches on bit0 = frame mode, bit1 = E2E). */
@@ -223,7 +223,8 @@ public:
 };
 
 /* Argument blocks passed through IOCommandGate::runAction(). */
-struct TbAccelSubmitArgs   { tbaccel_submit req; const void *blob; uint32_t blobLen; uint64_t fence; };
+struct TbAccelSubmitArgs   { tbaccel_submit req; const void *blob; uint32_t blobLen; uint64_t fence;
+                             uint64_t wait_handle, wait_value; uint32_t wait_ms; };
 struct TbAccelRecvCtrlArgs { tbaccel_recv_ctrl req; void *out; uint32_t cap; };
 struct TbAccelSendCtrlArgs { tbaccel_send_ctrl req; const void *blob; };
 struct TbAccelWaitSlotArgs { uint64_t slot; uint32_t timeout; };

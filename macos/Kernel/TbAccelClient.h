@@ -36,7 +36,8 @@ public:
     IOReturn opRegion(tbaccel_region *req);
     IOReturn opFree(const tbaccel_free *req);
     IOReturn opPostRecv(tbaccel_post_recv *req);
-    IOReturn opSubmit(const tbaccel_submit *req, const void *blob, uint32_t blobLen);
+    IOReturn opSubmit(const tbaccel_submit *req, const void *blob, uint32_t blobLen,
+                      uint64_t waitHandle, uint64_t waitValue, uint32_t waitMs);
     IOReturn opRecvCtrl(tbaccel_recv_ctrl *req, void *out, uint32_t outCap);
     IOReturn opSendCtrl(const tbaccel_send_ctrl *req, const void *blob);
     IOReturn opWaitSlot(uint64_t slot, uint32_t timeoutMs);
@@ -45,6 +46,7 @@ public:
     IOReturn opEvent(tbaccel_event *req);
     /* Wait until every transmit command queued at 'fence' has completed. */
     IOReturn opDrainWait(uint64_t fence, uint32_t timeoutMs, uint64_t *drained);
+    IOReturn waitGpuValue(uint64_t handle, uint64_t value, uint32_t timeoutMs);
     uint64_t drainFence() const { return fTxSubmitted; }
 
     /* With a user client attached the TBX1 operations are delivered through
@@ -108,7 +110,8 @@ private:
     /* ARM + wait for the peer's ACK + stream. The op rides the ARM, which is
      * what a Linux tbaccel receiver expects (tbaccel_transfer does the same). */
     IOReturn submitOpToSlot(uint64_t slotId, TbAccelRegion *region, uint64_t total,
-                            const void *op, uint32_t opLen);
+                            const void *op, uint32_t opLen,
+                            uint64_t waitHandle, uint64_t waitValue, uint32_t waitMs);
 
     /* ---- peer (compute) side: TBX1 operations, no userspace involved ---- */
     bool     peerAllocRegion(uint64_t size, TbAccelRegion **out);

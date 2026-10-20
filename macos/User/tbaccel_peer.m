@@ -88,8 +88,24 @@ static struct pbuf ybuf;  /* result buffer, grown on demand */
 static id<MTLDevice>              mtl_device;
 static id<MTLCommandQueue>        mtl_queue;
 static id<MTLComputePipelineState> mtl_matmul;
+/*
+ * The compute completion is an MTLSharedEvent the GPU writes itself: waiting on
+ * it by spinning costs ~70-110 us for a tiny kernel, where waitUntilCompleted
+ * costs ~200 us because it waits for the completion interrupt to be delivered.
+ * This is also the event shape the driver-side fence will take later.
+ */
+static id<MTLComputePipelineState> mtl_signal;
+/*
+ * The compute fence page.  The GPU stores the operation's sequence number here
+ * (atomic store with release semantics) after the matmul; the kext maps the
+ * same page uncached and waits for it inside SUBMIT.  This is the part of
+ * MTLSharedEvent we can actually hand to a kext: a value in memory.
+ */
+static struct pbuf                 evpage;
+static uint32_t                    gpu_seq;
 
 static int verbose = 1;
+static int bench_verbose = 0;
 
 #define LOG(lvl, ...) do { if (verbose >= (lvl)) { printf(__VA_ARGS__); fflush(stdout); } } while (0)
 
@@ -137,6 +153,11 @@ static int metal_init(void)
         "    for (uint k = 0; k < K; k++)\n"
         "        acc += x[m * K + k] * w[n * K + k];\n"
         "    y[m * N + n] = acc;\n"
+        "}\n"
+        "kernel void signal_event(device atomic<uint, thread_scope_device> *ev [[buffer(0)]],\n"
+        "                         constant uint &value [[buffer(1)]])\n"
+        "{\n"
+        "    atomic_store_explicit(ev, value, memory_order_release, mem_flags::mem_device);\n"
         "}\n";
 
     mtl_device = MTLCreateSystemDefaultDevice();
@@ -168,6 +189,19 @@ static int metal_init(void)
         fprintf(stderr, "metal: pipeline failed: %s\n",
                 err ? [[err localizedDescription] UTF8String] : "?");
         return -1;
+    }
+    {
+        id<MTLFunction> sf = [lib newFunctionWithName:@"signal_event"];
+        if (!sf) {
+            fprintf(stderr, "metal: no signal_event function\n");
+            return -1;
+        }
+        mtl_signal = [mtl_device newComputePipelineStateWithFunction:sf error:&err];
+        if (!mtl_signal) {
+            fprintf(stderr, "metal: signal pipeline failed: %s\n",
+                    err ? [[err localizedDescription] UTF8String] : "?");
+            return -1;
+        }
     }
     LOG(1, "metal: %s ready\n", [[mtl_device name] UTF8String]);
     return 0;
@@ -268,6 +302,34 @@ static int make_region(io_connect_t conn, size_t size, struct pbuf *b)
     return 0;
 }
 
+/* The GPU fence page: imported with flags=1 so the kext maps it uncached. */
+static int make_event_page(io_connect_t conn)
+{
+    struct tbaccel_import_surface is;
+    size_t outSize = sizeof(is);
+    kern_return_t kr;
+
+    if (alloc_buffer(4096, &evpage))
+        return -1;
+    memset(evpage.ptr, 0, evpage.size);
+
+    memset(&is, 0, sizeof(is));
+    is.addr = (uint64_t)(uintptr_t) evpage.ptr;
+    is.size = evpage.size;
+    is.surface_id = (uint32_t) IOSurfaceGetID(evpage.surf);
+    is.flags = 1;
+
+    kr = IOConnectCallStructMethod(conn, kTbAccelMethodImportSurface,
+                                   &is, sizeof(is), &is, &outSize);
+    if (kr != KERN_SUCCESS) {
+        fprintf(stderr, "event page ImportSurface: 0x%x\n", kr);
+        return -1;
+    }
+    evpage.handle = is.handle;
+    LOG(1, "event page: handle %llu\n", (unsigned long long) evpage.handle);
+    return 0;
+}
+
 static int post_recv(io_connect_t conn, struct pbuf *b, uint64_t *slot)
 {
     tbaccel_post_recv pr = { .region = b->region };
@@ -280,6 +342,50 @@ static int post_recv(io_connect_t conn, struct pbuf *b, uint64_t *slot)
         return -1;
     }
     *slot = pr.slot;
+    return 0;
+}
+
+/* Encode the matmul and signal 'ev' at 'value'; the caller waits on the event.
+ * Unlike waitUntilCompleted this needs no completion-interrupt round trip: the
+ * GPU writes the event value and a spin sees it directly. */
+static int metal_matmul_signal(const struct pbuf *w, const struct pbuf *x,
+                               struct pbuf *y, uint32_t M, uint32_t N, uint32_t K,
+                               uint32_t value)
+{
+    id<MTLCommandBuffer> cb = [mtl_queue commandBuffer];
+    id<MTLComputeCommandEncoder> enc;
+    uint32_t dims[3] = { M, N, K };
+
+    if (!cb)
+        return -1;
+    enc = [cb computeCommandEncoder];
+    if (!enc) {
+        [cb commit];
+        return -1;
+    }
+    [enc setComputePipelineState:mtl_matmul];
+    [enc setBuffer:x->mtl offset:0 atIndex:0];
+    [enc setBuffer:w->mtl offset:0 atIndex:1];
+    [enc setBuffer:y->mtl offset:0 atIndex:2];
+    [enc setBytes:&dims[0] length:sizeof(uint32_t) atIndex:3];
+    [enc setBytes:&dims[1] length:sizeof(uint32_t) atIndex:4];
+    [enc setBytes:&dims[2] length:sizeof(uint32_t) atIndex:5];
+    {
+        MTLSize grid = MTLSizeMake(N, M, 1);
+        MTLSize tg = MTLSizeMake(8, 8, 1);
+
+        [enc dispatchThreads:grid threadsPerThreadgroup:tg];
+    }
+    [enc setComputePipelineState:mtl_signal];
+    [enc setBuffer:evpage.mtl offset:0 atIndex:0];
+    [enc setBytes:&value length:sizeof(uint32_t) atIndex:1];
+    {
+        MTLSize one = MTLSizeMake(1, 1, 1);
+
+        [enc dispatchThreads:one threadsPerThreadgroup:one];
+    }
+    [enc endEncoding];
+    [cb commit];
     return 0;
 }
 
@@ -408,6 +514,8 @@ static int metal_matmul(const struct pbuf *w, const struct pbuf *x,
     id<MTLComputeCommandEncoder> enc;
     uint32_t dims[3] = { M, N, K };
 
+    uint64_t t0, t1, t2;
+    t0 = now_us();
     cb = [mtl_queue commandBuffer];
     if (!cb)
         return -1;
@@ -431,12 +539,21 @@ static int metal_matmul(const struct pbuf *w, const struct pbuf *x,
         [enc dispatchThreads:grid threadsPerThreadgroup:tg];
     }
     [enc endEncoding];
+    t1 = now_us();
     [cb commit];
     [cb waitUntilCompleted];
+    t2 = now_us();
+    if (bench_verbose) {
+        printf("  metal: setup %llu us, commit %llu us, wait %llu us\n",
+               (unsigned long long)(t1 - t0), (unsigned long long)(t2 - t1),
+               0ull);
+        fflush(stdout);
+    }
     return cb.status == MTLCommandBufferStatusCompleted ? 0 : -1;
 }
 
-static void peer_matmul(io_connect_t conn, const struct tbx_msg *op, uint64_t in_slot)
+static void peer_matmul(io_connect_t conn, const struct tbx_msg *op, uint64_t in_slot,
+                        uint64_t t_entry)
 {
     struct pbuf *w = find_id(op->a);
     struct pbuf *x = find_slot(in_slot);
@@ -448,12 +565,16 @@ static void peer_matmul(io_connect_t conn, const struct tbx_msg *op, uint64_t in
             (unsigned long long) in_slot, x ? "found" : "MISSING");
         return;
     }
+    uint64_t t_drain = 0, t_metal0 = 0, t_metal = 0, t_submit = 0;
+    uint32_t gpu_value = 0;
+
     if (ybuf.ptr && ybuf.fence) {
         uint64_t t0 = now_us(), drained = 0;
 
         if (drain_wait(conn, ybuf.fence, 2000, &drained) == 0) {
             uint64_t dt = now_us() - t0;
 
+            t_drain = dt;
             if (dt >= 50)
                 LOG(1, "drain fence %llu done (%llu us)\n",
                     (unsigned long long) ybuf.fence, (unsigned long long) dt);
@@ -473,9 +594,15 @@ static void peer_matmul(io_connect_t conn, const struct tbx_msg *op, uint64_t in
         }
     }
 
-    if (metal_matmul(w, x, &ybuf, op->m, op->n, op->k)) {
-        LOG(0, "matmul: metal failed\n");
-        return;
+    t_metal0 = now_us();
+    {
+        uint32_t value = ++gpu_seq;
+
+        if (metal_matmul_signal(w, x, &ybuf, op->m, op->n, op->k, value)) {
+            LOG(0, "matmul: metal encode failed\n");
+            return;
+        }
+        gpu_value = value;
     }
 
     {
@@ -493,16 +620,35 @@ static void peer_matmul(io_connect_t conn, const struct tbx_msg *op, uint64_t in
 
         uint64_t fence = 0;
         uint32_t fenceCnt = 1;
+        uint64_t t_sub0;
+        uint64_t wait[3];
+
+        wait[0] = evpage.handle;
+        wait[1] = gpu_value;
+        wait[2] = 200;              /* ms bound on the GPU fence */
+
+        t_metal = now_us() - t_metal0;
+        t_sub0 = now_us();
         kern_return_t kr = IOConnectCallMethod(conn, kTbAccelMethodSubmit,
-                                               NULL, 0, &in, sizeof(in),
+                                               wait, 3, &in, sizeof(in),
                                                &fence, &fenceCnt, NULL, NULL);
         if (kr != KERN_SUCCESS) {
             LOG(0, "matmul: result SUBMIT failed: 0x%x\n", kr);
         } else {
             ybuf.fence = fence;
+            t_submit = now_us() - t_sub0;
             LOG(1, "matmul %ux%ux%u done (metal), RESULT -> slot %llu (fence %llu)\n",
                 op->m, op->n, op->k, (unsigned long long) op->b,
                 (unsigned long long) fence);
+            {
+                uint64_t total = now_us() - t_entry;
+                uint64_t acc = t_drain + t_metal + t_submit;
+
+                LOG(1, "  timing: total %llu us = drain %llu + metal %llu + submit %llu + other %llu\n",
+                    (unsigned long long) total, (unsigned long long) t_drain,
+                    (unsigned long long) t_metal, (unsigned long long) t_submit,
+                    (unsigned long long) (total > acc ? total - acc : 0));
+            }
         }
     }
 }
@@ -542,11 +688,70 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    if (argc > 1 && (!strcmp(argv[1], "bench-event") || !strcmp(argv[1], "bench"))) {
+        int use_event = !strcmp(argv[1], "bench-event");
+
+        struct pbuf b[3];
+        uint32_t dim = 64, i;
+        uint64_t best = ~0ull, sum = 0;
+
+        if (use_event) {
+            memset(&evpage, 0, sizeof(evpage));
+            if (alloc_buffer(4096, &evpage)) {
+                fprintf(stderr, "bench: event page alloc failed\n");
+                return 1;
+            }
+        }
+        memset(b, 0, sizeof(b));
+        for (i = 0; i < 3; i++) {
+            if (alloc_buffer(16384, &b[i])) {
+                fprintf(stderr, "bench: alloc failed\n");
+                return 1;
+            }
+            for (uint32_t j = 0; j < 16384 / 4; j++)
+                ((float *)(void *)b[i].ptr)[j] = 0.001f;
+        }
+        bench_verbose = verbose >= 2;
+        for (i = 0; i < 6; i++) {   /* warm up */
+            if (metal_matmul(&b[0], &b[1], &b[2], dim, dim, dim))
+                return 1;
+        }
+        bench_verbose = 0;
+        for (i = 0; i < 50; i++) {
+            uint64_t t0 = now_us();
+            uint64_t dt;
+            if (use_event) {
+                if (metal_matmul_signal(&b[0], &b[1], &b[2], dim, dim, dim,
+                                        ++gpu_seq))
+                    return 1;
+                while (((volatile uint32_t *) evpage.ptr)[0] < gpu_seq) {
+                    /* spin on the page the GPU writes - the kext does this */
+                }
+            } else if (metal_matmul(&b[0], &b[1], &b[2], dim, dim, dim)) {
+                return 1;
+            }
+            dt = now_us() - t0;
+            sum += dt;
+            if (dt < best)
+                best = dt;
+        }
+        printf("bench: metal matmul 64x64x64: min %llu us, mean %llu us\n",
+               (unsigned long long) best, (unsigned long long) (sum / 50));
+        return 0;
+    }
+
+    if (make_event_page(conn)) {
+        LOG(0, "peer: cannot create the GPU fence page\n");
+        IOServiceClose(conn);
+        return 1;
+    }
+
     LOG(1, "peer: waiting for operations\n");
     for (;;) {
         struct tbx_msg m;
         uint64_t slot = 0;
         int r = recv_ctrl(conn, &m, &slot);
+        uint64_t t_recv = now_us();
 
         if (r) {
             LOG(0, "peer: RecvCtrl failed: 0x%x\n", r);
@@ -570,7 +775,7 @@ int main(int argc, char **argv)
             LOG(1, "peer: MATMUL w=%llu y_slot=%llu %ux%ux%u\n",
                 (unsigned long long) m.a, (unsigned long long) m.b,
                 m.m, m.n, m.k);
-            peer_matmul(conn, &m, slot);
+            peer_matmul(conn, &m, slot, t_recv);
             break;
         default:
             LOG(2, "peer: ignoring type %u\n", m.type);

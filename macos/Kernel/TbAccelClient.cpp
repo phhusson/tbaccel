@@ -1961,7 +1961,13 @@ IOReturn TbAccelClient::opImportSurface(tbaccel_import_surface *req)
         md->release();
         return kr;
     }
-    IOMemoryMap *map = md->createMappingInTask(kernel_task, 0, kIOMapAnywhere,
+    /* flags bit 0: give the kernel an uncached view.  A page the GPU writes
+     * (the compute fence) must be read straight from memory, not through a
+     * cache line that was populated before the GPU stored to it. */
+    IOOptionBits mapOpts = kIOMapAnywhere;
+    if (req->flags & 1)
+        mapOpts |= kIOMapInhibitCache;
+    IOMemoryMap *map = md->createMappingInTask(kernel_task, 0, mapOpts,
                                                0, req->size);
     if (!map) {
         md->complete();
@@ -2065,7 +2071,9 @@ IOReturn TbAccelClient::opPostRecv(tbaccel_post_recv *req)
  * and what a Mac peer needs in order to hand a MATMUL's result back together
  * with its RESULT message. */
 IOReturn TbAccelClient::submitOpToSlot(uint64_t slotId, TbAccelRegion *region,
-                                       uint64_t total, const void *op, uint32_t opLen)
+                                       uint64_t total, const void *op, uint32_t opLen,
+                                       uint64_t waitHandle, uint64_t waitValue,
+                                       uint32_t waitMs)
 {
     uint64_t armed = 0;
 
@@ -2097,6 +2105,14 @@ IOReturn TbAccelClient::submitOpToSlot(uint64_t slotId, TbAccelRegion *region,
             return kIOReturnTimeout;
     }
 
+    /* The ARM handshake above is a wire round trip; waiting for the GPU now
+     * means that round trip and the compute overlap instead of serialising. */
+    if (waitHandle) {
+        IOReturn wr = waitGpuValue(waitHandle, waitValue, waitMs);
+        if (wr != kIOReturnSuccess)
+            return wr;
+    }
+
     if (region) {
         if (total == 0 || total > region->size)
             total = region->size;
@@ -2111,7 +2127,8 @@ IOReturn TbAccelClient::submitOpToSlot(uint64_t slotId, TbAccelRegion *region,
     return kIOReturnSuccess;
 }
 
-IOReturn TbAccelClient::opSubmit(const tbaccel_submit *req, const void *blob, uint32_t blobLen)
+IOReturn TbAccelClient::opSubmit(const tbaccel_submit *req, const void *blob, uint32_t blobLen,
+                                 uint64_t waitHandle, uint64_t waitValue, uint32_t waitMs)
 {
     TbAccelRegion *region = nullptr;
 
@@ -2123,7 +2140,8 @@ IOReturn TbAccelClient::opSubmit(const tbaccel_submit *req, const void *blob, ui
         if (!region) return kIOReturnNotFound;
     }
 
-    return submitOpToSlot(req->slot, region, region ? region->size : 0, blob, blobLen);
+    return submitOpToSlot(req->slot, region, region ? region->size : 0, blob, blobLen,
+                          waitHandle, waitValue, waitMs);
 }
 
 IOReturn TbAccelClient::opSendCtrl(const tbaccel_send_ctrl *req, const void *blob)
@@ -2503,7 +2521,7 @@ void TbAccelClient::peerMatmul(TbAccelSlot *inSlot, const TbxMsg *op)
     res.type  = TBX_RESULT;
     res.b     = op->b;            /* the client's posted result slot */
 
-    IOReturn r = submitOpToSlot(op->b, fPeerY, need, &res, sizeof res);
+    IOReturn r = submitOpToSlot(op->b, fPeerY, need, &res, sizeof res, 0, 0, 0);
     uint64_t c2 = mach_absolute_time();
 
     if (r != kIOReturnSuccess) {
@@ -2604,6 +2622,55 @@ IOReturn TbAccelClient::opWaitSlot(uint64_t slot, uint32_t timeoutMs)
  * peer can start the next compute before the previous result has left the wire
  * and only block when it actually wants to reuse the buffer.
  */
+/*
+ * Wait for a value the GPU writes into an imported page.  This is the kernel
+ * side of the compute fence: the peer encodes "store value" after the matmul,
+ * so once the value appears the result is in memory and may be transmitted.
+ * There is no KPI to be interrupted by an MTLSharedEvent, so this polls the
+ * mapped page, but it runs after the ARM handshake, i.e. while the wire round
+ * trip and the GPU are already in flight, and it is bounded.
+ */
+IOReturn TbAccelClient::waitGpuValue(uint64_t handle, uint64_t value, uint32_t timeoutMs)
+{
+    if (!handle)
+        return kIOReturnSuccess;
+
+    LOCK(); TbAccelBuffer *b = findBuffer(handle); if (b) b->retain(); UNLOCK();
+    if (!b)
+        return kIOReturnNotFound;
+
+    volatile uint32_t *p = (volatile uint32_t *)bufferBytes(b);
+    if (!p) {
+        b->release();
+        return kIOReturnNoMemory;
+    }
+
+    uint64_t start = mach_absolute_time();
+    uint64_t elapsedNs = 0;
+    uint32_t want = (uint32_t)value;
+
+    while (*p < want) {
+        absolutetime_to_nanoseconds(mach_absolute_time() - start, &elapsedNs);
+        if (elapsedNs > (uint64_t)(timeoutMs ? timeoutMs : 2000) * 1000000ull) {
+            char v[80];
+            snprintf(v, sizeof v, "timeout want%u now%u after%lluns",
+                     (unsigned)want, (unsigned)*p, (unsigned long long)elapsedNs);
+            setProperty("TbAccelGpuWait", v);
+            b->release();
+            return kIOReturnTimeout;
+        }
+    }
+    {
+        char v[96];
+        snprintf(v, sizeof v, "h%llu want%u now%u waited%lluns",
+                 (unsigned long long)handle, (unsigned)want, (unsigned)*p,
+                 (unsigned long long)elapsedNs);
+        setProperty("TbAccelGpuWait", v);
+    }
+    b->release();
+    return kIOReturnSuccess;
+}
+
 IOReturn TbAccelClient::opDrainWait(uint64_t fence, uint32_t timeoutMs, uint64_t *drained)
 {
     if (!fGate)
@@ -2714,7 +2781,8 @@ IOReturn TbAccelClient::sPostRecv(OSObject *o, void *a, void *, void *, void *)
 IOReturn TbAccelClient::sSubmit(OSObject *o, void *a, void *, void *, void *)
 {
     TbAccelSubmitArgs *p = (TbAccelSubmitArgs *)a;
-    IOReturn r = ((TbAccelClient *)o)->opSubmit(&p->req, p->blob, p->blobLen);
+    IOReturn r = ((TbAccelClient *)o)->opSubmit(&p->req, p->blob, p->blobLen,
+                                                p->wait_handle, p->wait_value, p->wait_ms);
     p->fence = (r == kIOReturnSuccess) ? ((TbAccelClient *)o)->drainFence() : 0;
     return r;
 }
