@@ -1,0 +1,427 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		000000000000000000000030 /* TbAccelClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000020 /* TbAccelClient.cpp */; };
+		000000000000000000000031 /* TbAccelUserClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000021 /* TbAccelUserClient.cpp */; };
+		000000000000000000000032 /* TbAccelService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000022 /* TbAccelService.cpp */; };
+		000000000000000000000033 /* TbAccelDriver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000023 /* TbAccelDriver.cpp */; };
+		000000000000000000000051 /* TbTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000050 /* TbTest.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		000000000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		000000000000000000000009 /* TbAccel.kext */ = {isa = PBXFileReference; explicitFileType = "wrapper.kext"; includeInIndex = 0; path = TbAccel.kext; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000020 /* TbAccelClient.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TbAccelClient.cpp; path = Kernel/TbAccelClient.cpp; sourceTree = "<group>"; };
+		000000000000000000000021 /* TbAccelUserClient.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TbAccelUserClient.cpp; path = Kernel/TbAccelUserClient.cpp; sourceTree = "<group>"; };
+		000000000000000000000022 /* TbAccelService.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TbAccelService.cpp; path = Kernel/TbAccelService.cpp; sourceTree = "<group>"; };
+		000000000000000000000023 /* TbAccelDriver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TbAccelDriver.cpp; path = Kernel/TbAccelDriver.cpp; sourceTree = "<group>"; };
+		000000000000000000000040 /* TbAccelUAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TbAccelUAPI.h; path = Shared/TbAccelUAPI.h; sourceTree = "<group>"; };
+		000000000000000000000041 /* TbAccelProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TbAccelProtocol.h; path = Shared/TbAccelProtocol.h; sourceTree = "<group>"; };
+		000000000000000000000042 /* IOThunderboltFamily.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = IOThunderboltFamily.h; path = Private/IOThunderboltFamily.h; sourceTree = "<group>"; };
+		000000000000000000000043 /* TbAccelInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TbAccelInternal.h; path = Kernel/TbAccelInternal.h; sourceTree = "<group>"; };
+		000000000000000000000044 /* TbAccelClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TbAccelClient.h; path = Kernel/TbAccelClient.h; sourceTree = "<group>"; };
+		000000000000000000000045 /* TbAccelUserClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TbAccelUserClient.h; path = Kernel/TbAccelUserClient.h; sourceTree = "<group>"; };
+		000000000000000000000046 /* TbAccelService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TbAccelService.h; path = Kernel/TbAccelService.h; sourceTree = "<group>"; };
+		000000000000000000000050 /* TbTest.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TbTest.cpp; path = Kernel/TbTest.cpp; sourceTree = "<group>"; };
+		000000000000000000000052 /* Info-min.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-min.plist"; sourceTree = "<group>"; };
+		000000000000000000000053 /* TbAccelMin.kext */ = {isa = PBXFileReference; explicitFileType = "wrapper.kext"; includeInIndex = 0; path = TbAccelMin.kext; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		00000000000000000000000B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		000000000000000000000003 = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000004 /* Kernel */,
+				000000000000000000000005 /* Shared */,
+				000000000000000000000006 /* Private */,
+				000000000000000000000008 /* Info.plist */,
+				000000000000000000000052 /* Info-min.plist */,
+				000000000000000000000007 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		000000000000000000000004 /* Kernel */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000020 /* TbAccelClient.cpp */,
+				000000000000000000000021 /* TbAccelUserClient.cpp */,
+				000000000000000000000022 /* TbAccelService.cpp */,
+				000000000000000000000023 /* TbAccelDriver.cpp */,
+				000000000000000000000044 /* TbAccelClient.h */,
+				000000000000000000000045 /* TbAccelUserClient.h */,
+				000000000000000000000046 /* TbAccelService.h */,
+				000000000000000000000043 /* TbAccelInternal.h */,
+				000000000000000000000050 /* TbTest.cpp */,
+			);
+			name = Kernel;
+			sourceTree = "<group>";
+		};
+		000000000000000000000005 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000040 /* TbAccelUAPI.h */,
+				000000000000000000000041 /* TbAccelProtocol.h */,
+			);
+			name = Shared;
+			sourceTree = "<group>";
+		};
+		000000000000000000000006 /* Private */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000042 /* IOThunderboltFamily.h */,
+			);
+			name = Private;
+			sourceTree = "<group>";
+		};
+		000000000000000000000007 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000009 /* TbAccel.kext */,
+				000000000000000000000053 /* TbAccelMin.kext */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		000000000000000000000002 /* TbAccel */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 00000000000000000000000D /* Build configuration list for PBXNativeTarget "TbAccel" */;
+			buildPhases = (
+				00000000000000000000000A /* Sources */,
+				00000000000000000000000B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TbAccel;
+			productName = TbAccel;
+			productReference = 000000000000000000000009 /* TbAccel.kext */;
+			productType = "com.apple.product-type.kernel-extension";
+		};
+		000000000000000000000054 /* TbAccelMin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000058 /* Build configuration list for PBXNativeTarget "TbAccelMin" */;
+			buildPhases = (
+				000000000000000000000055 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TbAccelMin;
+			productName = TbAccelMin;
+			productReference = 000000000000000000000053 /* TbAccelMin.kext */;
+			productType = "com.apple.product-type.kernel-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		000000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 2700;
+			};
+			buildConfigurationList = 00000000000000000000000C /* Build configuration list for PBXProject "TbAccel" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 000000000000000000000003;
+			productRefGroup = 000000000000000000000007 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				000000000000000000000002 /* TbAccel */,
+				000000000000000000000054 /* TbAccelMin */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		00000000000000000000000A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000000030 /* TbAccelClient.cpp in Sources */,
+				000000000000000000000031 /* TbAccelUserClient.cpp in Sources */,
+				000000000000000000000032 /* TbAccelService.cpp in Sources */,
+				000000000000000000000033 /* TbAccelDriver.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000000000000000000000055 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000000051 /* TbTest.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		00000000000000000000000E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = NO;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				SDKROOT = macosx;
+				ARCHS = arm64e;
+			};
+			name = Debug;
+		};
+		00000000000000000000000F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = NO;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_OPTIMIZATION_LEVEL = 2;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				SDKROOT = macosx;
+				ARCHS = arm64e;
+			};
+			name = Release;
+		};
+		000000000000000000000010 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TbAccel;
+				PRODUCT_BUNDLE_IDENTIFIER = com.phh.tbaccel;
+				INFOPLIST_FILE = Info.plist;
+				WRAPPER_EXTENSION = kext;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"KERNEL=1",
+					"KERNEL_PRIVATE=1",
+					"DRIVER_PRIVATE=1",
+					"APPLE=1",
+					"NeXT=1",
+					"$(inherited)",
+				);
+				OTHER_CFLAGS = (
+					"-mkernel",
+					"-fapple-kext",
+					"-fno-builtin",
+					"-fno-common",
+					"-Wno-inconsistent-missing-override",
+					"-Wno-unused-parameter",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/Shared",
+					"$(SRCROOT)/Private",
+					"$(SRCROOT)/Kernel",
+				);
+				OTHER_LDFLAGS = (
+					"-Xlinker",
+					"-kext",
+					"-lkmodc++",
+					"-lkmod",
+					"-lcc_kext",
+				);
+				CODE_SIGN_IDENTITY = "TbAccel Local";
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGNING_REQUIRED = YES;
+				CODE_SIGNING_ALLOWED = YES;
+				DEVELOPMENT_TEAM = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Debug;
+		};
+		000000000000000000000011 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TbAccel;
+				PRODUCT_BUNDLE_IDENTIFIER = com.phh.tbaccel;
+				INFOPLIST_FILE = Info.plist;
+				WRAPPER_EXTENSION = kext;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"KERNEL=1",
+					"KERNEL_PRIVATE=1",
+					"DRIVER_PRIVATE=1",
+					"APPLE=1",
+					"NeXT=1",
+					"$(inherited)",
+				);
+				OTHER_CFLAGS = (
+					"-mkernel",
+					"-fapple-kext",
+					"-fno-builtin",
+					"-fno-common",
+					"-Wno-inconsistent-missing-override",
+					"-Wno-unused-parameter",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/Shared",
+					"$(SRCROOT)/Private",
+					"$(SRCROOT)/Kernel",
+				);
+				OTHER_LDFLAGS = (
+					"-Xlinker",
+					"-kext",
+					"-lkmodc++",
+					"-lkmod",
+					"-lcc_kext",
+				);
+				CODE_SIGN_IDENTITY = "TbAccel Local";
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGNING_REQUIRED = YES;
+				CODE_SIGNING_ALLOWED = YES;
+				DEVELOPMENT_TEAM = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Release;
+		};
+		000000000000000000000056 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TbAccelMin;
+				PRODUCT_BUNDLE_IDENTIFIER = com.phh.tbaccel.min;
+				INFOPLIST_FILE = "Info-min.plist";
+				WRAPPER_EXTENSION = kext;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"KERNEL=1",
+					"KERNEL_PRIVATE=1",
+					"DRIVER_PRIVATE=1",
+					"APPLE=1",
+					"NeXT=1",
+					"$(inherited)",
+				);
+				OTHER_CFLAGS = (
+					"-mkernel",
+					"-fapple-kext",
+					"-fno-builtin",
+					"-fno-common",
+					"-Wno-inconsistent-missing-override",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/Kernel",
+				);
+				OTHER_LDFLAGS = (
+					"-Xlinker",
+					"-kext",
+					"-lkmodc++",
+					"-lkmod",
+					"-lcc_kext",
+				);
+				CODE_SIGN_IDENTITY = "TbAccel Local";
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGNING_REQUIRED = YES;
+				CODE_SIGNING_ALLOWED = YES;
+				DEVELOPMENT_TEAM = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Debug;
+		};
+		000000000000000000000057 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = TbAccelMin;
+				PRODUCT_BUNDLE_IDENTIFIER = com.phh.tbaccel.min;
+				INFOPLIST_FILE = "Info-min.plist";
+				WRAPPER_EXTENSION = kext;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"KERNEL=1",
+					"KERNEL_PRIVATE=1",
+					"DRIVER_PRIVATE=1",
+					"APPLE=1",
+					"NeXT=1",
+					"$(inherited)",
+				);
+				OTHER_CFLAGS = (
+					"-mkernel",
+					"-fapple-kext",
+					"-fno-builtin",
+					"-fno-common",
+					"-Wno-inconsistent-missing-override",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/Kernel",
+				);
+				OTHER_LDFLAGS = (
+					"-Xlinker",
+					"-kext",
+					"-lkmodc++",
+					"-lkmod",
+					"-lcc_kext",
+				);
+				CODE_SIGN_IDENTITY = "TbAccel Local";
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGNING_REQUIRED = YES;
+				CODE_SIGNING_ALLOWED = YES;
+				DEVELOPMENT_TEAM = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		00000000000000000000000C /* Build configuration list for PBXProject "TbAccel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00000000000000000000000E /* Debug */,
+				00000000000000000000000F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		00000000000000000000000D /* Build configuration list for PBXNativeTarget "TbAccel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000010 /* Debug */,
+				000000000000000000000011 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000000000000000000000058 /* Build configuration list for PBXNativeTarget "TbAccelMin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000056 /* Debug */,
+				000000000000000000000057 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 000000000000000000000001 /* Project object */;
+}

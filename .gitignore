@@ -1,0 +1,35 @@
+# macOS build outputs
+macos/build/
+macos/build_min/
+macos/build_xc/
+macos/*.dSYM/
+macos/User/tbaccel
+
+# Linux kernel module build outputs
+linux/*.o
+linux/*.ko
+linux/*.mod
+linux/*.mod.c
+linux/Module.symvers
+linux/modules.order
+linux/.*.cmd
+linux/.tmp_versions/
+linux/.cache.mk
+
+# Linux userspace tools (built from the .c next to them)
+linux/tbaccel_client
+linux/tbaccel_peer
+linux/tbaccel_peer_ggml
+linux/test_tbaccel
+linux/macos-ctrl
+linux/macos-ctrl2
+
+# Reverse-engineering scratch: the Apple KDK binaries themselves are not ours to
+# redistribute, and the fixup dumps are large generated intermediate files.
+# The scripts and the *.symbols.txt / *.syms text dumps are kept.
+macos/reference/thin/
+macos/reference/__pycache__/
+macos/reference/*.fixups
+
+# macOS noise
+.DS_Store

@@ -1,0 +1,1357 @@
+AppleThunderboltIPConnection::AppleThunderboltIPConnection()
+AppleThunderboltIPConnection::AppleThunderboltIPConnection(OSMetaClass const*)
+AppleThunderboltIPConnection::MetaClass::MetaClass()
+AppleThunderboltIPConnection::MetaClass::alloc() const
+AppleThunderboltIPConnection::MetaClass::~MetaClass()
+AppleThunderboltIPConnection::closeGate(char const*)
+AppleThunderboltIPConnection::compareMacAddress(unsigned char*, unsigned int)
+AppleThunderboltIPConnection::compareMacAddress(unsigned char*, unsigned int)::_os_log_fmt
+AppleThunderboltIPConnection::compareRemoteUUID(EFI_GUID)
+AppleThunderboltIPConnection::compareRemoteUUID(EFI_GUID)::_os_log_fmt
+AppleThunderboltIPConnection::configureRxPath()
+AppleThunderboltIPConnection::configureRxPath()::_os_log_fmt
+AppleThunderboltIPConnection::connectionIsActive()
+AppleThunderboltIPConnection::connectionIsActive()::_os_log_fmt
+AppleThunderboltIPConnection::controlCommandCallback(void*, int, IOThunderboltConfigCommand*)
+AppleThunderboltIPConnection::controlCommandCallback(void*, int, IOThunderboltConfigCommand*)::_os_log_fmt
+AppleThunderboltIPConnection::createControlCommands()
+AppleThunderboltIPConnection::createControlCommands()::_os_log_fmt
+AppleThunderboltIPConnection::createRxPath()
+AppleThunderboltIPConnection::createRxPath()::_os_log_fmt
+AppleThunderboltIPConnection::destroyControlCommands()
+AppleThunderboltIPConnection::destroyControlCommands()::_os_log_fmt
+AppleThunderboltIPConnection::destroyControlCommands()::kalloc_type_view_1788
+AppleThunderboltIPConnection::destroyRxPath()
+AppleThunderboltIPConnection::destroyRxPath()::_os_log_fmt
+AppleThunderboltIPConnection::dispatchLogin(bool)
+AppleThunderboltIPConnection::dispatchLogin(bool)::_os_log_fmt
+AppleThunderboltIPConnection::dispatchLogout(bool)
+AppleThunderboltIPConnection::dispatchLogout(bool)::_os_log_fmt
+AppleThunderboltIPConnection::finalize(unsigned int)
+AppleThunderboltIPConnection::finalize(unsigned int)::_os_log_fmt
+AppleThunderboltIPConnection::free()
+AppleThunderboltIPConnection::free()::_os_log_fmt
+AppleThunderboltIPConnection::gMetaClass
+AppleThunderboltIPConnection::getControlCommand(bool)
+AppleThunderboltIPConnection::getMetaClass() const
+AppleThunderboltIPConnection::getRxCommand(bool)
+AppleThunderboltIPConnection::getState()
+AppleThunderboltIPConnection::getTBTPortNumber()
+AppleThunderboltIPConnection::getTBTRouteString()
+AppleThunderboltIPConnection::getTransmitter()
+AppleThunderboltIPConnection::getTransmitter()::_os_log_fmt
+AppleThunderboltIPConnection::initWithParams(EFI_GUID, AppleThunderboltIPService*, IOThunderboltXDomainLink*, AppleThunderboltIPPort*)
+AppleThunderboltIPConnection::initWithParams(EFI_GUID, AppleThunderboltIPService*, IOThunderboltXDomainLink*, AppleThunderboltIPPort*)::_os_log_fmt
+AppleThunderboltIPConnection::logState(unsigned int)
+AppleThunderboltIPConnection::login()
+AppleThunderboltIPConnection::login()::_os_log_fmt
+AppleThunderboltIPConnection::logout()
+AppleThunderboltIPConnection::logout()::_os_log_fmt
+AppleThunderboltIPConnection::metaClass
+AppleThunderboltIPConnection::newControlCommand()
+AppleThunderboltIPConnection::newControlCommand()::kalloc_type_view_1816
+AppleThunderboltIPConnection::newRxCommand(IOMemoryDescriptor*, unsigned long long)
+AppleThunderboltIPConnection::openGate(char const*)
+AppleThunderboltIPConnection::operator delete(void*, unsigned long)
+AppleThunderboltIPConnection::operator new(unsigned long)
+AppleThunderboltIPConnection::prepareForTermination()
+AppleThunderboltIPConnection::prepareForTermination()::_os_log_fmt
+AppleThunderboltIPConnection::processLoginPacket(IOBufferMemoryDescriptor*)
+AppleThunderboltIPConnection::processLoginPacket(IOBufferMemoryDescriptor*)::_os_log_fmt
+AppleThunderboltIPConnection::processLogoutPacket(IOBufferMemoryDescriptor*)
+AppleThunderboltIPConnection::processLogoutPacket(IOBufferMemoryDescriptor*)::_os_log_fmt
+AppleThunderboltIPConnection::processXDLinkNotification(IOThunderboltDispatchContext*)
+AppleThunderboltIPConnection::processXDLinkNotification(IOThunderboltDispatchContext*)::_os_log_fmt
+AppleThunderboltIPConnection::processXDomainPacket(IOBufferMemoryDescriptor*)
+AppleThunderboltIPConnection::processXDomainPacket(IOBufferMemoryDescriptor*)::_os_log_fmt
+AppleThunderboltIPConnection::returnControlCommand(AppleThunderboltIPControlCommand*)
+AppleThunderboltIPConnection::returnControlCommand(AppleThunderboltIPControlCommand*)::_os_log_fmt
+AppleThunderboltIPConnection::returnRxCommand(AppleThunderboltIPReceiveCommand*)
+AppleThunderboltIPConnection::returnRxCommand(AppleThunderboltIPReceiveCommand*)::_os_log_fmt
+AppleThunderboltIPConnection::rxCommandCallback(void*, int, IOThunderboltReceiveCommand*)
+AppleThunderboltIPConnection::rxCommandCallback(void*, int, IOThunderboltReceiveCommand*)::_os_log_fmt
+AppleThunderboltIPConnection::rxCommandCallbackAggregated(void*, int, IOThunderboltReceiveCommand*)
+AppleThunderboltIPConnection::rxCommandCallbackAggregated(void*, int, IOThunderboltReceiveCommand*) (.cold.1)
+AppleThunderboltIPConnection::rxCommandCallbackAggregated(void*, int, IOThunderboltReceiveCommand*) (.cold.2)
+AppleThunderboltIPConnection::rxCommandCallbackAggregated(void*, int, IOThunderboltReceiveCommand*) (.cold.3)
+AppleThunderboltIPConnection::rxCommandCallbackAggregated(void*, int, IOThunderboltReceiveCommand*) (.cold.4)
+AppleThunderboltIPConnection::sendRequestPacket(unsigned int, unsigned int, bool)
+AppleThunderboltIPConnection::sendRequestPacket(unsigned int, unsigned int, bool)::_os_log_fmt
+AppleThunderboltIPConnection::sendResponsePacket(unsigned int, unsigned int)
+AppleThunderboltIPConnection::sendResponsePacket(unsigned int, unsigned int)::_os_log_fmt
+AppleThunderboltIPConnection::setAggregatedMode(bool)
+AppleThunderboltIPConnection::setPowerState(unsigned long, IOService*)
+AppleThunderboltIPConnection::setPowerState(unsigned long, IOService*)::_os_log_fmt
+AppleThunderboltIPConnection::setRemoteMACAddress(unsigned char*, unsigned int)
+AppleThunderboltIPConnection::setRemoteMACAddress(unsigned char*, unsigned int)::_os_log_fmt
+AppleThunderboltIPConnection::setState(unsigned int)
+AppleThunderboltIPConnection::setState(unsigned int)::_os_log_fmt
+AppleThunderboltIPConnection::setTransmitter(AppleThunderboltIPTransmitter*)
+AppleThunderboltIPConnection::setTransmitter(AppleThunderboltIPTransmitter*)::_os_log_fmt
+AppleThunderboltIPConnection::setupPowerManagement(IOService*)
+AppleThunderboltIPConnection::setupPowerManagement(IOService*)::_os_log_fmt
+AppleThunderboltIPConnection::start(IOService*)
+AppleThunderboltIPConnection::start(IOService*)::_os_log_fmt
+AppleThunderboltIPConnection::superClass
+AppleThunderboltIPConnection::systemWillShutdown(unsigned int)
+AppleThunderboltIPConnection::systemWillShutdown(unsigned int)::_os_log_fmt
+AppleThunderboltIPConnection::tickleTx()
+AppleThunderboltIPConnection::updateLinkStatus()
+AppleThunderboltIPConnection::withParams(EFI_GUID, AppleThunderboltIPService*, IOThunderboltXDomainLink*, AppleThunderboltIPPort*)
+AppleThunderboltIPConnection::xdLinkNotificationCallback(void*, IOService*)
+AppleThunderboltIPConnection::xdLinkNotificationCallback(void*, IOService*)::_os_log_fmt
+AppleThunderboltIPConnection::~AppleThunderboltIPConnection()
+AppleThunderboltIPConnection_ktv
+AppleThunderboltIPControlCommand::AppleThunderboltIPControlCommand()
+AppleThunderboltIPControlCommand::AppleThunderboltIPControlCommand(OSMetaClass const*)
+AppleThunderboltIPControlCommand::BuildLoginPacket(unsigned int, unsigned int, bool)
+AppleThunderboltIPControlCommand::BuildLoginPacket(unsigned int, unsigned int, bool)::_os_log_fmt
+AppleThunderboltIPControlCommand::BuildLoginResponsePacket(unsigned int, unsigned int, unsigned char*, unsigned int)
+AppleThunderboltIPControlCommand::BuildLoginResponsePacket(unsigned int, unsigned int, unsigned char*, unsigned int)::_os_log_fmt
+AppleThunderboltIPControlCommand::BuildLogoutPacket(unsigned int)
+AppleThunderboltIPControlCommand::BuildLogoutPacket(unsigned int)::_os_log_fmt
+AppleThunderboltIPControlCommand::BuildLogoutResponsePacket(unsigned int, unsigned int)
+AppleThunderboltIPControlCommand::BuildLogoutResponsePacket(unsigned int, unsigned int)::_os_log_fmt
+AppleThunderboltIPControlCommand::BuildThunderboltIPLoginPacket(IOBufferMemoryDescriptor*, EFI_GUID, EFI_GUID, unsigned int, unsigned int, bool)
+AppleThunderboltIPControlCommand::BuildThunderboltIPLoginPacket(IOBufferMemoryDescriptor*, EFI_GUID, EFI_GUID, unsigned int, unsigned int, bool)::_os_log_fmt
+AppleThunderboltIPControlCommand::BuildThunderboltIPLoginResponsePacket(IOBufferMemoryDescriptor*, EFI_GUID, EFI_GUID, unsigned int, unsigned int, unsigned char*, unsigned int)
+AppleThunderboltIPControlCommand::BuildThunderboltIPLoginResponsePacket(IOBufferMemoryDescriptor*, EFI_GUID, EFI_GUID, unsigned int, unsigned int, unsigned char*, unsigned int)::_os_log_fmt
+AppleThunderboltIPControlCommand::BuildThunderboltIPLogoutPacket(IOBufferMemoryDescriptor*, EFI_GUID, EFI_GUID, unsigned int)
+AppleThunderboltIPControlCommand::BuildThunderboltIPLogoutPacket(IOBufferMemoryDescriptor*, EFI_GUID, EFI_GUID, unsigned int)::_os_log_fmt
+AppleThunderboltIPControlCommand::BuildThunderboltIPLogoutResponsePacket(IOBufferMemoryDescriptor*, EFI_GUID, EFI_GUID, unsigned int, unsigned int)
+AppleThunderboltIPControlCommand::BuildThunderboltIPLogoutResponsePacket(IOBufferMemoryDescriptor*, EFI_GUID, EFI_GUID, unsigned int, unsigned int)::_os_log_fmt
+AppleThunderboltIPControlCommand::BuildThunderboltIPProtocolHeader(IOBufferMemoryDescriptor*, unsigned int, EFI_GUID, EFI_GUID, unsigned int)
+AppleThunderboltIPControlCommand::BuildThunderboltIPProtocolHeader(IOBufferMemoryDescriptor*, unsigned int, EFI_GUID, EFI_GUID, unsigned int)::_os_log_fmt
+AppleThunderboltIPControlCommand::ExtractFromThunderboltIPLoginPacket(IOBufferMemoryDescriptor*, EFI_GUID*, EFI_GUID*, unsigned int*, unsigned int*, bool*)
+AppleThunderboltIPControlCommand::ExtractFromThunderboltIPLoginPacket(IOBufferMemoryDescriptor*, EFI_GUID*, EFI_GUID*, unsigned int*, unsigned int*, bool*)::_os_log_fmt
+AppleThunderboltIPControlCommand::ExtractFromThunderboltIPLoginResponsePacket(IOBufferMemoryDescriptor*, EFI_GUID*, EFI_GUID*, unsigned int*, unsigned int*, unsigned char*, unsigned int*)
+AppleThunderboltIPControlCommand::ExtractFromThunderboltIPLoginResponsePacket(IOBufferMemoryDescriptor*, EFI_GUID*, EFI_GUID*, unsigned int*, unsigned int*, unsigned char*, unsigned int*)::_os_log_fmt
+AppleThunderboltIPControlCommand::ExtractFromThunderboltIPLogoutPacket(IOBufferMemoryDescriptor*, EFI_GUID*, EFI_GUID*, unsigned int*)
+AppleThunderboltIPControlCommand::ExtractFromThunderboltIPLogoutPacket(IOBufferMemoryDescriptor*, EFI_GUID*, EFI_GUID*, unsigned int*)::_os_log_fmt
+AppleThunderboltIPControlCommand::ExtractFromThunderboltIPLogoutResponsePacket(IOBufferMemoryDescriptor*, EFI_GUID*, EFI_GUID*, unsigned int*, unsigned int*)
+AppleThunderboltIPControlCommand::ExtractFromThunderboltIPLogoutResponsePacket(IOBufferMemoryDescriptor*, EFI_GUID*, EFI_GUID*, unsigned int*, unsigned int*)::_os_log_fmt
+AppleThunderboltIPControlCommand::ExtractFromThunderboltIPProtocolHeader(IOBufferMemoryDescriptor*, unsigned int*, EFI_GUID*, EFI_GUID*, unsigned int*)
+AppleThunderboltIPControlCommand::ExtractFromThunderboltIPProtocolHeader(IOBufferMemoryDescriptor*, unsigned int*, EFI_GUID*, EFI_GUID*, unsigned int*)::_os_log_fmt
+AppleThunderboltIPControlCommand::LogPacket()
+AppleThunderboltIPControlCommand::MetaClass::MetaClass()
+AppleThunderboltIPControlCommand::MetaClass::alloc() const
+AppleThunderboltIPControlCommand::MetaClass::~MetaClass()
+AppleThunderboltIPControlCommand::TxPathHopIDForLoginPacket(IOBufferMemoryDescriptor*)
+AppleThunderboltIPControlCommand::TypeForPacket(IOBufferMemoryDescriptor*)
+AppleThunderboltIPControlCommand::free()
+AppleThunderboltIPControlCommand::gMetaClass
+AppleThunderboltIPControlCommand::getMetaClass() const
+AppleThunderboltIPControlCommand::initWithController(IOThunderboltController*)
+AppleThunderboltIPControlCommand::initWithParams(IOThunderboltController*, EFI_GUID, EFI_GUID, IOThunderboltXDomainLink*)
+AppleThunderboltIPControlCommand::initWithParams(IOThunderboltController*, EFI_GUID, EFI_GUID, IOThunderboltXDomainLink*)::_os_log_fmt
+AppleThunderboltIPControlCommand::metaClass
+AppleThunderboltIPControlCommand::operator delete(void*, unsigned long)
+AppleThunderboltIPControlCommand::operator new(unsigned long)
+AppleThunderboltIPControlCommand::superClass
+AppleThunderboltIPControlCommand::withParams(IOThunderboltController*, EFI_GUID, EFI_GUID, IOThunderboltXDomainLink*)
+AppleThunderboltIPControlCommand::~AppleThunderboltIPControlCommand()
+AppleThunderboltIPControlCommand_ktv
+AppleThunderboltIPGlobals::AppleThunderboltIPGlobals()
+AppleThunderboltIPGlobals::~AppleThunderboltIPGlobals()
+AppleThunderboltIPMSMInterface::AppleThunderboltIPMSMInterface()
+AppleThunderboltIPMSMInterface::AppleThunderboltIPMSMInterface(OSMetaClass const*)
+AppleThunderboltIPMSMInterface::MetaClass::MetaClass()
+AppleThunderboltIPMSMInterface::MetaClass::alloc() const
+AppleThunderboltIPMSMInterface::MetaClass::~MetaClass()
+AppleThunderboltIPMSMInterface::attachToDataLinkLayer(unsigned int, void*)
+AppleThunderboltIPMSMInterface::attachToDataLinkLayer(unsigned int, void*)::_os_log_fmt
+AppleThunderboltIPMSMInterface::configureIPv6LinkLayerAddress(bool)
+AppleThunderboltIPMSMInterface::configureIPv6LinkLayerAddress(bool)::_os_log_fmt
+AppleThunderboltIPMSMInterface::detachFromDataLinkLayer(unsigned int, void*)
+AppleThunderboltIPMSMInterface::detachFromDataLinkLayer(unsigned int, void*)::_os_log_fmt
+AppleThunderboltIPMSMInterface::gMetaClass
+AppleThunderboltIPMSMInterface::getMetaClass() const
+AppleThunderboltIPMSMInterface::getNamePrefix() const
+AppleThunderboltIPMSMInterface::getNamePrefix() const::_os_log_fmt
+AppleThunderboltIPMSMInterface::metaClass
+AppleThunderboltIPMSMInterface::operator delete(void*, unsigned long)
+AppleThunderboltIPMSMInterface::operator new(unsigned long)
+AppleThunderboltIPMSMInterface::superClass
+AppleThunderboltIPMSMInterface::~AppleThunderboltIPMSMInterface()
+AppleThunderboltIPMSMInterface_ktv
+AppleThunderboltIPPort::AppleThunderboltIPPort()
+AppleThunderboltIPPort::AppleThunderboltIPPort(OSMetaClass const*)
+AppleThunderboltIPPort::MetaClass::MetaClass()
+AppleThunderboltIPPort::MetaClass::alloc() const
+AppleThunderboltIPPort::MetaClass::~MetaClass()
+AppleThunderboltIPPort::addIPConnection(AppleThunderboltIPConnection*)
+AppleThunderboltIPPort::addIPConnection(AppleThunderboltIPConnection*)::_os_log_fmt
+AppleThunderboltIPPort::clearPackets()
+AppleThunderboltIPPort::closeGate(char const*)
+AppleThunderboltIPPort::configureInterface(IONetworkInterface*)
+AppleThunderboltIPPort::createIPConnectionForXDLink(IOThunderboltXDomainLink*, AppleThunderboltIPTransmitter*)
+AppleThunderboltIPPort::createIPConnectionForXDLink(IOThunderboltXDomainLink*, AppleThunderboltIPTransmitter*)::_os_log_fmt
+AppleThunderboltIPPort::createInterface()
+AppleThunderboltIPPort::createMACAddress()
+AppleThunderboltIPPort::createMACAddress()::_os_log_fmt
+AppleThunderboltIPPort::createMediumState()
+AppleThunderboltIPPort::createMediumState()::_os_log_fmt
+AppleThunderboltIPPort::disable(IONetworkInterface*)
+AppleThunderboltIPPort::disable(IONetworkInterface*)::_os_log_fmt
+AppleThunderboltIPPort::disablePacketFilter(OSSymbol const*, unsigned int, unsigned int, unsigned int)
+AppleThunderboltIPPort::enable(IONetworkInterface*)
+AppleThunderboltIPPort::enable(IONetworkInterface*)::_os_log_fmt
+AppleThunderboltIPPort::enablePacketFilter(OSSymbol const*, unsigned int, unsigned int, unsigned int)
+AppleThunderboltIPPort::finalize(unsigned int)
+AppleThunderboltIPPort::finalize(unsigned int)::_os_log_fmt
+AppleThunderboltIPPort::finalize(unsigned int)::kalloc_type_view_233
+AppleThunderboltIPPort::finalize(unsigned int)::kalloc_type_view_238
+AppleThunderboltIPPort::flushPackets()
+AppleThunderboltIPPort::free()
+AppleThunderboltIPPort::free()::_os_log_fmt
+AppleThunderboltIPPort::gMetaClass
+AppleThunderboltIPPort::getChecksumSupport(unsigned int*, unsigned int, bool)
+AppleThunderboltIPPort::getFeatures() const
+AppleThunderboltIPPort::getHardwareAddress(IOEthernetAddress*)
+AppleThunderboltIPPort::getHardwareAddress(void*, unsigned int*)
+AppleThunderboltIPPort::getIPConnectionForRemoteUUID(EFI_GUID)
+AppleThunderboltIPPort::getIPConnectionForRemoteUUID(EFI_GUID)::_os_log_fmt
+AppleThunderboltIPPort::getMaxPacketSize(unsigned int*) const
+AppleThunderboltIPPort::getMetaClass() const
+AppleThunderboltIPPort::getMinPacketSize(unsigned int*) const
+AppleThunderboltIPPort::getPacketFilters(OSSymbol const*, unsigned int*) const
+AppleThunderboltIPPort::getTBTPort()
+AppleThunderboltIPPort::getTBTPortNumber()
+AppleThunderboltIPPort::getTBTRouteString()
+AppleThunderboltIPPort::getWorkLoop()
+AppleThunderboltIPPort::initPortAndService(IOThunderboltPort*, AppleThunderboltIPService*)
+AppleThunderboltIPPort::initPortAndService(IOThunderboltPort*, AppleThunderboltIPService*)::_os_log_fmt
+AppleThunderboltIPPort::metaClass
+AppleThunderboltIPPort::newModelString() const
+AppleThunderboltIPPort::newRevisionString() const
+AppleThunderboltIPPort::newVendorString() const
+AppleThunderboltIPPort::openGate(char const*)
+AppleThunderboltIPPort::operator delete(void*, unsigned long)
+AppleThunderboltIPPort::operator new(unsigned long)
+AppleThunderboltIPPort::outputStart(IONetworkInterface*, unsigned int)
+AppleThunderboltIPPort::outputStartAggregatedPackets(IONetworkInterface*, unsigned int)
+AppleThunderboltIPPort::outputStartAggregatedPackets(IONetworkInterface*, unsigned int)::_os_log_fmt
+AppleThunderboltIPPort::outputStartAggregatedPackets(IONetworkInterface*, unsigned int)::kalloc_type_view_864
+AppleThunderboltIPPort::outputStartAggregatedPackets(IONetworkInterface*, unsigned int)::kalloc_type_view_869
+AppleThunderboltIPPort::outputStartLegacy(IONetworkInterface*, unsigned int)
+AppleThunderboltIPPort::outputStartLegacy(IONetworkInterface*, unsigned int)::_os_log_fmt
+AppleThunderboltIPPort::receivePacket(__mbuf*, unsigned long)
+AppleThunderboltIPPort::receivePacket(__mbuf*, unsigned long)::_os_log_fmt
+AppleThunderboltIPPort::removeIPConnection(AppleThunderboltIPConnection*)
+AppleThunderboltIPPort::removeIPConnection(AppleThunderboltIPConnection*)::_os_log_fmt
+AppleThunderboltIPPort::setAggregatedMode(bool)
+AppleThunderboltIPPort::setHardwareAddress(void const*, unsigned int)
+AppleThunderboltIPPort::setMaxPacketSize(unsigned int)
+AppleThunderboltIPPort::start(IOService*)
+AppleThunderboltIPPort::start(IOService*)::_os_log_fmt
+AppleThunderboltIPPort::superClass
+AppleThunderboltIPPort::tickleTx()
+AppleThunderboltIPPort::tickleTx()::_os_log_fmt
+AppleThunderboltIPPort::updateLinkStatus()
+AppleThunderboltIPPort::updateLinkStatus()::_os_log_fmt
+AppleThunderboltIPPort::withPortAndService(IOThunderboltPort*, AppleThunderboltIPService*)
+AppleThunderboltIPPort::withPortAndService(IOThunderboltPort*, AppleThunderboltIPService*)::_os_log_fmt
+AppleThunderboltIPPort::~AppleThunderboltIPPort()
+AppleThunderboltIPPort_ktv
+AppleThunderboltIPReceiveCommand::AppleThunderboltIPReceiveCommand()
+AppleThunderboltIPReceiveCommand::AppleThunderboltIPReceiveCommand(OSMetaClass const*)
+AppleThunderboltIPReceiveCommand::ExtractFromPacket(unsigned int*, unsigned short*, unsigned short*, unsigned int*, unsigned char**)
+AppleThunderboltIPReceiveCommand::ExtractFromPacket(unsigned int*, unsigned short*, unsigned short*, unsigned int*, unsigned char**)::_os_log_fmt
+AppleThunderboltIPReceiveCommand::ExtractFromPacketAggregated(unsigned char**, bool, AppleThunderboltIPPacketHeaderAggregated*, unsigned int*)
+AppleThunderboltIPReceiveCommand::ExtractFromPacketAggregated(unsigned char**, bool, AppleThunderboltIPPacketHeaderAggregated*, unsigned int*)::_os_log_fmt
+AppleThunderboltIPReceiveCommand::MetaClass::MetaClass()
+AppleThunderboltIPReceiveCommand::MetaClass::alloc() const
+AppleThunderboltIPReceiveCommand::MetaClass::~MetaClass()
+AppleThunderboltIPReceiveCommand::free()
+AppleThunderboltIPReceiveCommand::gMetaClass
+AppleThunderboltIPReceiveCommand::getMetaClass() const
+AppleThunderboltIPReceiveCommand::initWithController(IOThunderboltController*)
+AppleThunderboltIPReceiveCommand::initWithController(IOThunderboltController*)::_os_log_fmt
+AppleThunderboltIPReceiveCommand::initWithControllerAndQueue(IOThunderboltController*, IOThunderboltReceiveQueue*, IOMemoryDescriptor*, unsigned long long)
+AppleThunderboltIPReceiveCommand::initWithControllerAndQueue(IOThunderboltController*, IOThunderboltReceiveQueue*, IOMemoryDescriptor*, unsigned long long)::_os_log_fmt
+AppleThunderboltIPReceiveCommand::metaClass
+AppleThunderboltIPReceiveCommand::operator delete(void*, unsigned long)
+AppleThunderboltIPReceiveCommand::operator new(unsigned long)
+AppleThunderboltIPReceiveCommand::superClass
+AppleThunderboltIPReceiveCommand::withController(IOThunderboltController*)
+AppleThunderboltIPReceiveCommand::withControllerAndQueue(IOThunderboltController*, IOThunderboltReceiveQueue*, IOMemoryDescriptor*, unsigned long long)
+AppleThunderboltIPReceiveCommand::~AppleThunderboltIPReceiveCommand()
+AppleThunderboltIPReceiveCommand_ktv
+AppleThunderboltIPService::AppleThunderboltIPService()
+AppleThunderboltIPService::AppleThunderboltIPService(OSMetaClass const*)
+AppleThunderboltIPService::MetaClass::MetaClass()
+AppleThunderboltIPService::MetaClass::alloc() const
+AppleThunderboltIPService::MetaClass::~MetaClass()
+AppleThunderboltIPService::closeGate(char const*)
+AppleThunderboltIPService::createPorts()
+AppleThunderboltIPService::createPorts()::_os_log_fmt
+AppleThunderboltIPService::finalize(unsigned int)
+AppleThunderboltIPService::finalize(unsigned int)::_os_log_fmt
+AppleThunderboltIPService::gMetaClass
+AppleThunderboltIPService::getIPPortForThunderboltPort(IOThunderboltPort*)
+AppleThunderboltIPService::getIPPortForThunderboltPort(IOThunderboltPort*)::_os_log_fmt
+AppleThunderboltIPService::getLocalAggregatePacketsSupported()
+AppleThunderboltIPService::getLocalE2ESupported()
+AppleThunderboltIPService::getLocalNode()
+AppleThunderboltIPService::getLocalUUID()
+AppleThunderboltIPService::getMetaClass() const
+AppleThunderboltIPService::getRidgeID()
+AppleThunderboltIPService::getRxRingEntryCount()
+AppleThunderboltIPService::getTxRingEntryCount()
+AppleThunderboltIPService::handleXDomainPacket(IOThunderboltDispatchContext*)
+AppleThunderboltIPService::handleXDomainPacket(IOThunderboltDispatchContext*)::_os_log_fmt
+AppleThunderboltIPService::logPacketType(unsigned int)
+AppleThunderboltIPService::metaClass
+AppleThunderboltIPService::openGate(char const*)
+AppleThunderboltIPService::operator delete(void*, unsigned long)
+AppleThunderboltIPService::operator new(unsigned long)
+AppleThunderboltIPService::protocolListenerCallback(void*, IOThunderboltReceiveCommand*)
+AppleThunderboltIPService::protocolListenerCallback(void*, IOThunderboltReceiveCommand*)::_os_log_fmt
+AppleThunderboltIPService::publishIPService(bool)
+AppleThunderboltIPService::publishIPService(bool)::_os_log_fmt
+AppleThunderboltIPService::reserveForLogin(bool, AppleThunderboltIPTransmitter*)
+AppleThunderboltIPService::reserveForLogin(bool, AppleThunderboltIPTransmitter*)::_os_log_fmt
+AppleThunderboltIPService::start(IOService*)
+AppleThunderboltIPService::start(IOService*)::_os_log_fmt
+AppleThunderboltIPService::superClass
+AppleThunderboltIPService::~AppleThunderboltIPService()
+AppleThunderboltIPService_ktv
+AppleThunderboltIPSysctl(sysctl_oid*, void*, int, sysctl_req*)
+AppleThunderboltIPTransmitCommand::AppleThunderboltIPTransmitCommand()
+AppleThunderboltIPTransmitCommand::AppleThunderboltIPTransmitCommand(OSMetaClass const*)
+AppleThunderboltIPTransmitCommand::BuildHeadersPacket(AppleThunderboltIPPacketHeaderAggregated*, unsigned int)
+AppleThunderboltIPTransmitCommand::BuildHeadersPacket(AppleThunderboltIPPacketHeaderAggregated*, unsigned int) (.cold.1)
+AppleThunderboltIPTransmitCommand::BuildHeadersPacket(AppleThunderboltIPPacketHeaderAggregated*, unsigned int)::_os_log_fmt
+AppleThunderboltIPTransmitCommand::BuildPacket(unsigned int, unsigned short, unsigned short, unsigned int, __mbuf*, unsigned int)
+AppleThunderboltIPTransmitCommand::BuildPacket(unsigned int, unsigned short, unsigned short, unsigned int, __mbuf*, unsigned int)::_os_log_fmt
+AppleThunderboltIPTransmitCommand::MetaClass::MetaClass()
+AppleThunderboltIPTransmitCommand::MetaClass::alloc() const
+AppleThunderboltIPTransmitCommand::MetaClass::~MetaClass()
+AppleThunderboltIPTransmitCommand::addMemoryDescriptorMultiple(IOMemoryDescriptor**, unsigned int, unsigned long long)
+AppleThunderboltIPTransmitCommand::copyDataFromMbuf(__mbuf*, unsigned long long)
+AppleThunderboltIPTransmitCommand::free()
+AppleThunderboltIPTransmitCommand::gMetaClass
+AppleThunderboltIPTransmitCommand::getMetaClass() const
+AppleThunderboltIPTransmitCommand::initWithController(IOThunderboltController*, unsigned long long)
+AppleThunderboltIPTransmitCommand::initWithControllerAndQueue(IOThunderboltController*, IOThunderboltTransmitQueue*)
+AppleThunderboltIPTransmitCommand::initWithControllerAndQueue(IOThunderboltController*, IOThunderboltTransmitQueue*)::_os_log_fmt
+AppleThunderboltIPTransmitCommand::initWithControllerAndQueueAllocateDesc(IOThunderboltController*, IOThunderboltTransmitQueue*, unsigned long long)
+AppleThunderboltIPTransmitCommand::initWithControllerAndQueueAllocateDesc(IOThunderboltController*, IOThunderboltTransmitQueue*, unsigned long long)::_os_log_fmt
+AppleThunderboltIPTransmitCommand::metaClass
+AppleThunderboltIPTransmitCommand::operator delete(void*, unsigned long)
+AppleThunderboltIPTransmitCommand::operator new(unsigned long)
+AppleThunderboltIPTransmitCommand::superClass
+AppleThunderboltIPTransmitCommand::withController(IOThunderboltController*, unsigned long long)
+AppleThunderboltIPTransmitCommand::withControllerAndQueue(IOThunderboltController*, IOThunderboltTransmitQueue*, bool, unsigned long long)
+AppleThunderboltIPTransmitCommand::~AppleThunderboltIPTransmitCommand()
+AppleThunderboltIPTransmitCommand_ktv
+AppleThunderboltIPTransmitter::AppleThunderboltIPTransmitter()
+AppleThunderboltIPTransmitter::AppleThunderboltIPTransmitter(OSMetaClass const*)
+AppleThunderboltIPTransmitter::MetaClass::MetaClass()
+AppleThunderboltIPTransmitter::MetaClass::alloc() const
+AppleThunderboltIPTransmitter::MetaClass::~MetaClass()
+AppleThunderboltIPTransmitter::closeGate(char const*)
+AppleThunderboltIPTransmitter::configureTxPath()
+AppleThunderboltIPTransmitter::configureTxPath()::_os_log_fmt
+AppleThunderboltIPTransmitter::createTxPath()
+AppleThunderboltIPTransmitter::createTxPath()::_os_log_fmt
+AppleThunderboltIPTransmitter::destroyTxPath()
+AppleThunderboltIPTransmitter::destroyTxPath()::_os_log_fmt
+AppleThunderboltIPTransmitter::dispatchLoginWithRequest(bool)
+AppleThunderboltIPTransmitter::dispatchLoginWithRequest(bool)::_os_log_fmt
+AppleThunderboltIPTransmitter::dispatchLogoutWithRequest(bool)
+AppleThunderboltIPTransmitter::dispatchLogoutWithRequest(bool)::_os_log_fmt
+AppleThunderboltIPTransmitter::dispatchProcessLoginResponsePacket(IOBufferMemoryDescriptor*)
+AppleThunderboltIPTransmitter::dispatchProcessLoginResponsePacket(IOBufferMemoryDescriptor*)::_os_log_fmt
+AppleThunderboltIPTransmitter::dispatchProcessLogoutResponsePacket(IOBufferMemoryDescriptor*)
+AppleThunderboltIPTransmitter::dispatchProcessLogoutResponsePacket(IOBufferMemoryDescriptor*)::_os_log_fmt
+AppleThunderboltIPTransmitter::finalize(unsigned int)
+AppleThunderboltIPTransmitter::finalize(unsigned int)::_os_log_fmt
+AppleThunderboltIPTransmitter::free()
+AppleThunderboltIPTransmitter::free()::_os_log_fmt
+AppleThunderboltIPTransmitter::gMetaClass
+AppleThunderboltIPTransmitter::getMetaClass() const
+AppleThunderboltIPTransmitter::getRemoteAggregatedPacketsSupported()
+AppleThunderboltIPTransmitter::getRemoteE2ESupported()
+AppleThunderboltIPTransmitter::getState()
+AppleThunderboltIPTransmitter::getTxCommand(bool, bool)
+AppleThunderboltIPTransmitter::getTxE2EHopID(unsigned short*)
+AppleThunderboltIPTransmitter::getTxE2EHopID(unsigned short*)::_os_log_fmt
+AppleThunderboltIPTransmitter::getWorkLoop()
+AppleThunderboltIPTransmitter::ipServiceNotificationCallback(void*, IOService*)
+AppleThunderboltIPTransmitter::ipServiceNotificationCallback(void*, IOService*)::_os_log_fmt
+AppleThunderboltIPTransmitter::logState(unsigned int)
+AppleThunderboltIPTransmitter::login(bool)
+AppleThunderboltIPTransmitter::login(bool)::_os_log_fmt
+AppleThunderboltIPTransmitter::loginWithRequest()
+AppleThunderboltIPTransmitter::loginWithRequest()::_os_log_fmt
+AppleThunderboltIPTransmitter::logout(bool)
+AppleThunderboltIPTransmitter::logout(bool)::_os_log_fmt
+AppleThunderboltIPTransmitter::logoutWithRequest()
+AppleThunderboltIPTransmitter::logoutWithRequest()::_os_log_fmt
+AppleThunderboltIPTransmitter::metaClass
+AppleThunderboltIPTransmitter::newTxCommand(bool)
+AppleThunderboltIPTransmitter::openGate(char const*)
+AppleThunderboltIPTransmitter::operator delete(void*, unsigned long)
+AppleThunderboltIPTransmitter::operator new(unsigned long)
+AppleThunderboltIPTransmitter::outputPacket(__mbuf*, void*)
+AppleThunderboltIPTransmitter::outputPacket(__mbuf*, void*)::_os_log_fmt
+AppleThunderboltIPTransmitter::prepPacket(__mbuf*, void*, bool, AppleThunderboltIPPacketHeaderAggregated*)
+AppleThunderboltIPTransmitter::prepareForTermination()
+AppleThunderboltIPTransmitter::prepareForTermination()::_os_log_fmt
+AppleThunderboltIPTransmitter::processIPServiceNotification(IOThunderboltDispatchContext*)
+AppleThunderboltIPTransmitter::processIPServiceNotification(IOThunderboltDispatchContext*)::_os_log_fmt
+AppleThunderboltIPTransmitter::processLoginResponsePacket(IOThunderboltDispatchContext*)
+AppleThunderboltIPTransmitter::processLoginResponsePacket(IOThunderboltDispatchContext*)::_os_log_fmt
+AppleThunderboltIPTransmitter::processLogoutResponsePacket(IOThunderboltDispatchContext*)
+AppleThunderboltIPTransmitter::processLogoutResponsePacket(IOThunderboltDispatchContext*)::_os_log_fmt
+AppleThunderboltIPTransmitter::processTimeout(IOThunderboltDispatchContext*)
+AppleThunderboltIPTransmitter::processTimeout(IOThunderboltDispatchContext*)::_os_log_fmt
+AppleThunderboltIPTransmitter::returnTxCommand(AppleThunderboltIPTransmitCommand*, bool)
+AppleThunderboltIPTransmitter::returnTxCommand(AppleThunderboltIPTransmitCommand*, bool)::_os_log_fmt
+AppleThunderboltIPTransmitter::sendLoginRequest()
+AppleThunderboltIPTransmitter::sendLoginRequest()::_os_log_fmt
+AppleThunderboltIPTransmitter::sendLogoutRequest()
+AppleThunderboltIPTransmitter::sendLogoutRequest()::_os_log_fmt
+AppleThunderboltIPTransmitter::setAggregatedMode(bool)
+AppleThunderboltIPTransmitter::setPowerState(unsigned long, IOService*)
+AppleThunderboltIPTransmitter::setPowerState(unsigned long, IOService*)::_os_log_fmt
+AppleThunderboltIPTransmitter::setState(unsigned int)
+AppleThunderboltIPTransmitter::setState(unsigned int)::_os_log_fmt
+AppleThunderboltIPTransmitter::setTimer(unsigned int)
+AppleThunderboltIPTransmitter::setTimer(unsigned int)::_os_log_fmt
+AppleThunderboltIPTransmitter::setupPowerManagement(IOService*)
+AppleThunderboltIPTransmitter::setupPowerManagement(IOService*)::_os_log_fmt
+AppleThunderboltIPTransmitter::start(IOService*)
+AppleThunderboltIPTransmitter::start(IOService*)::_os_log_fmt
+AppleThunderboltIPTransmitter::submitAll(AppleThunderboltIPTransmitCommand**, unsigned int)
+AppleThunderboltIPTransmitter::submitHeaders(AppleThunderboltIPPacketHeaderAggregated*, unsigned int)
+AppleThunderboltIPTransmitter::superClass
+AppleThunderboltIPTransmitter::systemWillShutdown(unsigned int)
+AppleThunderboltIPTransmitter::systemWillShutdown(unsigned int)::_os_log_fmt
+AppleThunderboltIPTransmitter::timerCommandCallback(void*, int, IOThunderboltTimerCommand*)
+AppleThunderboltIPTransmitter::timerCommandCallback(void*, int, IOThunderboltTimerCommand*)::_os_log_fmt
+AppleThunderboltIPTransmitter::txCommandCallback(void*, int, IOThunderboltTransmitCommand*)
+AppleThunderboltIPTransmitter::txCommandCallback(void*, int, IOThunderboltTransmitCommand*)::_os_log_fmt
+AppleThunderboltIPTransmitter::txHeaderCommandCallback(void*, int, IOThunderboltTransmitCommand*)
+AppleThunderboltIPTransmitter::~AppleThunderboltIPTransmitter()
+AppleThunderboltIPTransmitter_ktv
+IOBufferMemoryDescriptor::metaClass
+IOBufferMemoryDescriptor::withBytes(void const*, unsigned long, unsigned int, bool)
+IOBufferMemoryDescriptor::withCapacity(unsigned long, unsigned int, bool)
+IOCommand::init()
+IOCommandPool::withWorkLoop(IOWorkLoop*)
+IOEthernetController::IOEthernetController(OSMetaClass const*)
+IOEthernetController::_RESERVEDIOEthernetController10()
+IOEthernetController::_RESERVEDIOEthernetController11()
+IOEthernetController::_RESERVEDIOEthernetController12()
+IOEthernetController::_RESERVEDIOEthernetController13()
+IOEthernetController::_RESERVEDIOEthernetController14()
+IOEthernetController::_RESERVEDIOEthernetController15()
+IOEthernetController::_RESERVEDIOEthernetController16()
+IOEthernetController::_RESERVEDIOEthernetController17()
+IOEthernetController::_RESERVEDIOEthernetController18()
+IOEthernetController::_RESERVEDIOEthernetController19()
+IOEthernetController::_RESERVEDIOEthernetController20()
+IOEthernetController::_RESERVEDIOEthernetController21()
+IOEthernetController::_RESERVEDIOEthernetController22()
+IOEthernetController::_RESERVEDIOEthernetController23()
+IOEthernetController::_RESERVEDIOEthernetController24()
+IOEthernetController::_RESERVEDIOEthernetController25()
+IOEthernetController::_RESERVEDIOEthernetController26()
+IOEthernetController::_RESERVEDIOEthernetController27()
+IOEthernetController::_RESERVEDIOEthernetController28()
+IOEthernetController::_RESERVEDIOEthernetController29()
+IOEthernetController::_RESERVEDIOEthernetController30()
+IOEthernetController::_RESERVEDIOEthernetController31()
+IOEthernetController::cleanupTransmitQueue(unsigned int)
+IOEthernetController::gMetaClass
+IOEthernetController::getPacketFilters(unsigned int*) const
+IOEthernetController::getRealtimeReceiveQueueFilter(unsigned int, IOEthernetController::IOEthernetAVBIngressFilterElement*, unsigned int*)
+IOEthernetController::getVlanTagDemand(__mbuf*, unsigned int*)
+IOEthernetController::init(OSDictionary*)
+IOEthernetController::publishProperties()
+IOEthernetController::setAVBControllerState(IOEthernetControllerAVBState)
+IOEthernetController::setHardwareAddress(IOEthernetAddress const*)
+IOEthernetController::setMulticastList(IOEthernetAddress*, unsigned int)
+IOEthernetController::setMulticastMode(bool)
+IOEthernetController::setPromiscuousMode(bool)
+IOEthernetController::setRealtimeReceiveDestinationMACList(unsigned int, IOEthernetAddress*, int)
+IOEthernetController::setRealtimeReceiveQueueFilter(unsigned int, IOEthernetController::IOEthernetAVBIngressFilterElement*, unsigned int)
+IOEthernetController::setRealtimeReceiveQueuePacketHandler(unsigned int, void (*)(void*, IOEthernetController::IOEthernetAVBPacket*), void*)
+IOEthernetController::setVlanTag(__mbuf*, unsigned int)
+IOEthernetController::setWakeOnMagicPacket(bool)
+IOEthernetController::transmitRealtimePackets(unsigned int, IOEthernetController::IOEthernetAVBPacket**, unsigned int, bool, unsigned int*)
+IOEthernetController::transmitTimeSyncPacket(IOEthernetController::IOEthernetAVBPacket*, unsigned long long)
+IOEthernetController::~IOEthernetController()
+IOEthernetInterface::IOEthernetInterface()
+IOEthernetInterface::IOEthernetInterface(OSMetaClass const*)
+IOEthernetInterface::_RESERVEDIOEthernetInterface0()
+IOEthernetInterface::_RESERVEDIOEthernetInterface1()
+IOEthernetInterface::_RESERVEDIOEthernetInterface10()
+IOEthernetInterface::_RESERVEDIOEthernetInterface11()
+IOEthernetInterface::_RESERVEDIOEthernetInterface12()
+IOEthernetInterface::_RESERVEDIOEthernetInterface13()
+IOEthernetInterface::_RESERVEDIOEthernetInterface14()
+IOEthernetInterface::_RESERVEDIOEthernetInterface15()
+IOEthernetInterface::_RESERVEDIOEthernetInterface2()
+IOEthernetInterface::_RESERVEDIOEthernetInterface3()
+IOEthernetInterface::_RESERVEDIOEthernetInterface4()
+IOEthernetInterface::_RESERVEDIOEthernetInterface5()
+IOEthernetInterface::_RESERVEDIOEthernetInterface6()
+IOEthernetInterface::_RESERVEDIOEthernetInterface7()
+IOEthernetInterface::_RESERVEDIOEthernetInterface8()
+IOEthernetInterface::_RESERVEDIOEthernetInterface9()
+IOEthernetInterface::controllerDidChangePowerState(IONetworkController*, unsigned long, unsigned int, IOService*)
+IOEthernetInterface::controllerDidOpen(IONetworkController*)
+IOEthernetInterface::controllerWillChangePowerState(IONetworkController*, unsigned long, unsigned int, IOService*)
+IOEthernetInterface::controllerWillClose(IONetworkController*)
+IOEthernetInterface::feedPacketInputTap(__mbuf*)
+IOEthernetInterface::feedPacketOutputTap(__mbuf*)
+IOEthernetInterface::free()
+IOEthernetInterface::gMetaClass
+IOEthernetInterface::init(IONetworkController*)
+IOEthernetInterface::initIfnetParams(ifnet_init_params*)
+IOEthernetInterface::inputEvent(unsigned int, void*)
+IOEthernetInterface::operator new(unsigned long)
+IOEthernetInterface::performCommand(IONetworkController*, unsigned long, void*, void*)
+IOEthernetInterface::willTerminate(IOService*, unsigned int)
+IOEthernetInterface::~IOEthernetInterface()
+IOEventSource::closeGate()
+IOEventSource::openGate()
+IOMultiMemoryDescriptor::withDescriptors(IOMemoryDescriptor**, unsigned int, unsigned int, bool)
+IONetworkController::_RESERVEDIONetworkController10()
+IONetworkController::_RESERVEDIONetworkController11()
+IONetworkController::_RESERVEDIONetworkController12()
+IONetworkController::_RESERVEDIONetworkController13()
+IONetworkController::_RESERVEDIONetworkController14()
+IONetworkController::_RESERVEDIONetworkController15()
+IONetworkController::_RESERVEDIONetworkController16()
+IONetworkController::_RESERVEDIONetworkController17()
+IONetworkController::_RESERVEDIONetworkController18()
+IONetworkController::_RESERVEDIONetworkController19()
+IONetworkController::_RESERVEDIONetworkController20()
+IONetworkController::_RESERVEDIONetworkController21()
+IONetworkController::_RESERVEDIONetworkController22()
+IONetworkController::_RESERVEDIONetworkController23()
+IONetworkController::_RESERVEDIONetworkController24()
+IONetworkController::_RESERVEDIONetworkController25()
+IONetworkController::_RESERVEDIONetworkController26()
+IONetworkController::_RESERVEDIONetworkController27()
+IONetworkController::_RESERVEDIONetworkController28()
+IONetworkController::_RESERVEDIONetworkController29()
+IONetworkController::_RESERVEDIONetworkController30()
+IONetworkController::_RESERVEDIONetworkController31()
+IONetworkController::_RESERVEDIONetworkController8()
+IONetworkController::_RESERVEDIONetworkController9()
+IONetworkController::allocatePacket(unsigned int)
+IONetworkController::allocatePacketNoWait(unsigned int)
+IONetworkController::attachDebuggerClient(IOKernelDebugger**)
+IONetworkController::attachInterface(IONetworkInterface**, bool)
+IONetworkController::copyMediumDictionary() const
+IONetworkController::copyPacket(__mbuf*, unsigned int)
+IONetworkController::createOutputQueue()
+IONetworkController::createWorkLoop()
+IONetworkController::detachDebuggerClient(IOKernelDebugger*)
+IONetworkController::detachInterface(IONetworkInterface*, bool)
+IONetworkController::disable(IOKernelDebugger*)
+IONetworkController::disable(IOService*)
+IONetworkController::doDisable(IOService*)
+IONetworkController::doEnable(IOService*)
+IONetworkController::enable(IOKernelDebugger*)
+IONetworkController::enable(IOService*)
+IONetworkController::executeCommand(OSObject*, int (*)(void*, void*, void*, void*, void*), void*, void*, void*, void*, void*)
+IONetworkController::freePacket(__mbuf*, unsigned int)
+IONetworkController::getChecksumDemand(__mbuf*, unsigned int, unsigned int*, void*, void*)
+IONetworkController::getCommandClient() const
+IONetworkController::getCommandGate() const
+IONetworkController::getCurrentMedium() const
+IONetworkController::getDebuggerLinkStatus()
+IONetworkController::getMediumDictionary() const
+IONetworkController::getOutputHandler() const
+IONetworkController::getOutputQueue() const
+IONetworkController::getPacketBufferConstraints(IOPacketBufferConstraints*) const
+IONetworkController::getSelectedMedium() const
+IONetworkController::handleClose(IOService*, unsigned int)
+IONetworkController::handleIsOpen(IOService const*) const
+IONetworkController::handleOpen(IOService*, unsigned int, void*)
+IONetworkController::message(unsigned int, IOService*, void*)
+IONetworkController::networkInterfaceNotification(IONetworkInterface*, unsigned int, void*)
+IONetworkController::outputPacket(__mbuf*, void*)
+IONetworkController::pollInputPackets(IONetworkInterface*, unsigned int, IOMbufQueue*, void*)
+IONetworkController::prepare()
+IONetworkController::publishMediumDictionary(OSDictionary const*)
+IONetworkController::receivePacket(void*, unsigned int*, unsigned int)
+IONetworkController::registerWithPolicyMaker(IOService*)
+IONetworkController::releaseFreePackets()
+IONetworkController::replaceOrCopyPacket(__mbuf**, unsigned int, bool*)
+IONetworkController::replacePacket(__mbuf**, unsigned int)
+IONetworkController::selectMedium(IONetworkMedium const*)
+IONetworkController::selectMediumWithName(OSSymbol const*)
+IONetworkController::sendPacket(void*, unsigned int)
+IONetworkController::setAggressiveness(unsigned long, unsigned long)
+IONetworkController::setChecksumResult(__mbuf*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int)
+IONetworkController::setCurrentMedium(IONetworkMedium const*)
+IONetworkController::setDebuggerMode(bool)
+IONetworkController::setHardwareAssists(unsigned int, unsigned int)
+IONetworkController::setInputPacketPollingEnable(IONetworkInterface*, bool)
+IONetworkController::setLinkStatus(unsigned int, IONetworkMedium const*, unsigned long long, OSData*)
+IONetworkController::setSelectedMedium(IONetworkMedium const*)
+IONetworkController::stop(IOService*)
+IONetworkController::systemWillShutdown(unsigned int)
+IONetworkInterface::_RESERVEDIONetworkInterface11()
+IONetworkInterface::_RESERVEDIONetworkInterface12()
+IONetworkInterface::_RESERVEDIONetworkInterface13()
+IONetworkInterface::_RESERVEDIONetworkInterface14()
+IONetworkInterface::_RESERVEDIONetworkInterface15()
+IONetworkInterface::addNetworkData(IONetworkData*)
+IONetworkInterface::clearInputQueue()
+IONetworkInterface::configureInputPacketPolling(unsigned int, unsigned int)
+IONetworkInterface::configureOutputPullModel(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int)
+IONetworkInterface::dequeueOutputPackets(unsigned int, __mbuf**, __mbuf**, unsigned int*, unsigned long long*)
+IONetworkInterface::dequeueOutputPacketsWithServiceClass(unsigned int, IOMbufServiceClass, __mbuf**, __mbuf**, unsigned int*, unsigned long long*)
+IONetworkInterface::enqueueInputPacket(__mbuf*, IOMbufQueue*, unsigned int)
+IONetworkInterface::flushInputQueue()
+IONetworkInterface::flushOutputQueue(unsigned int)
+IONetworkInterface::getController() const
+IONetworkInterface::getExtraFlags() const
+IONetworkInterface::getFlags() const
+IONetworkInterface::getIfnet() const
+IONetworkInterface::getInterfaceState() const
+IONetworkInterface::getInterfaceType() const
+IONetworkInterface::getMaxTransferUnit() const
+IONetworkInterface::getMediaAddressLength() const
+IONetworkInterface::getMediaHeaderLength() const
+IONetworkInterface::getNetworkData(OSSymbol const*) const
+IONetworkInterface::getNetworkData(char const*) const
+IONetworkInterface::getUnitNumber() const
+IONetworkInterface::handleClientClose(IOService*, unsigned int)
+IONetworkInterface::handleClientOpen(IOService*, unsigned int, void*)
+IONetworkInterface::handleClose(IOService*, unsigned int)
+IONetworkInterface::handleIsOpen(IOService const*) const
+IONetworkInterface::handleOpen(IOService*, unsigned int, void*)
+IONetworkInterface::initIfnet(ifnet*)
+IONetworkInterface::inputPacket(__mbuf*, unsigned int, unsigned int, void*)
+IONetworkInterface::isPrimaryInterface() const
+IONetworkInterface::isRegistered() const
+IONetworkInterface::lock()
+IONetworkInterface::message(unsigned int, IOService*, void*)
+IONetworkInterface::newUserClient(task*, void*, unsigned int, IOUserClient**)
+IONetworkInterface::powerStateDidChangeTo(unsigned long, unsigned long, IOService*)
+IONetworkInterface::powerStateWillChangeTo(unsigned long, unsigned long, IOService*)
+IONetworkInterface::registerOutputHandler(OSObject*, unsigned int (OSObject::*)(__mbuf*, void*))
+IONetworkInterface::removeNetworkData(OSSymbol const*)
+IONetworkInterface::removeNetworkData(char const*)
+IONetworkInterface::reportDataTransferRates(unsigned long long, unsigned long long, unsigned long long, unsigned long long)
+IONetworkInterface::requestTerminate(IOService*, unsigned int)
+IONetworkInterface::serializeProperties(OSSerialize*) const
+IONetworkInterface::setExtraFlags(unsigned int, unsigned int)
+IONetworkInterface::setFlags(unsigned short, unsigned short)
+IONetworkInterface::setInterfaceState(unsigned int, unsigned int)
+IONetworkInterface::setInterfaceSubType(unsigned int)
+IONetworkInterface::setInterfaceType(unsigned char)
+IONetworkInterface::setMaxTransferUnit(unsigned int)
+IONetworkInterface::setMediaAddressLength(unsigned char)
+IONetworkInterface::setMediaHeaderLength(unsigned char)
+IONetworkInterface::setUnitNumber(unsigned short)
+IONetworkInterface::signalOutputThread(unsigned int)
+IONetworkInterface::startOutputThread(unsigned int)
+IONetworkInterface::stopOutputThread(unsigned int)
+IONetworkInterface::unlock()
+IONetworkMedium::medium(unsigned int, unsigned long long, unsigned int, unsigned int, char const*)
+IORegistryEntry::_RESERVEDIORegistryEntry0()
+IORegistryEntry::_RESERVEDIORegistryEntry1()
+IORegistryEntry::_RESERVEDIORegistryEntry10()
+IORegistryEntry::_RESERVEDIORegistryEntry11()
+IORegistryEntry::_RESERVEDIORegistryEntry12()
+IORegistryEntry::_RESERVEDIORegistryEntry13()
+IORegistryEntry::_RESERVEDIORegistryEntry14()
+IORegistryEntry::_RESERVEDIORegistryEntry15()
+IORegistryEntry::_RESERVEDIORegistryEntry16()
+IORegistryEntry::_RESERVEDIORegistryEntry17()
+IORegistryEntry::_RESERVEDIORegistryEntry18()
+IORegistryEntry::_RESERVEDIORegistryEntry19()
+IORegistryEntry::_RESERVEDIORegistryEntry2()
+IORegistryEntry::_RESERVEDIORegistryEntry20()
+IORegistryEntry::_RESERVEDIORegistryEntry21()
+IORegistryEntry::_RESERVEDIORegistryEntry22()
+IORegistryEntry::_RESERVEDIORegistryEntry23()
+IORegistryEntry::_RESERVEDIORegistryEntry24()
+IORegistryEntry::_RESERVEDIORegistryEntry25()
+IORegistryEntry::_RESERVEDIORegistryEntry26()
+IORegistryEntry::_RESERVEDIORegistryEntry27()
+IORegistryEntry::_RESERVEDIORegistryEntry28()
+IORegistryEntry::_RESERVEDIORegistryEntry29()
+IORegistryEntry::_RESERVEDIORegistryEntry3()
+IORegistryEntry::_RESERVEDIORegistryEntry30()
+IORegistryEntry::_RESERVEDIORegistryEntry31()
+IORegistryEntry::_RESERVEDIORegistryEntry4()
+IORegistryEntry::_RESERVEDIORegistryEntry5()
+IORegistryEntry::_RESERVEDIORegistryEntry6()
+IORegistryEntry::_RESERVEDIORegistryEntry7()
+IORegistryEntry::_RESERVEDIORegistryEntry8()
+IORegistryEntry::_RESERVEDIORegistryEntry9()
+IORegistryEntry::applyToChildren(void (*)(IORegistryEntry*, void*), void*, IORegistryPlane const*) const
+IORegistryEntry::applyToParents(void (*)(IORegistryEntry*, void*), void*, IORegistryPlane const*) const
+IORegistryEntry::attachToChild(IORegistryEntry*, IORegistryPlane const*)
+IORegistryEntry::attachToParent(IORegistryEntry*, IORegistryPlane const*)
+IORegistryEntry::childFromPath(char const*, IORegistryPlane const*, char*, int*)
+IORegistryEntry::compareName(OSString*, OSString**) const
+IORegistryEntry::compareNames(OSObject*, OSString**) const
+IORegistryEntry::copyChildEntry(IORegistryPlane const*) const
+IORegistryEntry::copyLocation(IORegistryPlane const*) const
+IORegistryEntry::copyName(IORegistryPlane const*) const
+IORegistryEntry::copyParentEntry(IORegistryPlane const*) const
+IORegistryEntry::copyProperty(OSString const*) const
+IORegistryEntry::copyProperty(OSString const*, IORegistryPlane const*, unsigned int) const
+IORegistryEntry::copyProperty(OSSymbol const*) const
+IORegistryEntry::copyProperty(OSSymbol const*, IORegistryPlane const*, unsigned int) const
+IORegistryEntry::copyProperty(char const*) const
+IORegistryEntry::copyProperty(char const*, IORegistryPlane const*, unsigned int) const
+IORegistryEntry::detachAbove(IORegistryPlane const*)
+IORegistryEntry::detachAll(IORegistryPlane const*)
+IORegistryEntry::detachFromChild(IORegistryEntry*, IORegistryPlane const*)
+IORegistryEntry::detachFromParent(IORegistryEntry*, IORegistryPlane const*)
+IORegistryEntry::dictionaryWithProperties() const
+IORegistryEntry::fromPath(char const*, IORegistryPlane const*, char*, int*, IORegistryEntry*)
+IORegistryEntry::getChildEntry(IORegistryPlane const*) const
+IORegistryEntry::getChildIterator(IORegistryPlane const*) const
+IORegistryEntry::getDepth(IORegistryPlane const*) const
+IORegistryEntry::getLocation(IORegistryPlane const*) const
+IORegistryEntry::getName(IORegistryPlane const*) const
+IORegistryEntry::getParentEntry(IORegistryPlane const*) const
+IORegistryEntry::getParentIterator(IORegistryPlane const*) const
+IORegistryEntry::getPath(char*, int*, IORegistryPlane const*) const
+IORegistryEntry::getPathComponent(char*, int*, IORegistryPlane const*) const
+IORegistryEntry::getProperty(OSString const*) const
+IORegistryEntry::getProperty(OSString const*, IORegistryPlane const*, unsigned int) const
+IORegistryEntry::getProperty(OSSymbol const*) const
+IORegistryEntry::getProperty(OSSymbol const*, IORegistryPlane const*, unsigned int) const
+IORegistryEntry::getProperty(char const*) const
+IORegistryEntry::getProperty(char const*, IORegistryPlane const*, unsigned int) const
+IORegistryEntry::inPlane(IORegistryPlane const*) const
+IORegistryEntry::isChild(IORegistryEntry*, IORegistryPlane const*, bool) const
+IORegistryEntry::isParent(IORegistryEntry*, IORegistryPlane const*, bool) const
+IORegistryEntry::propertyExists(char const*)
+IORegistryEntry::propertyHasValue(char const*, OSObject const*)
+IORegistryEntry::removeProperty(OSString const*)
+IORegistryEntry::removeProperty(OSSymbol const*)
+IORegistryEntry::removeProperty(char const*)
+IORegistryEntry::runPropertyAction(int (*)(OSObject*, void*, void*, void*, void*), OSObject*, void*, void*, void*, void*)
+IORegistryEntry::setLocation(OSSymbol const*, IORegistryPlane const*)
+IORegistryEntry::setLocation(char const*, IORegistryPlane const*)
+IORegistryEntry::setName(OSSymbol const*, IORegistryPlane const*)
+IORegistryEntry::setName(char const*, IORegistryPlane const*)
+IORegistryEntry::setProperties(OSObject*)
+IORegistryEntry::setProperty(OSString const*, OSObject*)
+IORegistryEntry::setProperty(OSSymbol const*, OSObject*)
+IORegistryEntry::setProperty(char const*, OSObject*)
+IORegistryEntry::setProperty(char const*, bool)
+IORegistryEntry::setProperty(char const*, char const*)
+IORegistryEntry::setProperty(char const*, unsigned long long, unsigned int)
+IORegistryEntry::setProperty(char const*, void*, unsigned int)
+IORegistryEntry::setPropertyTable(OSDictionary*)
+IORegistryIterator::iterateOver(IORegistryEntry*, IORegistryPlane const*, unsigned int)
+IOService::Dispatch(IORPC)
+IOService::IOService(OSMetaClass const*)
+IOService::PMinit()
+IOService::PMstop()
+IOService::_RESERVEDIOService0()
+IOService::_RESERVEDIOService1()
+IOService::_RESERVEDIOService10()
+IOService::_RESERVEDIOService11()
+IOService::_RESERVEDIOService12()
+IOService::_RESERVEDIOService13()
+IOService::_RESERVEDIOService14()
+IOService::_RESERVEDIOService15()
+IOService::_RESERVEDIOService16()
+IOService::_RESERVEDIOService17()
+IOService::_RESERVEDIOService18()
+IOService::_RESERVEDIOService19()
+IOService::_RESERVEDIOService2()
+IOService::_RESERVEDIOService20()
+IOService::_RESERVEDIOService21()
+IOService::_RESERVEDIOService22()
+IOService::_RESERVEDIOService23()
+IOService::_RESERVEDIOService24()
+IOService::_RESERVEDIOService25()
+IOService::_RESERVEDIOService26()
+IOService::_RESERVEDIOService27()
+IOService::_RESERVEDIOService28()
+IOService::_RESERVEDIOService29()
+IOService::_RESERVEDIOService3()
+IOService::_RESERVEDIOService30()
+IOService::_RESERVEDIOService31()
+IOService::_RESERVEDIOService32()
+IOService::_RESERVEDIOService33()
+IOService::_RESERVEDIOService34()
+IOService::_RESERVEDIOService35()
+IOService::_RESERVEDIOService36()
+IOService::_RESERVEDIOService37()
+IOService::_RESERVEDIOService38()
+IOService::_RESERVEDIOService39()
+IOService::_RESERVEDIOService4()
+IOService::_RESERVEDIOService40()
+IOService::_RESERVEDIOService41()
+IOService::_RESERVEDIOService42()
+IOService::_RESERVEDIOService43()
+IOService::_RESERVEDIOService44()
+IOService::_RESERVEDIOService45()
+IOService::_RESERVEDIOService46()
+IOService::_RESERVEDIOService47()
+IOService::_RESERVEDIOService5()
+IOService::_RESERVEDIOService6()
+IOService::_RESERVEDIOService7()
+IOService::_RESERVEDIOService8()
+IOService::_RESERVEDIOService9()
+IOService::acknowledgeNotification(void*, unsigned int)
+IOService::activityTickle(unsigned long, unsigned long)
+IOService::addMatchingNotification(OSSymbol const*, OSDictionary*, bool (*)(void*, void*, IOService*, IONotifier*), void*, void*, int)
+IOService::addNeededResource(char const*)
+IOService::addPowerChild(IOService*)
+IOService::adjustBusy(int)
+IOService::allowPowerChange(unsigned long)
+IOService::applyToClients(void (*)(IOService*, void*), void*)
+IOService::applyToInterested(OSSymbol const*, void (*)(OSObject*, void*), void*)
+IOService::applyToProviders(void (*)(IOService*, void*), void*)
+IOService::askChangeDown(unsigned long)
+IOService::attach(IOService*)
+IOService::callPlatformFunction(OSSymbol const*, bool, void*, void*, void*, void*)
+IOService::callPlatformFunction(char const*, bool, void*, void*, void*, void*)
+IOService::cancelPowerChange(unsigned long)
+IOService::causeInterrupt(int)
+IOService::close(IOService*, unsigned int)
+IOService::compareProperties(OSDictionary*, OSCollection*)
+IOService::compareProperty(OSDictionary*, OSString const*)
+IOService::compareProperty(OSDictionary*, char const*)
+IOService::configureReport(IOReportChannelList*, unsigned int, void*, void*)
+IOService::copyClientWithCategory(OSSymbol const*)
+IOService::detach(IOService*)
+IOService::didTerminate(IOService*, unsigned int, bool*)
+IOService::disableInterrupt(int)
+IOService::enableInterrupt(int)
+IOService::errnoFromReturn(int)
+IOService::finalize(unsigned int)
+IOService::free()
+IOService::gMetaClass
+IOService::getAggressiveness(unsigned long, unsigned long*)
+IOService::getBusyState()
+IOService::getClient() const
+IOService::getClientIterator() const
+IOService::getDeviceMemory()
+IOService::getDeviceMemoryCount()
+IOService::getDeviceMemoryWithIndex(unsigned int)
+IOService::getInterruptType(int, int*)
+IOService::getOpenClientIterator() const
+IOService::getOpenProviderIterator() const
+IOService::getProvider() const
+IOService::getProviderIterator() const
+IOService::getResources()
+IOService::getState() const
+IOService::getWorkLoop() const
+IOService::handleClose(IOService*, unsigned int)
+IOService::handleIsOpen(IOService const*) const
+IOService::handleOpen(IOService*, unsigned int, void*)
+IOService::init(IORegistryEntry*, IORegistryPlane const*)
+IOService::init(OSDictionary*)
+IOService::initialPowerStateForDomainState(unsigned long)
+IOService::isInactive() const
+IOService::isOpen(IOService const*) const
+IOService::joinPMtree(IOService*)
+IOService::lockForArbitration(bool)
+IOService::makeUsable()
+IOService::mapDeviceMemoryWithIndex(unsigned int, unsigned int)
+IOService::matchLocation(IOService*)
+IOService::matchPropertyTable(OSDictionary*)
+IOService::matchPropertyTable(OSDictionary*, int*)
+IOService::maxCapabilityForDomainState(unsigned long)
+IOService::message(unsigned int, IOService*, void*)
+IOService::messageClient(unsigned int, OSObject*, void*, unsigned long)
+IOService::messageClients(unsigned int, void*, unsigned long)
+IOService::newUserClient(task*, void*, unsigned int, IOUserClient**)
+IOService::newUserClient(task*, void*, unsigned int, OSDictionary*, IOUserClient**)
+IOService::nextIdleTimeout(unsigned long long, unsigned long long, unsigned int)
+IOService::open(IOService*, unsigned int, void*)
+IOService::powerChangeDone(unsigned long)
+IOService::powerStateDidChangeTo(unsigned long, unsigned long, IOService*)
+IOService::powerStateForDomainState(unsigned long)
+IOService::powerStateWillChangeTo(unsigned long, unsigned long, IOService*)
+IOService::probe(IOService*, int*)
+IOService::registerInterest(OSSymbol const*, int (*)(void*, void*, unsigned int, IOService*, void*, unsigned long), void*, void*)
+IOService::registerInterrupt(int, OSObject*, void (*)(OSObject*, void*, IOService*, int), void*)
+IOService::registerPowerDriver(IOService*, IOPMPowerState*, unsigned long)
+IOService::registerService(unsigned int)
+IOService::removePowerChild(IOPowerConnection*)
+IOService::requestPowerDomainState(unsigned long, IOPowerConnection*, unsigned long)
+IOService::requestProbe(unsigned int)
+IOService::requestTerminate(IOService*, unsigned int)
+IOService::serializeProperties(OSSerialize*) const
+IOService::serviceMatching(char const*, OSDictionary*)
+IOService::setAggressiveness(unsigned long, unsigned long)
+IOService::setDeviceMemory(OSArray*)
+IOService::setIdleTimerPeriod(unsigned long)
+IOService::setPowerState(unsigned long, IOService*)
+IOService::start(IOService*)
+IOService::stop(IOService*)
+IOService::stringFromReturn(int)
+IOService::systemWillShutdown(unsigned int)
+IOService::tellChangeDown(unsigned long)
+IOService::tellChangeUp(unsigned long)
+IOService::tellNoChangeDown(unsigned long)
+IOService::terminate(unsigned int)
+IOService::terminateClient(IOService*, unsigned int)
+IOService::unlockForArbitration()
+IOService::unregisterInterrupt(int)
+IOService::updateReport(IOReportChannelList*, unsigned int, void*, void*)
+IOService::willTerminate(IOService*, unsigned int)
+IOService::~IOService()
+IOSubMemoryDescriptor::withSubRange(IOMemoryDescriptor*, unsigned long long, unsigned long long, unsigned int)
+IOThunderboltAbstractPath::setDestinationInitialCredits(unsigned int)
+IOThunderboltAbstractPath::setSourceInitialCredits(unsigned int)
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand0()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand1()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand10()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand11()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand12()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand13()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand14()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand15()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand2()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand3()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand4()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand5()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand6()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand7()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand8()
+IOThunderboltCommand::_RESERVEDIOThunderboltCommand9()
+IOThunderboltCommand::release() const
+IOThunderboltCommandGate::commandGate(OSObject*, int (*)(OSObject*, void*, void*, void*, void*))
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand0()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand1()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand10()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand11()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand12()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand13()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand14()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand15()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand16()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand17()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand18()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand19()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand2()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand20()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand21()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand22()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand23()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand24()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand25()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand26()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand27()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand28()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand29()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand3()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand30()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand31()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand4()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand5()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand6()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand7()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand8()
+IOThunderboltConfigCommand::_RESERVEDIOThunderboltConfigCommand9()
+IOThunderboltConfigCommand::createResources()
+IOThunderboltConfigCommand::destroyResources()
+IOThunderboltConfigCommand::getCompletion()
+IOThunderboltConfigCommand::getConfigQueue()
+IOThunderboltConfigCommand::getRemainingRetries()
+IOThunderboltConfigCommand::getRetries()
+IOThunderboltConfigCommand::getRouteString()
+IOThunderboltConfigCommand::getTimeout()
+IOThunderboltConfigCommand::isInProgress()
+IOThunderboltConfigCommand::setCompletion(IOThunderboltConfigCommand::Completion)
+IOThunderboltConfigCommand::setInProgress(bool)
+IOThunderboltConfigCommand::setRemainingRetries(unsigned char)
+IOThunderboltConfigCommand::setRetries(unsigned char)
+IOThunderboltConfigCommand::setRouteString(unsigned long long)
+IOThunderboltConfigCommand::setTimeout(unsigned long long)
+IOThunderboltConfigCommand::submit()
+IOThunderboltConfigCommand::submitSynchronous()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand0()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand1()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand10()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand11()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand12()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand13()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand14()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand15()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand16()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand17()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand18()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand19()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand2()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand20()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand21()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand22()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand23()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand24()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand25()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand26()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand27()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand28()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand29()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand3()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand30()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand31()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand4()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand5()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand6()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand7()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand8()
+IOThunderboltConfigXDomainCommand::_RESERVEDIOThunderboltConfigXDomainCommand9()
+IOThunderboltConfigXDomainCommand::processResponse(IOThunderboltReceiveCommand*)
+IOThunderboltConfigXDomainResponseCommand::IOThunderboltConfigXDomainResponseCommand(OSMetaClass const*)
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand0()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand1()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand10()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand11()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand12()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand13()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand14()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand15()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand16()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand17()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand18()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand19()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand2()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand20()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand21()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand22()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand23()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand24()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand25()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand26()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand27()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand28()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand29()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand3()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand30()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand31()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand4()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand5()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand6()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand7()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand8()
+IOThunderboltConfigXDomainResponseCommand::_RESERVEDIOThunderboltConfigXDomainResponseCommand9()
+IOThunderboltConfigXDomainResponseCommand::complete(int)
+IOThunderboltConfigXDomainResponseCommand::gMetaClass
+IOThunderboltConfigXDomainResponseCommand::getDataDescriptor()
+IOThunderboltConfigXDomainResponseCommand::getLength()
+IOThunderboltConfigXDomainResponseCommand::prepareForExecution(IOThunderboltTransmitCommand*)
+IOThunderboltConfigXDomainResponseCommand::processRequestComplete(IOThunderboltTransmitCommand*)
+IOThunderboltConfigXDomainResponseCommand::setDataDescriptor(IOMemoryDescriptor*)
+IOThunderboltConfigXDomainResponseCommand::setLength(unsigned int)
+IOThunderboltConfigXDomainResponseCommand::~IOThunderboltConfigXDomainResponseCommand()
+IOThunderboltDispatchContext::withGate(IOThunderboltCommandGate*)
+IOThunderboltDispatchQueue::withGate(IOThunderboltCommandGate*)
+IOThunderboltLocalNode::metaClass
+IOThunderboltPath::withController(IOThunderboltController*)
+IOThunderboltPort::metaClass
+IOThunderboltProtocolListener::withController(IOThunderboltController*)
+IOThunderboltReceiveCommand::IOThunderboltReceiveCommand(OSMetaClass const*)
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand0()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand1()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand10()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand11()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand12()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand13()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand14()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand15()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand16()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand17()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand18()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand19()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand2()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand20()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand21()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand22()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand23()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand24()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand25()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand26()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand27()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand28()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand29()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand3()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand30()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand31()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand4()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand5()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand6()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand7()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand8()
+IOThunderboltReceiveCommand::_RESERVEDIOThunderboltReceiveCommand9()
+IOThunderboltReceiveCommand::closeGate()
+IOThunderboltReceiveCommand::complete()
+IOThunderboltReceiveCommand::gMetaClass
+IOThunderboltReceiveCommand::getAssociatedQueue()
+IOThunderboltReceiveCommand::getCompletion()
+IOThunderboltReceiveCommand::getConsumerIndexUpdateMode()
+IOThunderboltReceiveCommand::getDMACommand()
+IOThunderboltReceiveCommand::getEOF()
+IOThunderboltReceiveCommand::getFrameList()
+IOThunderboltReceiveCommand::getInterruptMode()
+IOThunderboltReceiveCommand::getLength()
+IOThunderboltReceiveCommand::getMemoryDescriptor()
+IOThunderboltReceiveCommand::getOffset()
+IOThunderboltReceiveCommand::getReceivedLength()
+IOThunderboltReceiveCommand::getRefcon()
+IOThunderboltReceiveCommand::getWorkLoop()
+IOThunderboltReceiveCommand::initWithControllerAndQueue(IOThunderboltController*, IOThunderboltReceiveQueue*)
+IOThunderboltReceiveCommand::isInProgress()
+IOThunderboltReceiveCommand::openGate()
+IOThunderboltReceiveCommand::setCompletion(IOThunderboltReceiveCommand::Completion)
+IOThunderboltReceiveCommand::setConsumerIndexUpdateMode(unsigned int)
+IOThunderboltReceiveCommand::setFrameList(IOThunderboltFrameList*)
+IOThunderboltReceiveCommand::setInProgress(bool)
+IOThunderboltReceiveCommand::setInterruptMode(unsigned int)
+IOThunderboltReceiveCommand::setLength(unsigned long long)
+IOThunderboltReceiveCommand::setMemoryDescriptor(IOMemoryDescriptor*)
+IOThunderboltReceiveCommand::setOffset(unsigned long long)
+IOThunderboltReceiveCommand::setRefcon(void*)
+IOThunderboltReceiveCommand::~IOThunderboltReceiveCommand()
+IOThunderboltReceiveQueue::withControllerAndWorkLoop(IOThunderboltController*, IOWorkLoop*)
+IOThunderboltTimerCommand::withController(IOThunderboltController*)
+IOThunderboltTransmitCommand::IOThunderboltTransmitCommand(OSMetaClass const*)
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand0()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand1()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand10()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand11()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand12()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand13()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand14()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand15()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand16()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand17()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand18()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand19()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand2()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand20()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand21()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand22()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand23()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand24()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand25()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand26()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand27()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand28()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand29()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand3()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand30()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand31()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand4()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand5()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand6()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand7()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand8()
+IOThunderboltTransmitCommand::_RESERVEDIOThunderboltTransmitCommand9()
+IOThunderboltTransmitCommand::closeGate()
+IOThunderboltTransmitCommand::complete()
+IOThunderboltTransmitCommand::gMetaClass
+IOThunderboltTransmitCommand::getAssociatedQueue()
+IOThunderboltTransmitCommand::getCompletion()
+IOThunderboltTransmitCommand::getDMACommand()
+IOThunderboltTransmitCommand::getFrameList()
+IOThunderboltTransmitCommand::getInterruptMode()
+IOThunderboltTransmitCommand::getLength()
+IOThunderboltTransmitCommand::getMemoryDescriptor()
+IOThunderboltTransmitCommand::getOffset()
+IOThunderboltTransmitCommand::getProducerIndexUpdateMode()
+IOThunderboltTransmitCommand::getRefcon()
+IOThunderboltTransmitCommand::getWorkLoop()
+IOThunderboltTransmitCommand::initWithController(IOThunderboltController*)
+IOThunderboltTransmitCommand::isInProgress()
+IOThunderboltTransmitCommand::openGate()
+IOThunderboltTransmitCommand::setCompletion(IOThunderboltTransmitCommand::Completion)
+IOThunderboltTransmitCommand::setEOF(unsigned char)
+IOThunderboltTransmitCommand::setFrameList(IOThunderboltFrameList*)
+IOThunderboltTransmitCommand::setInProgress(bool)
+IOThunderboltTransmitCommand::setInterruptMode(unsigned int)
+IOThunderboltTransmitCommand::setLength(unsigned long long)
+IOThunderboltTransmitCommand::setMemoryDescriptor(IOMemoryDescriptor*)
+IOThunderboltTransmitCommand::setOffset(unsigned long long)
+IOThunderboltTransmitCommand::setProducerIndexUpdateMode(unsigned int)
+IOThunderboltTransmitCommand::setRefcon(void*)
+IOThunderboltTransmitCommand::setSOF(unsigned char)
+IOThunderboltTransmitCommand::~IOThunderboltTransmitCommand()
+IOThunderboltTransmitQueue::withControllerAndWorkLoop(IOThunderboltController*, IOWorkLoop*)
+IOThunderboltWorkLoop::workLoop()
+IOThunderboltXDomainLink::metaClass
+IOThunderboltXDomainService::metaClass
+OSCollectionIterator::withCollection(OSCollection const*)
+OSDictionary::withCapacity(unsigned int)
+OSMetaClass::OSMetaClass(char const*, OSMetaClass const*, unsigned int)
+OSMetaClass::_RESERVEDOSMetaClass0()
+OSMetaClass::_RESERVEDOSMetaClass1()
+OSMetaClass::_RESERVEDOSMetaClass2()
+OSMetaClass::_RESERVEDOSMetaClass3()
+OSMetaClass::_RESERVEDOSMetaClass4()
+OSMetaClass::_RESERVEDOSMetaClass5()
+OSMetaClass::_RESERVEDOSMetaClass6()
+OSMetaClass::_RESERVEDOSMetaClass7()
+OSMetaClass::getMetaClass() const
+OSMetaClass::getRetainCount() const
+OSMetaClass::instanceConstructed() const
+OSMetaClass::release() const
+OSMetaClass::release(int) const
+OSMetaClass::retain() const
+OSMetaClass::serialize(OSSerialize*) const
+OSMetaClass::taggedRelease(void const*) const
+OSMetaClass::taggedRelease(void const*, int) const
+OSMetaClass::taggedRetain(void const*) const
+OSMetaClass::~OSMetaClass()
+OSMetaClassBase::Dispatch(IORPC)
+OSMetaClassBase::_RESERVEDOSMetaClassBase0()
+OSMetaClassBase::_RESERVEDOSMetaClassBase1()
+OSMetaClassBase::_RESERVEDOSMetaClassBase2()
+OSMetaClassBase::_RESERVEDOSMetaClassBase3()
+OSMetaClassBase::_RESERVEDOSMetaClassBase4()
+OSMetaClassBase::_RESERVEDOSMetaClassBase5()
+OSMetaClassBase::_RESERVEDOSMetaClassBase6()
+OSMetaClassBase::_RESERVEDOSMetaClassBase7()
+OSMetaClassBase::isEqualTo(OSMetaClassBase const*) const
+OSMetaClassBase::safeMetaCast(OSMetaClassBase const*, OSMetaClass const*)
+OSNumber::metaClass
+OSNumber::withNumber(unsigned long long, unsigned int)
+OSObject::Dispatch(IORPC)
+OSObject::_RESERVEDOSObject0()
+OSObject::_RESERVEDOSObject1()
+OSObject::_RESERVEDOSObject10()
+OSObject::_RESERVEDOSObject11()
+OSObject::_RESERVEDOSObject12()
+OSObject::_RESERVEDOSObject13()
+OSObject::_RESERVEDOSObject14()
+OSObject::_RESERVEDOSObject15()
+OSObject::_RESERVEDOSObject2()
+OSObject::_RESERVEDOSObject3()
+OSObject::_RESERVEDOSObject4()
+OSObject::_RESERVEDOSObject5()
+OSObject::_RESERVEDOSObject6()
+OSObject::_RESERVEDOSObject7()
+OSObject::_RESERVEDOSObject8()
+OSObject::_RESERVEDOSObject9()
+OSObject::getRetainCount() const
+OSObject::init()
+OSObject::release() const
+OSObject::release(int) const
+OSObject::retain() const
+OSObject::serialize(OSSerialize*) const
+OSObject::taggedRelease(void const*) const
+OSObject::taggedRelease(void const*, int) const
+OSObject::taggedRetain(void const*) const
+OSSet::withCapacity(unsigned int)
+OSString::withCString(char const*)
+OSSymbol::withCString(char const*)
+_IOFreeData
+_IOFreeTypeImpl
+_IOFreeTypeVarImpl
+_IOLockAlloc
+_IOLockFree
+_IOLockLock
+_IOLockUnlock
+_IOLog
+_IOMallocData
+_IOMallocTypeImpl
+_IOMallocTypeVarImpl
+_OSKextGetCurrentIdentifier
+_OSKextGetCurrentLoadTag
+_OSKextGetCurrentVersionString
+_OSObject_typed_operator_delete
+_OSObject_typed_operator_new
+_OUTLINED_FUNCTION_0
+_PE_parse_boot_argn
+__GLOBAL__D_a
+__GLOBAL__sub_I_AppleThunderboltIPConnection.cpp
+__GLOBAL__sub_I_AppleThunderboltIPControlCommand.cpp
+__GLOBAL__sub_I_AppleThunderboltIPDebugging.cpp
+__GLOBAL__sub_I_AppleThunderboltIPGlobals.cpp
+__GLOBAL__sub_I_AppleThunderboltIPMSMInterface.cpp
+__GLOBAL__sub_I_AppleThunderboltIPPort.cpp
+__GLOBAL__sub_I_AppleThunderboltIPReceiveCommand.cpp
+__GLOBAL__sub_I_AppleThunderboltIPService.cpp
+__GLOBAL__sub_I_AppleThunderboltIPTransmitCommand.cpp
+__GLOBAL__sub_I_AppleThunderboltIPTransmitter.cpp
+___stack_chk_fail
+___stack_chk_guard
+__antimain
+__kext_apple_cc
+__os_log_default
+__os_log_internal
+__realmain
+__start
+__stop
+_absolutetime_to_nanoseconds
+_gAppleThunderboltIPProtocolGUID
+_gHexDumpLock
+_gIODTPlane
+_gIOFirstMatchNotification
+_gIOFirstPublishNotification
+_gIONetworkFilterGroup
+_gIOServicePlane
+_gIOTerminatedNotification
+_gThunderboltFamilyLogBootArgs
+_gThunderboltIPBootArgs
+_gThunderboltLogModeBootArgs
+_gThunderboltTraceFlags
+_gUpdateModeStrideConfig
+_ifnet_set_tso_mtu
+_kauth_getuid
+_kdebug_enable
+_kernel_debug
+_kmod_info
+_kprintHexDump
+_kprintf
+_mach_absolute_time
+_mbuf_copyback
+_mbuf_copydata
+_mbuf_nextpkt
+_mbuf_pkthdr_len
+_mbuf_pkthdr_setlen
+_mbuf_setnextpkt
+_memcmp
+_memmove
+_panic
+_snprintf
+_sock_close
+_sock_ioctl
+_sock_socket_internal
+_sysctl__debug_AppleThunderboltIP
+_sysctl__debug_children
+_sysctl_register_oid
+_sysctl_unregister_oid
+gApplethunderboltIPGlobals
+lockIniter::lockIniter()
+lockIniter::~lockIniter()
+operator delete(void*)
+sThunderboltIPPowerStates
+vtable for AppleThunderboltIPConnection
+vtable for AppleThunderboltIPConnection::MetaClass
+vtable for AppleThunderboltIPControlCommand
+vtable for AppleThunderboltIPControlCommand::MetaClass
+vtable for AppleThunderboltIPGlobals
+vtable for AppleThunderboltIPMSMInterface
+vtable for AppleThunderboltIPMSMInterface::MetaClass
+vtable for AppleThunderboltIPPort
+vtable for AppleThunderboltIPPort::MetaClass
+vtable for AppleThunderboltIPReceiveCommand
+vtable for AppleThunderboltIPReceiveCommand::MetaClass
+vtable for AppleThunderboltIPService
+vtable for AppleThunderboltIPService::MetaClass
+vtable for AppleThunderboltIPTransmitCommand
+vtable for AppleThunderboltIPTransmitCommand::MetaClass
+vtable for AppleThunderboltIPTransmitter
+vtable for AppleThunderboltIPTransmitter::MetaClass
+vtable for IOEthernetController
+vtable for IOEthernetInterface
+vtable for IOService
+vtable for IOThunderboltConfigXDomainResponseCommand
+vtable for IOThunderboltReceiveCommand
+vtable for IOThunderboltTransmitCommand

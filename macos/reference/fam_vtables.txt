@@ -1,0 +1,1068 @@
+######## __ZTV17IOThunderboltPath
+vtable for IOThunderboltPath @ 0x285090
+off 0x000  0x1339a0  IOThunderboltPath::~IOThunderboltPath()
+off 0x008  0x133b5c  IOThunderboltPath::~IOThunderboltPath()
+off 0x038  0x133bbc  IOThunderboltPath::getMetaClass() const
+off 0x060  <import> <flat-namespace>/__ZN8OSObject8DispatchE5IORPC
+off 0x0b0  0x1340d8  IOThunderboltPath::free()
+off 0x138  0x13400c  IOThunderboltPath::initWithController(IOThunderboltController*)
+off 0x140  0x1ec9cc  IOThunderboltAbstractPath::setInitialCredits(unsigned int)
+off 0x148  0x1eca0c  IOThunderboltAbstractPath::getInitialCredits()
+off 0x150  0x1ecbe0  IOThunderboltAbstractPath::setPriority(unsigned int)
+off 0x158  0x1ecc20  IOThunderboltAbstractPath::getPriority()
+off 0x160  0x1ecc2c  IOThunderboltAbstractPath::setWeight(unsigned int)
+off 0x168  0x1ecc6c  IOThunderboltAbstractPath::getWeight()
+off 0x170  0x1ecc78  IOThunderboltAbstractPath::setDropPacketEnable(unsigned int)
+off 0x178  0x1eccb8  IOThunderboltAbstractPath::getDropPacketEnable()
+off 0x180  0x1eccc4  IOThunderboltAbstractPath::setCounterEnable(unsigned int)
+off 0x188  0x1ecd04  IOThunderboltAbstractPath::getCounterEnable()
+off 0x190  0x1ecd10  IOThunderboltAbstractPath::setIngressFlowControlEnable(unsigned int)
+off 0x198  0x1ecd50  IOThunderboltAbstractPath::getIngressFlowControlEnable()
+off 0x1a0  0x1ecd5c  IOThunderboltAbstractPath::setEgressFlowControlEnable(unsigned int)
+off 0x1a8  0x1ecd9c  IOThunderboltAbstractPath::getEgressFlowControlEnable()
+off 0x1b0  0x1ecda8  IOThunderboltAbstractPath::setIngressSharedBufferingEnable(unsigned int)
+off 0x1b8  0x1ecde8  IOThunderboltAbstractPath::getIngressSharedBufferingEnable()
+off 0x1c0  0x1ecdf4  IOThunderboltAbstractPath::setEgressSharedBufferingEnable(unsigned int)
+off 0x1c8  0x1ece34  IOThunderboltAbstractPath::getEgressSharedBufferingEnable()
+off 0x1d0  0x1eca64  IOThunderboltAbstractPath::setNonFlowControlledCredits(unsigned int)
+off 0x1d8  0x1ecaa4  IOThunderboltAbstractPath::getNonFlowControlledCredits()
+off 0x1e0  0x1ece40  IOThunderboltAbstractPath::setFlags(unsigned int)
+off 0x1e8  0x1ece80  IOThunderboltAbstractPath::getFlags()
+off 0x1f0  0x1ece8c  IOThunderboltAbstractPath::setPathType(unsigned int)
+off 0x1f8  0x1ececc  IOThunderboltAbstractPath::getPathType()
+off 0x200  0x136b64  IOThunderboltPath::getState()
+off 0x208  0x1eced8  IOThunderboltAbstractPath::setActivationCompletion(IOThunderboltAbstractPath::Completion)
+off 0x210  0x1ecf24  IOThunderboltAbstractPath::getActivationCompletion()
+off 0x218  0x1ecf3c  IOThunderboltAbstractPath::setDeactivationCompletion(IOThunderboltAbstractPath::Completion)
+off 0x220  0x1ecf88  IOThunderboltAbstractPath::getDeactivationCompletion()
+off 0x228  0x1ecfa0  IOThunderboltAbstractPath::setUpdateCompletion(IOThunderboltAbstractPath::Completion)
+off 0x230  0x1ecfec  IOThunderboltAbstractPath::getUpdateCompletion()
+off 0x238  0x142798  IOThunderboltPath::activate()
+off 0x240  0x142b10  IOThunderboltPath::deactivate(bool)
+off 0x248  0x148ea8  IOThunderboltPath::update()
+off 0x250  0x1ed01c  IOThunderboltAbstractPath::getUUID(unsigned char*)
+off 0x258  0x1ed004  IOThunderboltAbstractPath::setRefcon(void*)
+off 0x260  0x1ed010  IOThunderboltAbstractPath::getRefcon()
+off 0x268  0x1ed03c  IOThunderboltAbstractPath::sendActivationCompletion(int)
+off 0x270  0x1ed064  IOThunderboltAbstractPath::sendDeactivationCompletion(int)
+off 0x278  0x1ed08c  IOThunderboltAbstractPath::sendUpdateCompletion(int)
+off 0x380  0x1342b8  IOThunderboltPath::configureFromDescription(IOThunderboltPathDescStruct*)
+off 0x388  0x135cb4  IOThunderboltPath::setSourcePort(IOThunderboltPort*)
+off 0x390  0x135e50  IOThunderboltPath::getSourcePort()
+off 0x398  0x135e5c  IOThunderboltPath::setDestinationPort(IOThunderboltPort*)
+off 0x3a0  0x135ff8  IOThunderboltPath::getDestinationPort()
+off 0x3a8  0x136004  IOThunderboltPath::setSourceHopIDRange(IOThunderboltHopIDRange)
+off 0x3b0  0x136064  IOThunderboltPath::getSourceHopIDRange()
+off 0x3b8  0x136070  IOThunderboltPath::setDestinationHopIDRange(IOThunderboltHopIDRange)
+off 0x3c0  0x136b58  IOThunderboltPath::getDestinationHopIDRange()
+off 0x3c8  0x1482a8  IOThunderboltPath::getAllocatedSourceHopID()
+off 0x3d0  0x1482c4  IOThunderboltPath::getAllocatedDestinationHopID()
+off 0x3d8  0x141208  IOThunderboltPath::activateSynchronous()
+off 0x3e0  0x142a08  IOThunderboltPath::deactivateSynchronous()
+off 0x3e8  0x1360d0  IOThunderboltPath::setRequiredBandwidth(unsigned int)
+off 0x3f0  0x136a54  IOThunderboltPath::getRequiredBandwidth()
+off 0x3f8  0x136a60  IOThunderboltPath::setMaximumBandwidth(unsigned int)
+off 0x400  0x136b4c  IOThunderboltPath::getMaximumBandwidth()
+off 0x408  0x135c18  IOThunderboltPath::updateExistingPath()
+off 0x410  0x141348  IOThunderboltPath::allocate()
+off 0x418  0x1431d8  IOThunderboltPath::deallocate()
+off 0x420  0x136ce8  IOThunderboltPath::setCustomPortList(OSArray*)
+off 0x428  0x136d48  IOThunderboltPath::getPortList()
+off 0x430  0x142ea4  IOThunderboltPath::hardwareWasReset()
+off 0x438  0x136d54  IOThunderboltPath::setRoutingOptions(unsigned int)
+off 0x440  0x136d94  IOThunderboltPath::getRoutingOptions()
+off 0x448  0x1435f4  IOThunderboltPath::completeActivation(int)
+off 0x450  0x14384c  IOThunderboltPath::completeDeactivation(int)
+off 0x458  0x13f958  IOThunderboltPath::getAncestorPort(IOThunderboltPort*, OSArray*)
+off 0x460  0x13fb54  IOThunderboltPath::createPathTable()
+off 0x468  0x140b7c  IOThunderboltPath::destroyPathTable()
+off 0x470  0x136df0  IOThunderboltPath::createResources()
+off 0x478  0x137398  IOThunderboltPath::destroyResources()
+off 0x480  0x143e64  IOThunderboltPath::startNFCActivation()
+off 0x488  0x143ea8  IOThunderboltPath::beginNextNFCActivation(unsigned int)
+off 0x490  0x1443b4  IOThunderboltPath::processNFCActivationResults(int, IOThunderboltConfigCommand*)
+off 0x498  0x144784  IOThunderboltPath::beginNextCounterClearWrite()
+off 0x4a0  0x144740  IOThunderboltPath::startCounterClearWrites()
+off 0x4a8  0x144bb0  IOThunderboltPath::processCounterClearWriteResults(int, IOThunderboltConfigCommand*)
+off 0x4b0  0x144c28  IOThunderboltPath::startHopActivationWrites()
+off 0x4b8  0x1451b8  IOThunderboltPath::beginNextActivationWrite()
+off 0x4c0  0x145510  IOThunderboltPath::doActivationWrite(IOThunderboltDispatchContext*)
+off 0x4c8  0x147988  IOThunderboltPath::startNFCDeactivation()
+off 0x4d0  0x147aac  IOThunderboltPath::beginNextNFCDeactivation(unsigned int)
+off 0x4d8  0x147fcc  IOThunderboltPath::processNFCDeactivationWrite(int, IOThunderboltConfigCommand*)
+off 0x4e0  0x145bdc  IOThunderboltPath::startHopDeactivations()
+off 0x4e8  0x1460cc  IOThunderboltPath::doHopDeactivations(IOThunderboltDispatchContext*)
+off 0x4f0  0x144c6c  IOThunderboltPath::getPacketForPath(unsigned int, bool, bool, unsigned int*)
+off 0x4f8  0x136ba8  IOThunderboltPath::getHopInfo(IOThunderboltPort*, IOThunderboltPath::HopInfo*)
+off 0x500  0x1375a8  IOThunderboltPath::getNextPortsArray(OSArray*, IOThunderboltPort*)
+off 0x508  0x138a68  IOThunderboltPath::findUpstreamPaths(IOThunderboltPort*, IOThunderboltPort*)
+off 0x510  0x13a7ec  IOThunderboltPath::mergeLists(OSArray*, OSArray*)
+off 0x518  0x13b730  IOThunderboltPath::addListToCandidateArray(OSArray*, OSArray*)
+off 0x520  0x13be0c  IOThunderboltPath::findCandidatePaths()
+off 0x528  0x13ceec  IOThunderboltPath::findBestPath()
+off 0x530  0x13f6f4  IOThunderboltPath::getNFCCreditsForPathTableIndex(int)
+off 0x538  0x13f870  IOThunderboltPath::getInitialCreditsForPathTableIndex(int)
+off 0x540  0x143ad0  IOThunderboltPath::configCommandCallback(void*, int, IOThunderboltConfigCommand*)
+off 0x548  0x147508  IOThunderboltPath::pollForQNE(int)
+off 0x550  0x13f770  IOThunderboltPath::getPortCreditsBasedOnPathType(IOThunderboltPort*)
+off 0x558  0x148304  IOThunderboltPath::getCL0sExitTime(unsigned int*)
+off 0x560  0x148414  IOThunderboltPath::getCL1ExitTime(unsigned int*)
+off 0x568  0x148524  IOThunderboltPath::getCL2ExitTime(unsigned int*)
+off 0x570  0x136da0  IOThunderboltPath::setPMPacketSupport(bool)
+off 0x578  0x136de0  IOThunderboltPath::getPMPacketSupport()
+off 0x580  0x148634  IOThunderboltPath::getAvailableBandwidth(unsigned int*)
+off 0x588  0x148c84  IOThunderboltPath::getEstimatedBandwidth(unsigned int*)
+off 0x590  0x148d68  IOThunderboltPath::updateSynchronous()
+off 0x598  0x1499cc  IOThunderboltPath::getMinLinkRate(unsigned int*)
+off 0x5a0  0x14943c  IOThunderboltPath::doUpdate(IOThunderboltDispatchContext*)
+off 0x5a8  0x1497d4  IOThunderboltPath::completeUpdate(int)
+######## __ZTV27IOThunderboltXDomainService
+vtable for IOThunderboltXDomainService @ 0x28d7f0
+off 0x000  0x1851ec  IOThunderboltXDomainService::~IOThunderboltXDomainService()
+off 0x008  0x185290  IOThunderboltXDomainService::~IOThunderboltXDomainService()
+off 0x038  0x1852f0  IOThunderboltXDomainService::getMetaClass() const
+off 0x060  <import> <flat-namespace>/__ZN9IOService8DispatchE5IORPC
+off 0x0b0  0x185e5c  IOThunderboltXDomainService::free()
+off 0x138  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPKcPK15IORegistryPlanej
+off 0x140  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSStringPK15IORegistryPlanej
+off 0x148  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSSymbolPK15IORegistryPlanej
+off 0x150  <import> <flat-namespace>/__ZNK15IORegistryEntry15copyParentEntryEPK15IORegistryPlane
+off 0x158  <import> <flat-namespace>/__ZNK15IORegistryEntry14copyChildEntryEPK15IORegistryPlane
+off 0x160  <import> <flat-namespace>/__ZN15IORegistryEntry17runPropertyActionEPFiP8OSObjectPvS2_S2_S2_ES1_S2_S2_S2_S2_
+off 0x268  <import> <flat-namespace>/__ZN9IOService4initEP12OSDictionary
+off 0x270  <import> <flat-namespace>/__ZN15IORegistryEntry16setPropertyTableEP12OSDictionary
+off 0x278  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPK8OSSymbolP8OSObject
+off 0x280  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPK8OSStringP8OSObject
+off 0x288  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcP8OSObject
+off 0x290  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcS1_
+off 0x298  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcb
+off 0x2a0  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcyj
+off 0x2a8  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcPvj
+off 0x2b0  <import> <flat-namespace>/__ZN15IORegistryEntry14removePropertyEPK8OSSymbol
+off 0x2b8  <import> <flat-namespace>/__ZN15IORegistryEntry14removePropertyEPK8OSString
+off 0x2c0  <import> <flat-namespace>/__ZN15IORegistryEntry14removePropertyEPKc
+off 0x2c8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSSymbol
+off 0x2d0  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSString
+off 0x2d8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPKc
+off 0x2e0  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSSymbolPK15IORegistryPlanej
+off 0x2e8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSStringPK15IORegistryPlanej
+off 0x2f0  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPKcPK15IORegistryPlanej
+off 0x2f8  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSSymbol
+off 0x300  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSString
+off 0x308  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPKc
+off 0x310  <import> <flat-namespace>/__ZNK15IORegistryEntry24dictionaryWithPropertiesEv
+off 0x318  <import> <flat-namespace>/__ZNK9IOService19serializePropertiesEP11OSSerialize
+off 0x320  <import> <flat-namespace>/__ZN15IORegistryEntry13setPropertiesEP8OSObject
+off 0x328  <import> <flat-namespace>/__ZNK15IORegistryEntry17getParentIteratorEPK15IORegistryPlane
+off 0x330  <import> <flat-namespace>/__ZNK15IORegistryEntry14applyToParentsEPFvPS_PvES1_PK15IORegistryPlane
+off 0x338  <import> <flat-namespace>/__ZNK15IORegistryEntry14getParentEntryEPK15IORegistryPlane
+off 0x340  <import> <flat-namespace>/__ZNK15IORegistryEntry16getChildIteratorEPK15IORegistryPlane
+off 0x348  <import> <flat-namespace>/__ZNK15IORegistryEntry15applyToChildrenEPFvPS_PvES1_PK15IORegistryPlane
+off 0x350  <import> <flat-namespace>/__ZNK15IORegistryEntry13getChildEntryEPK15IORegistryPlane
+off 0x358  <import> <flat-namespace>/__ZNK15IORegistryEntry7isChildEPS_PK15IORegistryPlaneb
+off 0x360  <import> <flat-namespace>/__ZNK15IORegistryEntry8isParentEPS_PK15IORegistryPlaneb
+off 0x368  <import> <flat-namespace>/__ZNK15IORegistryEntry7inPlaneEPK15IORegistryPlane
+off 0x370  <import> <flat-namespace>/__ZNK15IORegistryEntry8getDepthEPK15IORegistryPlane
+off 0x378  <import> <flat-namespace>/__ZN15IORegistryEntry14attachToParentEPS_PK15IORegistryPlane
+off 0x380  <import> <flat-namespace>/__ZN15IORegistryEntry16detachFromParentEPS_PK15IORegistryPlane
+off 0x388  <import> <flat-namespace>/__ZN15IORegistryEntry13attachToChildEPS_PK15IORegistryPlane
+off 0x390  <import> <flat-namespace>/__ZN15IORegistryEntry15detachFromChildEPS_PK15IORegistryPlane
+off 0x398  <import> <flat-namespace>/__ZN15IORegistryEntry11detachAboveEPK15IORegistryPlane
+off 0x3a0  <import> <flat-namespace>/__ZN15IORegistryEntry9detachAllEPK15IORegistryPlane
+off 0x3a8  <import> <flat-namespace>/__ZNK15IORegistryEntry7getNameEPK15IORegistryPlane
+off 0x3b0  <import> <flat-namespace>/__ZNK15IORegistryEntry8copyNameEPK15IORegistryPlane
+off 0x3b8  <import> <flat-namespace>/__ZNK15IORegistryEntry12compareNamesEP8OSObjectPP8OSString
+off 0x3c0  <import> <flat-namespace>/__ZNK15IORegistryEntry11compareNameEP8OSStringPS1_
+off 0x3c8  <import> <flat-namespace>/__ZN15IORegistryEntry7setNameEPK8OSSymbolPK15IORegistryPlane
+off 0x3d0  <import> <flat-namespace>/__ZN15IORegistryEntry7setNameEPKcPK15IORegistryPlane
+off 0x3d8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getLocationEPK15IORegistryPlane
+off 0x3e0  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyLocationEPK15IORegistryPlane
+off 0x3e8  <import> <flat-namespace>/__ZN15IORegistryEntry11setLocationEPK8OSSymbolPK15IORegistryPlane
+off 0x3f0  <import> <flat-namespace>/__ZN15IORegistryEntry11setLocationEPKcPK15IORegistryPlane
+off 0x3f8  <import> <flat-namespace>/__ZNK15IORegistryEntry7getPathEPcPiPK15IORegistryPlane
+off 0x400  <import> <flat-namespace>/__ZNK15IORegistryEntry16getPathComponentEPcPiPK15IORegistryPlane
+off 0x408  <import> <flat-namespace>/__ZN15IORegistryEntry13childFromPathEPKcPK15IORegistryPlanePcPi
+off 0x410  <import> <flat-namespace>/__ZN9IOService4initEP15IORegistryEntryPK15IORegistryPlane
+off 0x418  <import> <flat-namespace>/__ZN9IOService16requestTerminateEPS_j
+off 0x420  <import> <flat-namespace>/__ZN9IOService13willTerminateEPS_j
+off 0x428  <import> <flat-namespace>/__ZN9IOService12didTerminateEPS_jPb
+off 0x430  <import> <flat-namespace>/__ZN9IOService15nextIdleTimeoutEyyj
+off 0x438  <import> <flat-namespace>/__ZN9IOService18systemWillShutdownEj
+off 0x440  <import> <flat-namespace>/__ZN9IOService22copyClientWithCategoryEPK8OSSymbol
+off 0x448  <import> <flat-namespace>/__ZN9IOService15configureReportEP19IOReportChannelListjPvS2_
+off 0x450  <import> <flat-namespace>/__ZN9IOService12updateReportEP19IOReportChannelListjPvS2_
+off 0x5d8  <import> <flat-namespace>/__ZNK9IOService8getStateEv
+off 0x5e0  <import> <flat-namespace>/__ZN9IOService15registerServiceEj
+off 0x5e8  <import> <flat-namespace>/__ZN9IOService5probeEPS_Pi
+off 0x5f0  <import> <flat-namespace>/__ZN9IOService5startEPS_
+off 0x5f8  <import> <flat-namespace>/__ZN9IOService4stopEPS_
+off 0x600  <import> <flat-namespace>/__ZN9IOService4openEPS_jPv
+off 0x608  <import> <flat-namespace>/__ZN9IOService5closeEPS_j
+off 0x610  <import> <flat-namespace>/__ZNK9IOService6isOpenEPKS_
+off 0x618  <import> <flat-namespace>/__ZN9IOService10handleOpenEPS_jPv
+off 0x620  <import> <flat-namespace>/__ZN9IOService11handleCloseEPS_j
+off 0x628  <import> <flat-namespace>/__ZNK9IOService12handleIsOpenEPKS_
+off 0x630  0x1873ec  IOThunderboltXDomainService::terminate(unsigned int)
+off 0x638  0x185968  IOThunderboltXDomainService::finalize(unsigned int)
+######## __ZTV17IOThunderboltPort
+vtable for IOThunderboltPort @ 0x282380
+off 0x000  0x11dd80  IOThunderboltPort::~IOThunderboltPort()
+off 0x008  0x11deec  IOThunderboltPort::~IOThunderboltPort()
+off 0x038  0x11df4c  IOThunderboltPort::getMetaClass() const
+off 0x060  <import> <flat-namespace>/__ZN9IOService8DispatchE5IORPC
+off 0x0b0  0x11e5e0  IOThunderboltPort::free()
+off 0x138  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPKcPK15IORegistryPlanej
+off 0x140  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSStringPK15IORegistryPlanej
+off 0x148  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSSymbolPK15IORegistryPlanej
+off 0x150  <import> <flat-namespace>/__ZNK15IORegistryEntry15copyParentEntryEPK15IORegistryPlane
+off 0x158  <import> <flat-namespace>/__ZNK15IORegistryEntry14copyChildEntryEPK15IORegistryPlane
+off 0x160  <import> <flat-namespace>/__ZN15IORegistryEntry17runPropertyActionEPFiP8OSObjectPvS2_S2_S2_ES1_S2_S2_S2_S2_
+off 0x268  <import> <flat-namespace>/__ZN9IOService4initEP12OSDictionary
+off 0x270  <import> <flat-namespace>/__ZN15IORegistryEntry16setPropertyTableEP12OSDictionary
+off 0x278  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPK8OSSymbolP8OSObject
+off 0x280  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPK8OSStringP8OSObject
+off 0x288  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcP8OSObject
+off 0x290  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcS1_
+off 0x298  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcb
+off 0x2a0  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcyj
+off 0x2a8  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcPvj
+off 0x2b0  <import> <flat-namespace>/__ZN15IORegistryEntry14removePropertyEPK8OSSymbol
+off 0x2b8  <import> <flat-namespace>/__ZN15IORegistryEntry14removePropertyEPK8OSString
+off 0x2c0  <import> <flat-namespace>/__ZN15IORegistryEntry14removePropertyEPKc
+off 0x2c8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSSymbol
+off 0x2d0  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSString
+off 0x2d8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPKc
+off 0x2e0  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSSymbolPK15IORegistryPlanej
+off 0x2e8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSStringPK15IORegistryPlanej
+off 0x2f0  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPKcPK15IORegistryPlanej
+off 0x2f8  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSSymbol
+off 0x300  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSString
+off 0x308  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPKc
+off 0x310  <import> <flat-namespace>/__ZNK15IORegistryEntry24dictionaryWithPropertiesEv
+off 0x318  <import> <flat-namespace>/__ZNK9IOService19serializePropertiesEP11OSSerialize
+off 0x320  <import> <flat-namespace>/__ZN15IORegistryEntry13setPropertiesEP8OSObject
+off 0x328  <import> <flat-namespace>/__ZNK15IORegistryEntry17getParentIteratorEPK15IORegistryPlane
+off 0x330  <import> <flat-namespace>/__ZNK15IORegistryEntry14applyToParentsEPFvPS_PvES1_PK15IORegistryPlane
+off 0x338  <import> <flat-namespace>/__ZNK15IORegistryEntry14getParentEntryEPK15IORegistryPlane
+off 0x340  <import> <flat-namespace>/__ZNK15IORegistryEntry16getChildIteratorEPK15IORegistryPlane
+off 0x348  <import> <flat-namespace>/__ZNK15IORegistryEntry15applyToChildrenEPFvPS_PvES1_PK15IORegistryPlane
+off 0x350  <import> <flat-namespace>/__ZNK15IORegistryEntry13getChildEntryEPK15IORegistryPlane
+off 0x358  <import> <flat-namespace>/__ZNK15IORegistryEntry7isChildEPS_PK15IORegistryPlaneb
+off 0x360  <import> <flat-namespace>/__ZNK15IORegistryEntry8isParentEPS_PK15IORegistryPlaneb
+off 0x368  <import> <flat-namespace>/__ZNK15IORegistryEntry7inPlaneEPK15IORegistryPlane
+off 0x370  <import> <flat-namespace>/__ZNK15IORegistryEntry8getDepthEPK15IORegistryPlane
+off 0x378  <import> <flat-namespace>/__ZN15IORegistryEntry14attachToParentEPS_PK15IORegistryPlane
+off 0x380  <import> <flat-namespace>/__ZN15IORegistryEntry16detachFromParentEPS_PK15IORegistryPlane
+off 0x388  <import> <flat-namespace>/__ZN15IORegistryEntry13attachToChildEPS_PK15IORegistryPlane
+off 0x390  <import> <flat-namespace>/__ZN15IORegistryEntry15detachFromChildEPS_PK15IORegistryPlane
+off 0x398  <import> <flat-namespace>/__ZN15IORegistryEntry11detachAboveEPK15IORegistryPlane
+off 0x3a0  <import> <flat-namespace>/__ZN15IORegistryEntry9detachAllEPK15IORegistryPlane
+off 0x3a8  <import> <flat-namespace>/__ZNK15IORegistryEntry7getNameEPK15IORegistryPlane
+off 0x3b0  <import> <flat-namespace>/__ZNK15IORegistryEntry8copyNameEPK15IORegistryPlane
+off 0x3b8  <import> <flat-namespace>/__ZNK15IORegistryEntry12compareNamesEP8OSObjectPP8OSString
+off 0x3c0  <import> <flat-namespace>/__ZNK15IORegistryEntry11compareNameEP8OSStringPS1_
+off 0x3c8  <import> <flat-namespace>/__ZN15IORegistryEntry7setNameEPK8OSSymbolPK15IORegistryPlane
+off 0x3d0  <import> <flat-namespace>/__ZN15IORegistryEntry7setNameEPKcPK15IORegistryPlane
+off 0x3d8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getLocationEPK15IORegistryPlane
+off 0x3e0  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyLocationEPK15IORegistryPlane
+off 0x3e8  <import> <flat-namespace>/__ZN15IORegistryEntry11setLocationEPK8OSSymbolPK15IORegistryPlane
+off 0x3f0  <import> <flat-namespace>/__ZN15IORegistryEntry11setLocationEPKcPK15IORegistryPlane
+off 0x3f8  <import> <flat-namespace>/__ZNK15IORegistryEntry7getPathEPcPiPK15IORegistryPlane
+off 0x400  <import> <flat-namespace>/__ZNK15IORegistryEntry16getPathComponentEPcPiPK15IORegistryPlane
+off 0x408  <import> <flat-namespace>/__ZN15IORegistryEntry13childFromPathEPKcPK15IORegistryPlanePcPi
+off 0x410  <import> <flat-namespace>/__ZN9IOService4initEP15IORegistryEntryPK15IORegistryPlane
+off 0x418  <import> <flat-namespace>/__ZN9IOService16requestTerminateEPS_j
+off 0x420  <import> <flat-namespace>/__ZN9IOService13willTerminateEPS_j
+off 0x428  <import> <flat-namespace>/__ZN9IOService12didTerminateEPS_jPb
+off 0x430  <import> <flat-namespace>/__ZN9IOService15nextIdleTimeoutEyyj
+off 0x438  <import> <flat-namespace>/__ZN9IOService18systemWillShutdownEj
+off 0x440  <import> <flat-namespace>/__ZN9IOService22copyClientWithCategoryEPK8OSSymbol
+off 0x448  <import> <flat-namespace>/__ZN9IOService15configureReportEP19IOReportChannelListjPvS2_
+off 0x450  <import> <flat-namespace>/__ZN9IOService12updateReportEP19IOReportChannelListjPvS2_
+off 0x5d8  <import> <flat-namespace>/__ZNK9IOService8getStateEv
+off 0x5e0  <import> <flat-namespace>/__ZN9IOService15registerServiceEj
+off 0x5e8  <import> <flat-namespace>/__ZN9IOService5probeEPS_Pi
+off 0x5f0  <import> <flat-namespace>/__ZN9IOService5startEPS_
+off 0x5f8  <import> <flat-namespace>/__ZN9IOService4stopEPS_
+off 0x600  <import> <flat-namespace>/__ZN9IOService4openEPS_jPv
+off 0x608  <import> <flat-namespace>/__ZN9IOService5closeEPS_j
+off 0x610  <import> <flat-namespace>/__ZNK9IOService6isOpenEPKS_
+off 0x618  <import> <flat-namespace>/__ZN9IOService10handleOpenEPS_jPv
+off 0x620  <import> <flat-namespace>/__ZN9IOService11handleCloseEPS_j
+off 0x628  <import> <flat-namespace>/__ZNK9IOService12handleIsOpenEPKS_
+off 0x630  <import> <flat-namespace>/__ZN9IOService9terminateEj
+off 0x638  0x11e3bc  IOThunderboltPort::finalize(unsigned int)
+######## __ZTV23IOThunderboltController
+vtable for IOThunderboltController @ 0x2708f8
+off 0x000  0x885e4  IOThunderboltController::~IOThunderboltController()
+off 0x008  0x88890  IOThunderboltController::~IOThunderboltController()
+off 0x038  0x888f0  IOThunderboltController::getMetaClass() const
+off 0x060  <import> <flat-namespace>/__ZN9IOService8DispatchE5IORPC
+off 0x0b0  0x8af88  IOThunderboltController::free()
+off 0x138  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPKcPK15IORegistryPlanej
+off 0x140  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSStringPK15IORegistryPlanej
+off 0x148  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSSymbolPK15IORegistryPlanej
+off 0x150  <import> <flat-namespace>/__ZNK15IORegistryEntry15copyParentEntryEPK15IORegistryPlane
+off 0x158  <import> <flat-namespace>/__ZNK15IORegistryEntry14copyChildEntryEPK15IORegistryPlane
+off 0x160  <import> <flat-namespace>/__ZN15IORegistryEntry17runPropertyActionEPFiP8OSObjectPvS2_S2_S2_ES1_S2_S2_S2_S2_
+off 0x268  <import> <flat-namespace>/__ZN9IOService4initEP12OSDictionary
+off 0x270  <import> <flat-namespace>/__ZN15IORegistryEntry16setPropertyTableEP12OSDictionary
+off 0x278  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPK8OSSymbolP8OSObject
+off 0x280  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPK8OSStringP8OSObject
+off 0x288  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcP8OSObject
+off 0x290  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcS1_
+off 0x298  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcb
+off 0x2a0  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcyj
+off 0x2a8  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcPvj
+off 0x2b0  <import> <flat-namespace>/__ZN15IORegistryEntry14removePropertyEPK8OSSymbol
+off 0x2b8  <import> <flat-namespace>/__ZN15IORegistryEntry14removePropertyEPK8OSString
+off 0x2c0  <import> <flat-namespace>/__ZN15IORegistryEntry14removePropertyEPKc
+off 0x2c8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSSymbol
+off 0x2d0  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSString
+off 0x2d8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPKc
+off 0x2e0  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSSymbolPK15IORegistryPlanej
+off 0x2e8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSStringPK15IORegistryPlanej
+off 0x2f0  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPKcPK15IORegistryPlanej
+off 0x2f8  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSSymbol
+off 0x300  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSString
+off 0x308  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPKc
+off 0x310  <import> <flat-namespace>/__ZNK15IORegistryEntry24dictionaryWithPropertiesEv
+off 0x318  <import> <flat-namespace>/__ZNK9IOService19serializePropertiesEP11OSSerialize
+off 0x320  <import> <flat-namespace>/__ZN15IORegistryEntry13setPropertiesEP8OSObject
+off 0x328  <import> <flat-namespace>/__ZNK15IORegistryEntry17getParentIteratorEPK15IORegistryPlane
+off 0x330  <import> <flat-namespace>/__ZNK15IORegistryEntry14applyToParentsEPFvPS_PvES1_PK15IORegistryPlane
+off 0x338  <import> <flat-namespace>/__ZNK15IORegistryEntry14getParentEntryEPK15IORegistryPlane
+off 0x340  <import> <flat-namespace>/__ZNK15IORegistryEntry16getChildIteratorEPK15IORegistryPlane
+off 0x348  <import> <flat-namespace>/__ZNK15IORegistryEntry15applyToChildrenEPFvPS_PvES1_PK15IORegistryPlane
+off 0x350  <import> <flat-namespace>/__ZNK15IORegistryEntry13getChildEntryEPK15IORegistryPlane
+off 0x358  <import> <flat-namespace>/__ZNK15IORegistryEntry7isChildEPS_PK15IORegistryPlaneb
+off 0x360  <import> <flat-namespace>/__ZNK15IORegistryEntry8isParentEPS_PK15IORegistryPlaneb
+off 0x368  <import> <flat-namespace>/__ZNK15IORegistryEntry7inPlaneEPK15IORegistryPlane
+off 0x370  <import> <flat-namespace>/__ZNK15IORegistryEntry8getDepthEPK15IORegistryPlane
+off 0x378  <import> <flat-namespace>/__ZN15IORegistryEntry14attachToParentEPS_PK15IORegistryPlane
+off 0x380  <import> <flat-namespace>/__ZN15IORegistryEntry16detachFromParentEPS_PK15IORegistryPlane
+off 0x388  <import> <flat-namespace>/__ZN15IORegistryEntry13attachToChildEPS_PK15IORegistryPlane
+off 0x390  <import> <flat-namespace>/__ZN15IORegistryEntry15detachFromChildEPS_PK15IORegistryPlane
+off 0x398  <import> <flat-namespace>/__ZN15IORegistryEntry11detachAboveEPK15IORegistryPlane
+off 0x3a0  <import> <flat-namespace>/__ZN15IORegistryEntry9detachAllEPK15IORegistryPlane
+off 0x3a8  <import> <flat-namespace>/__ZNK15IORegistryEntry7getNameEPK15IORegistryPlane
+off 0x3b0  <import> <flat-namespace>/__ZNK15IORegistryEntry8copyNameEPK15IORegistryPlane
+off 0x3b8  <import> <flat-namespace>/__ZNK15IORegistryEntry12compareNamesEP8OSObjectPP8OSString
+off 0x3c0  <import> <flat-namespace>/__ZNK15IORegistryEntry11compareNameEP8OSStringPS1_
+off 0x3c8  <import> <flat-namespace>/__ZN15IORegistryEntry7setNameEPK8OSSymbolPK15IORegistryPlane
+off 0x3d0  <import> <flat-namespace>/__ZN15IORegistryEntry7setNameEPKcPK15IORegistryPlane
+off 0x3d8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getLocationEPK15IORegistryPlane
+off 0x3e0  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyLocationEPK15IORegistryPlane
+off 0x3e8  <import> <flat-namespace>/__ZN15IORegistryEntry11setLocationEPK8OSSymbolPK15IORegistryPlane
+off 0x3f0  <import> <flat-namespace>/__ZN15IORegistryEntry11setLocationEPKcPK15IORegistryPlane
+off 0x3f8  <import> <flat-namespace>/__ZNK15IORegistryEntry7getPathEPcPiPK15IORegistryPlane
+off 0x400  <import> <flat-namespace>/__ZNK15IORegistryEntry16getPathComponentEPcPiPK15IORegistryPlane
+off 0x408  <import> <flat-namespace>/__ZN15IORegistryEntry13childFromPathEPKcPK15IORegistryPlanePcPi
+off 0x410  <import> <flat-namespace>/__ZN9IOService4initEP15IORegistryEntryPK15IORegistryPlane
+off 0x418  <import> <flat-namespace>/__ZN9IOService16requestTerminateEPS_j
+off 0x420  <import> <flat-namespace>/__ZN9IOService13willTerminateEPS_j
+off 0x428  <import> <flat-namespace>/__ZN9IOService12didTerminateEPS_jPb
+off 0x430  <import> <flat-namespace>/__ZN9IOService15nextIdleTimeoutEyyj
+off 0x438  0x94028  IOThunderboltController::systemWillShutdown(unsigned int)
+off 0x440  <import> <flat-namespace>/__ZN9IOService22copyClientWithCategoryEPK8OSSymbol
+off 0x448  <import> <flat-namespace>/__ZN9IOService15configureReportEP19IOReportChannelListjPvS2_
+off 0x450  <import> <flat-namespace>/__ZN9IOService12updateReportEP19IOReportChannelListjPvS2_
+off 0x5d8  <import> <flat-namespace>/__ZNK9IOService8getStateEv
+off 0x5e0  <import> <flat-namespace>/__ZN9IOService15registerServiceEj
+off 0x5e8  <import> <flat-namespace>/__ZN9IOService5probeEPS_Pi
+off 0x5f0  0x88ba0  IOThunderboltController::start(IOService*)
+off 0x5f8  <import> <flat-namespace>/__ZN9IOService4stopEPS_
+off 0x600  <import> <flat-namespace>/__ZN9IOService4openEPS_jPv
+off 0x608  <import> <flat-namespace>/__ZN9IOService5closeEPS_j
+off 0x610  <import> <flat-namespace>/__ZNK9IOService6isOpenEPKS_
+off 0x618  <import> <flat-namespace>/__ZN9IOService10handleOpenEPS_jPv
+off 0x620  <import> <flat-namespace>/__ZN9IOService11handleCloseEPS_j
+off 0x628  <import> <flat-namespace>/__ZNK9IOService12handleIsOpenEPKS_
+off 0x630  <import> <flat-namespace>/__ZN9IOService9terminateEj
+off 0x638  0x8a854  IOThunderboltController::finalize(unsigned int)
+######## __ZTV25IOThunderboltXDomainLink
+not found
+######## __ZTV28IOThunderboltReceiveQueue
+not found
+######## __ZTV29IOThunderboltTransmitQueue
+not found
+######## __ZTV30IOThunderboltProtocolListener
+not found
+######## __ZTV18IOThunderboltCommand
+not found
+######## __ZTV25IOThunderboltReceiveCommand
+not found
+######## __ZTV26IOThunderboltTransmitCommand
+not found
+######## __ZTV41IOThunderboltConfigXDomainResponseCommand
+vtable for IOThunderboltConfigXDomainResponseCommand @ 0x290fc8
+off 0x000  0x19ef24  IOThunderboltConfigXDomainResponseCommand::~IOThunderboltConfigXDomainResponseCommand()
+off 0x008  0x19efa0  IOThunderboltConfigXDomainResponseCommand::~IOThunderboltConfigXDomainResponseCommand()
+off 0x028  0xac4dc  IOThunderboltCommand::release() const
+off 0x038  0x19f000  IOThunderboltConfigXDomainResponseCommand::getMetaClass() const
+off 0x060  <import> <flat-namespace>/__ZN8OSObject8DispatchE5IORPC
+off 0x0a8  <import> <flat-namespace>/__ZN9IOCommand4initEv
+off 0x0b0  0x19f644  IOThunderboltConfigXDomainResponseCommand::free()
+off 0x138  0x19f4c8  IOThunderboltConfigXDomainResponseCommand::initWithController(IOThunderboltController*)
+off 0x1c0  0xd7ca8  IOThunderboltConfigCommand::setInProgress(bool)
+off 0x1c8  0x19f94c  IOThunderboltConfigXDomainResponseCommand::prepareForExecution(IOThunderboltTransmitCommand*)
+off 0x1d0  0x19fc4c  IOThunderboltConfigXDomainResponseCommand::processRequestComplete(IOThunderboltTransmitCommand*)
+off 0x1d8  0xe0de4  IOThunderboltConfigXDomainCommand::processResponse(IOThunderboltReceiveCommand*)
+off 0x1e0  0x19ff1c  IOThunderboltConfigXDomainResponseCommand::complete(int)
+off 0x1e8  0xd92b8  IOThunderboltConfigCommand::getConfigQueue()
+off 0x1f0  0xd7c94  IOThunderboltConfigCommand::createResources()
+off 0x1f8  0xd7ca0  IOThunderboltConfigCommand::destroyResources()
+off 0x200  0xd7d00  IOThunderboltConfigCommand::setCompletion(IOThunderboltConfigCommand::Completion)
+off 0x208  0xd7d90  IOThunderboltConfigCommand::getCompletion()
+off 0x210  0xd7da8  IOThunderboltConfigCommand::setRouteString(unsigned long long)
+off 0x218  0xd7e2c  IOThunderboltConfigCommand::getRouteString()
+off 0x220  0xd7cf0  IOThunderboltConfigCommand::isInProgress()
+off 0x228  0xd92c4  IOThunderboltConfigCommand::submit()
+off 0x230  0xd935c  IOThunderboltConfigCommand::submitSynchronous()
+off 0x238  0xd7e38  IOThunderboltConfigCommand::getTimeout()
+off 0x240  0xd7e44  IOThunderboltConfigCommand::setTimeout(unsigned long long)
+off 0x248  0xd9448  IOThunderboltConfigCommand::getRetries()
+off 0x250  0xd9454  IOThunderboltConfigCommand::setRetries(unsigned char)
+off 0x258  0xd94d8  IOThunderboltConfigCommand::getRemainingRetries()
+off 0x260  0xd94e4  IOThunderboltConfigCommand::setRemainingRetries(unsigned char)
+off 0x468  0x19f7d0  IOThunderboltConfigXDomainResponseCommand::setLength(unsigned int)
+off 0x470  0x19f860  IOThunderboltConfigXDomainResponseCommand::getLength()
+off 0x478  0x19f86c  IOThunderboltConfigXDomainResponseCommand::setDataDescriptor(IOMemoryDescriptor*)
+off 0x480  0x19f940  IOThunderboltConfigXDomainResponseCommand::getDataDescriptor()
+off 0x588  (no fixup)
+off 0x590  (no fixup)
+off 0x598  (no fixup)
+off 0x5a0  0x19ee28  IOThunderboltConfigXDomainResponseCommand::MetaClass::~MetaClass()
+off 0x5a8  0x1a008c  IOThunderboltConfigXDomainResponseCommand::MetaClass::~MetaClass()
+off 0x5b0  <import> <flat-namespace>/__ZNK11OSMetaClass7releaseEi
+off 0x5b8  <import> <flat-namespace>/__ZNK11OSMetaClass14getRetainCountEv
+off 0x5c0  <import> <flat-namespace>/__ZNK11OSMetaClass6retainEv
+off 0x5c8  <import> <flat-namespace>/__ZNK11OSMetaClass7releaseEv
+off 0x5d0  <import> <flat-namespace>/__ZNK11OSMetaClass9serializeEP11OSSerialize
+off 0x5d8  <import> <flat-namespace>/__ZNK11OSMetaClass12getMetaClassEv
+off 0x5e8  <import> <flat-namespace>/__ZNK11OSMetaClass12taggedRetainEPKv
+off 0x5f0  <import> <flat-namespace>/__ZNK11OSMetaClass13taggedReleaseEPKv
+off 0x5f8  <import> <flat-namespace>/__ZNK11OSMetaClass13taggedReleaseEPKvi
+off 0x600  <import> <flat-namespace>/__ZN15OSMetaClassBase8DispatchE5IORPC
+######## __ZTV24IOThunderboltXDomainPath
+vtable for IOThunderboltXDomainPath @ 0x29baa8
+off 0x000  0x1d6db0  IOThunderboltXDomainPath::~IOThunderboltXDomainPath()
+off 0x008  0x1d6ecc  IOThunderboltXDomainPath::~IOThunderboltXDomainPath()
+off 0x038  0x1d6f2c  IOThunderboltXDomainPath::getMetaClass() const
+off 0x060  <import> <flat-namespace>/__ZN8OSObject8DispatchE5IORPC
+off 0x0b0  0x1d79cc  IOThunderboltXDomainPath::free()
+off 0x138  0x1ec944  IOThunderboltAbstractPath::initWithController(IOThunderboltController*)
+off 0x140  0x1ec9cc  IOThunderboltAbstractPath::setInitialCredits(unsigned int)
+off 0x148  0x1eca0c  IOThunderboltAbstractPath::getInitialCredits()
+off 0x150  0x1ecbe0  IOThunderboltAbstractPath::setPriority(unsigned int)
+off 0x158  0x1ecc20  IOThunderboltAbstractPath::getPriority()
+off 0x160  0x1ecc2c  IOThunderboltAbstractPath::setWeight(unsigned int)
+off 0x168  0x1ecc6c  IOThunderboltAbstractPath::getWeight()
+off 0x170  0x1ecc78  IOThunderboltAbstractPath::setDropPacketEnable(unsigned int)
+off 0x178  0x1eccb8  IOThunderboltAbstractPath::getDropPacketEnable()
+off 0x180  0x1eccc4  IOThunderboltAbstractPath::setCounterEnable(unsigned int)
+off 0x188  0x1ecd04  IOThunderboltAbstractPath::getCounterEnable()
+off 0x190  0x1ecd10  IOThunderboltAbstractPath::setIngressFlowControlEnable(unsigned int)
+off 0x198  0x1ecd50  IOThunderboltAbstractPath::getIngressFlowControlEnable()
+off 0x1a0  0x1ecd5c  IOThunderboltAbstractPath::setEgressFlowControlEnable(unsigned int)
+off 0x1a8  0x1ecd9c  IOThunderboltAbstractPath::getEgressFlowControlEnable()
+off 0x1b0  0x1ecda8  IOThunderboltAbstractPath::setIngressSharedBufferingEnable(unsigned int)
+off 0x1b8  0x1ecde8  IOThunderboltAbstractPath::getIngressSharedBufferingEnable()
+off 0x1c0  0x1ecdf4  IOThunderboltAbstractPath::setEgressSharedBufferingEnable(unsigned int)
+off 0x1c8  0x1ece34  IOThunderboltAbstractPath::getEgressSharedBufferingEnable()
+off 0x1d0  0x1eca64  IOThunderboltAbstractPath::setNonFlowControlledCredits(unsigned int)
+off 0x1d8  0x1ecaa4  IOThunderboltAbstractPath::getNonFlowControlledCredits()
+off 0x1e0  0x1ece40  IOThunderboltAbstractPath::setFlags(unsigned int)
+off 0x1e8  0x1ece80  IOThunderboltAbstractPath::getFlags()
+off 0x1f0  0x1d89b4  IOThunderboltXDomainPath::setPathType(unsigned int)
+off 0x1f8  0x1d89c4  IOThunderboltXDomainPath::getPathType()
+off 0x200  0x1d9ad4  IOThunderboltXDomainPath::getState()
+off 0x208  0x1eced8  IOThunderboltAbstractPath::setActivationCompletion(IOThunderboltAbstractPath::Completion)
+off 0x210  0x1ecf24  IOThunderboltAbstractPath::getActivationCompletion()
+off 0x218  0x1ecf3c  IOThunderboltAbstractPath::setDeactivationCompletion(IOThunderboltAbstractPath::Completion)
+off 0x220  0x1ecf88  IOThunderboltAbstractPath::getDeactivationCompletion()
+off 0x228  0x1ecfa0  IOThunderboltAbstractPath::setUpdateCompletion(IOThunderboltAbstractPath::Completion)
+off 0x230  0x1ecfec  IOThunderboltAbstractPath::getUpdateCompletion()
+off 0x238  0x1d9fc4  IOThunderboltXDomainPath::activate()
+off 0x240  0x1e0010  IOThunderboltXDomainPath::deactivate(bool)
+off 0x248  0x1ed030  IOThunderboltAbstractPath::update()
+off 0x250  0x1ed01c  IOThunderboltAbstractPath::getUUID(unsigned char*)
+off 0x258  0x1ed004  IOThunderboltAbstractPath::setRefcon(void*)
+off 0x260  0x1ed010  IOThunderboltAbstractPath::getRefcon()
+off 0x268  0x1e1dec  IOThunderboltXDomainPath::sendActivationCompletion(int)
+off 0x270  0x1e1f34  IOThunderboltXDomainPath::sendDeactivationCompletion(int)
+off 0x278  0x1e207c  IOThunderboltXDomainPath::sendUpdateCompletion(int)
+off 0x380  0x1defb8  IOThunderboltXDomainPath::startCompleteActivation(int)
+off 0x388  0x1df790  IOThunderboltXDomainPath::finishCompleteActivation(int)
+off 0x390  0x1e1754  IOThunderboltXDomainPath::completeDeactivation(int)
+off 0x398  0x1d7b7c  IOThunderboltXDomainPath::createResources()
+off 0x3a0  0x1d862c  IOThunderboltXDomainPath::destroyResources()
+off 0x3a8  0x1ddc84  IOThunderboltXDomainPath::processPathSetupRequestResponse(void*, int, IOThunderboltConfigCommand*)
+off 0x3b0  0x1de200  IOThunderboltXDomainPath::processPathSetupCompleteResponse(void*, int, IOThunderboltConfigCommand*)
+off 0x3b8  0x1de7dc  IOThunderboltXDomainPath::processPathSetupCompleteResponseSuccess()
+off 0x3c0  0x1e1434  IOThunderboltXDomainPath::processRemoteDeactivateComplete(void*, int, IOThunderboltConfigCommand*)
+off 0x3c8  0x1dba0c  IOThunderboltXDomainPath::processLocalActivateComplete(void*, int, IOThunderboltAbstractPath*)
+off 0x3d0  0x1e0c88  IOThunderboltXDomainPath::processLocalDeactivateComplete(void*, int, IOThunderboltAbstractPath*)
+off 0x3d8  0x1d9b18  IOThunderboltXDomainPath::localMask(unsigned int)
+off 0x3e0  0x1d9bd4  IOThunderboltXDomainPath::remoteMask(unsigned int)
+off 0x3e8  0x1da220  IOThunderboltXDomainPath::startActivation()
+off 0x3f0  0x1da2d4  IOThunderboltXDomainPath::startLocalPathActivation()
+off 0x3f8  0x1dbe90  IOThunderboltXDomainPath::startRemotePathActivation()
+off 0x400  0x1db958  IOThunderboltXDomainPath::startLocalPathActivationConfigure()
+off 0x408  0x1dceb8  IOThunderboltXDomainPath::startRemotePathActivationConfigure()
+off 0x410  0x1df6dc  IOThunderboltXDomainPath::startCompleteActivationConfigure()
+off 0x418  0x1dcf6c  IOThunderboltXDomainPath::dispatchResubmitXDomainPathSetupRequestCommand()
+off 0x420  0x1dd2f8  IOThunderboltXDomainPath::dispatchResubmitXDomainPathSetupCompleteCommand()
+off 0x428  0x1dd684  IOThunderboltXDomainPath::resubmitXDomainPathSetupRequestCommand(IOThunderboltDispatchContext*)
+off 0x430  0x1dd984  IOThunderboltXDomainPath::resubmitXDomainPathSetupCompleteCommand(IOThunderboltDispatchContext*)
+off 0x438  0x1dbddc  IOThunderboltXDomainPath::processLocalActivateCompleteSuccess()
+off 0x440  0x1def04  IOThunderboltXDomainPath::processRemoteActivateCompleteSuccess()
+off 0x448  0x1dfa74  IOThunderboltXDomainPath::cleanUpOnActivationError(int)
+off 0x450  0x1e0338  IOThunderboltXDomainPath::startDeactivation()
+off 0x458  0x1e08a8  IOThunderboltXDomainPath::startDeactivationInternal()
+off 0x460  0x1e095c  IOThunderboltXDomainPath::startLocalPathDeactivation()
+off 0x468  0x1e104c  IOThunderboltXDomainPath::startRemotePathDeactivation()
+off 0x470  0x1e0bdc  IOThunderboltXDomainPath::startLocalPathDeactivationFailed(int)
+off 0x478  0x1e0fa0  IOThunderboltXDomainPath::startRemotePathDeactivationFailed(int)
+off 0x480  0x1e0eec  IOThunderboltXDomainPath::processLocalDeactivateCompleteSuccess()
+off 0x488  0x1e16a0  IOThunderboltXDomainPath::processRemoteDeactivateCompleteSuccess()
+off 0x490  0x1e1b38  IOThunderboltXDomainPath::printStatusInfo(char const*, int)
+off 0x498  0x1d7360  IOThunderboltXDomainPath::initWithXDomainLink(IOThunderboltXDomainLink*)
+off 0x4a0  0x1d9c90  IOThunderboltXDomainPath::activateSynchronous()
+off 0x4a8  0x1dfcd8  IOThunderboltXDomainPath::deactivateSynchronous()
+off 0x4b0  0x1d899c  IOThunderboltXDomainPath::getIsReceivePath()
+off 0x4b8  0x1d89a8  IOThunderboltXDomainPath::getIsTransmitPath()
+off 0x4c0  0x1d89d0  IOThunderboltXDomainPath::setRemoteRequest(bool)
+off 0x4c8  0x1d8a54  IOThunderboltXDomainPath::getRemoteRequest()
+off 0x4d0  0x1d8a64  IOThunderboltXDomainPath::setRemotePortNumber(unsigned int)
+off 0x4d8  0x1d8ae8  IOThunderboltXDomainPath::getRemotePortNumber()
+off 0x4e0  0x1d8af4  IOThunderboltXDomainPath::setRemoteRouteString(unsigned long long)
+off 0x4e8  0x1d8b78  IOThunderboltXDomainPath::getRemoteRouteString()
+off 0x4f0  0x1d8b84  IOThunderboltXDomainPath::setDestinationUUID(unsigned char*)
+off 0x4f8  0x1d8d54  IOThunderboltXDomainPath::getDestinationUUID(unsigned char*)
+off 0x500  0x1d8d68  IOThunderboltXDomainPath::setDestinationServiceUUID(unsigned char*)
+off 0x508  0x1d8f38  IOThunderboltXDomainPath::getDestinationServiceUUID(unsigned char*)
+off 0x510  0x1d8f4c  IOThunderboltXDomainPath::getXDomainLink()
+off 0x518  0x1d8f58  IOThunderboltXDomainPath::setLocalPort(IOThunderboltPort*)
+off 0x520  0x1d8fdc  IOThunderboltXDomainPath::getLocalPort()
+off 0x528  0x1d8fe8  IOThunderboltXDomainPath::setXDomainMaxHopID(unsigned short)
+off 0x530  0x1d906c  IOThunderboltXDomainPath::getXDomainMaxHopID()
+off 0x538  0x1d9078  IOThunderboltXDomainPath::setSourceUUID(unsigned char*)
+off 0x540  0x1d9260  IOThunderboltXDomainPath::getSourceUUID(unsigned char*)
+off 0x548  0x1d9274  IOThunderboltXDomainPath::setSourceServiceUUID(unsigned char*)
+off 0x550  0x1d945c  IOThunderboltXDomainPath::getSourceServiceUUID(unsigned char*)
+off 0x558  0x1d9470  IOThunderboltXDomainPath::setRemotePathUUID(unsigned char*)
+off 0x560  0x1d9658  IOThunderboltXDomainPath::getRemotePathUUID(unsigned char*)
+off 0x568  0x1d966c  IOThunderboltXDomainPath::setAllocatedLocalHopID(unsigned short)
+off 0x570  0x1d96f0  IOThunderboltXDomainPath::getAllocatedLocalHopID()
+off 0x578  0x1d96fc  IOThunderboltXDomainPath::setAllocatedXDomainHopID(unsigned short)
+off 0x580  0x1d9780  IOThunderboltXDomainPath::getAllocatedXDomainHopID()
+off 0x588  0x1d978c  IOThunderboltXDomainPath::setAllocatedRemoteHopID(unsigned short)
+off 0x590  0x1d9810  IOThunderboltXDomainPath::getAllocatedRemoteHopID()
+off 0x598  0x1d981c  IOThunderboltXDomainPath::setMaxFrameSize(unsigned int)
+off 0x5a0  0x1d98a0  IOThunderboltXDomainPath::getMaxFrameSize()
+off 0x5a8  0x1d98ac  IOThunderboltXDomainPath::setServicePathID(unsigned int)
+off 0x5b0  0x1d99b4  IOThunderboltXDomainPath::getServicePathID()
+off 0x5b8  0x1d99c0  IOThunderboltXDomainPath::setServicePathIDPair(unsigned int)
+off 0x5c0  0x1d9ac8  IOThunderboltXDomainPath::getServicePathIDPair()
+off 0x5c8  0x1e21c4  IOThunderboltXDomainPath::getDescription()
+off 0x5d0  0x1de924  IOThunderboltXDomainPath::processRemoteActivateComplete(IOThunderboltReceiveCommand*)
+######## __ZTV31IOThunderboltXDomainReceivePath
+vtable for IOThunderboltXDomainReceivePath @ 0x2a4980
+off 0x000  0x221610  IOThunderboltXDomainReceivePath::~IOThunderboltXDomainReceivePath()
+off 0x008  0x221618  IOThunderboltXDomainReceivePath::~IOThunderboltXDomainReceivePath()
+off 0x038  0x221678  IOThunderboltXDomainReceivePath::getMetaClass() const
+off 0x060  <import> <flat-namespace>/__ZN8OSObject8DispatchE5IORPC
+off 0x0b0  0x1d79cc  IOThunderboltXDomainPath::free()
+off 0x138  0x1ec944  IOThunderboltAbstractPath::initWithController(IOThunderboltController*)
+off 0x140  0x1ec9cc  IOThunderboltAbstractPath::setInitialCredits(unsigned int)
+off 0x148  0x1eca0c  IOThunderboltAbstractPath::getInitialCredits()
+off 0x150  0x1ecbe0  IOThunderboltAbstractPath::setPriority(unsigned int)
+off 0x158  0x1ecc20  IOThunderboltAbstractPath::getPriority()
+off 0x160  0x1ecc2c  IOThunderboltAbstractPath::setWeight(unsigned int)
+off 0x168  0x1ecc6c  IOThunderboltAbstractPath::getWeight()
+off 0x170  0x1ecc78  IOThunderboltAbstractPath::setDropPacketEnable(unsigned int)
+off 0x178  0x1eccb8  IOThunderboltAbstractPath::getDropPacketEnable()
+off 0x180  0x1eccc4  IOThunderboltAbstractPath::setCounterEnable(unsigned int)
+off 0x188  0x1ecd04  IOThunderboltAbstractPath::getCounterEnable()
+off 0x190  0x1ecd10  IOThunderboltAbstractPath::setIngressFlowControlEnable(unsigned int)
+off 0x198  0x1ecd50  IOThunderboltAbstractPath::getIngressFlowControlEnable()
+off 0x1a0  0x1ecd5c  IOThunderboltAbstractPath::setEgressFlowControlEnable(unsigned int)
+off 0x1a8  0x1ecd9c  IOThunderboltAbstractPath::getEgressFlowControlEnable()
+off 0x1b0  0x1ecda8  IOThunderboltAbstractPath::setIngressSharedBufferingEnable(unsigned int)
+off 0x1b8  0x1ecde8  IOThunderboltAbstractPath::getIngressSharedBufferingEnable()
+off 0x1c0  0x1ecdf4  IOThunderboltAbstractPath::setEgressSharedBufferingEnable(unsigned int)
+off 0x1c8  0x1ece34  IOThunderboltAbstractPath::getEgressSharedBufferingEnable()
+off 0x1d0  0x1eca64  IOThunderboltAbstractPath::setNonFlowControlledCredits(unsigned int)
+off 0x1d8  0x1ecaa4  IOThunderboltAbstractPath::getNonFlowControlledCredits()
+off 0x1e0  0x1ece40  IOThunderboltAbstractPath::setFlags(unsigned int)
+off 0x1e8  0x1ece80  IOThunderboltAbstractPath::getFlags()
+off 0x1f0  0x1d89b4  IOThunderboltXDomainPath::setPathType(unsigned int)
+off 0x1f8  0x1d89c4  IOThunderboltXDomainPath::getPathType()
+off 0x200  0x1d9ad4  IOThunderboltXDomainPath::getState()
+off 0x208  0x1eced8  IOThunderboltAbstractPath::setActivationCompletion(IOThunderboltAbstractPath::Completion)
+off 0x210  0x1ecf24  IOThunderboltAbstractPath::getActivationCompletion()
+off 0x218  0x1ecf3c  IOThunderboltAbstractPath::setDeactivationCompletion(IOThunderboltAbstractPath::Completion)
+off 0x220  0x1ecf88  IOThunderboltAbstractPath::getDeactivationCompletion()
+off 0x228  0x1ecfa0  IOThunderboltAbstractPath::setUpdateCompletion(IOThunderboltAbstractPath::Completion)
+off 0x230  0x1ecfec  IOThunderboltAbstractPath::getUpdateCompletion()
+off 0x238  0x1d9fc4  IOThunderboltXDomainPath::activate()
+off 0x240  0x1e0010  IOThunderboltXDomainPath::deactivate(bool)
+off 0x248  0x1ed030  IOThunderboltAbstractPath::update()
+off 0x250  0x1ed01c  IOThunderboltAbstractPath::getUUID(unsigned char*)
+off 0x258  0x1ed004  IOThunderboltAbstractPath::setRefcon(void*)
+off 0x260  0x1ed010  IOThunderboltAbstractPath::getRefcon()
+off 0x268  0x1e1dec  IOThunderboltXDomainPath::sendActivationCompletion(int)
+off 0x270  0x1e1f34  IOThunderboltXDomainPath::sendDeactivationCompletion(int)
+off 0x278  0x1e207c  IOThunderboltXDomainPath::sendUpdateCompletion(int)
+off 0x380  0x1defb8  IOThunderboltXDomainPath::startCompleteActivation(int)
+off 0x388  0x1df790  IOThunderboltXDomainPath::finishCompleteActivation(int)
+off 0x390  0x1e1754  IOThunderboltXDomainPath::completeDeactivation(int)
+off 0x398  0x1d7b7c  IOThunderboltXDomainPath::createResources()
+off 0x3a0  0x1d862c  IOThunderboltXDomainPath::destroyResources()
+off 0x3a8  0x1ddc84  IOThunderboltXDomainPath::processPathSetupRequestResponse(void*, int, IOThunderboltConfigCommand*)
+off 0x3b0  0x1de200  IOThunderboltXDomainPath::processPathSetupCompleteResponse(void*, int, IOThunderboltConfigCommand*)
+off 0x3b8  0x1de7dc  IOThunderboltXDomainPath::processPathSetupCompleteResponseSuccess()
+off 0x3c0  0x1e1434  IOThunderboltXDomainPath::processRemoteDeactivateComplete(void*, int, IOThunderboltConfigCommand*)
+off 0x3c8  0x1dba0c  IOThunderboltXDomainPath::processLocalActivateComplete(void*, int, IOThunderboltAbstractPath*)
+off 0x3d0  0x1e0c88  IOThunderboltXDomainPath::processLocalDeactivateComplete(void*, int, IOThunderboltAbstractPath*)
+off 0x3d8  0x221b4c  IOThunderboltXDomainReceivePath::localMask(unsigned int)
+off 0x3e0  0x221b5c  IOThunderboltXDomainReceivePath::remoteMask(unsigned int)
+off 0x3e8  0x221b6c  IOThunderboltXDomainReceivePath::startActivation()
+off 0x3f0  0x1da2d4  IOThunderboltXDomainPath::startLocalPathActivation()
+off 0x3f8  0x1dbe90  IOThunderboltXDomainPath::startRemotePathActivation()
+off 0x400  0x221cb0  IOThunderboltXDomainReceivePath::startLocalPathActivationConfigure()
+off 0x408  0x222c68  IOThunderboltXDomainReceivePath::startRemotePathActivationConfigure()
+off 0x410  0x222cf8  IOThunderboltXDomainReceivePath::startCompleteActivationConfigure()
+off 0x418  0x1dcf6c  IOThunderboltXDomainPath::dispatchResubmitXDomainPathSetupRequestCommand()
+off 0x420  0x1dd2f8  IOThunderboltXDomainPath::dispatchResubmitXDomainPathSetupCompleteCommand()
+off 0x428  0x1dd684  IOThunderboltXDomainPath::resubmitXDomainPathSetupRequestCommand(IOThunderboltDispatchContext*)
+off 0x430  0x1dd984  IOThunderboltXDomainPath::resubmitXDomainPathSetupCompleteCommand(IOThunderboltDispatchContext*)
+off 0x438  0x222aec  IOThunderboltXDomainReceivePath::processLocalActivateCompleteSuccess()
+off 0x440  0x222d44  IOThunderboltXDomainReceivePath::processRemoteActivateCompleteSuccess()
+off 0x448  0x1dfa74  IOThunderboltXDomainPath::cleanUpOnActivationError(int)
+off 0x450  0x1e0338  IOThunderboltXDomainPath::startDeactivation()
+off 0x458  0x222fbc  IOThunderboltXDomainReceivePath::startDeactivationInternal()
+off 0x460  0x1e095c  IOThunderboltXDomainPath::startLocalPathDeactivation()
+off 0x468  0x1e104c  IOThunderboltXDomainPath::startRemotePathDeactivation()
+off 0x470  0x223100  IOThunderboltXDomainReceivePath::startLocalPathDeactivationFailed(int)
+off 0x478  0x22348c  IOThunderboltXDomainReceivePath::startRemotePathDeactivationFailed(int)
+off 0x480  0x22324c  IOThunderboltXDomainReceivePath::processLocalDeactivateCompleteSuccess()
+off 0x488  0x2235e0  IOThunderboltXDomainReceivePath::processRemoteDeactivateCompleteSuccess()
+off 0x490  0x1e1b38  IOThunderboltXDomainPath::printStatusInfo(char const*, int)
+off 0x498  0x1d7360  IOThunderboltXDomainPath::initWithXDomainLink(IOThunderboltXDomainLink*)
+off 0x4a0  0x1d9c90  IOThunderboltXDomainPath::activateSynchronous()
+off 0x4a8  0x1dfcd8  IOThunderboltXDomainPath::deactivateSynchronous()
+off 0x4b0  0x221b34  IOThunderboltXDomainReceivePath::getIsReceivePath()
+off 0x4b8  0x221b40  IOThunderboltXDomainReceivePath::getIsTransmitPath()
+off 0x4c0  0x1d89d0  IOThunderboltXDomainPath::setRemoteRequest(bool)
+off 0x4c8  0x1d8a54  IOThunderboltXDomainPath::getRemoteRequest()
+off 0x4d0  0x1d8a64  IOThunderboltXDomainPath::setRemotePortNumber(unsigned int)
+off 0x4d8  0x1d8ae8  IOThunderboltXDomainPath::getRemotePortNumber()
+off 0x4e0  0x1d8af4  IOThunderboltXDomainPath::setRemoteRouteString(unsigned long long)
+off 0x4e8  0x1d8b78  IOThunderboltXDomainPath::getRemoteRouteString()
+off 0x4f0  0x1d8b84  IOThunderboltXDomainPath::setDestinationUUID(unsigned char*)
+off 0x4f8  0x1d8d54  IOThunderboltXDomainPath::getDestinationUUID(unsigned char*)
+off 0x500  0x1d8d68  IOThunderboltXDomainPath::setDestinationServiceUUID(unsigned char*)
+off 0x508  0x1d8f38  IOThunderboltXDomainPath::getDestinationServiceUUID(unsigned char*)
+off 0x510  0x1d8f4c  IOThunderboltXDomainPath::getXDomainLink()
+off 0x518  0x1d8f58  IOThunderboltXDomainPath::setLocalPort(IOThunderboltPort*)
+off 0x520  0x1d8fdc  IOThunderboltXDomainPath::getLocalPort()
+off 0x528  0x1d8fe8  IOThunderboltXDomainPath::setXDomainMaxHopID(unsigned short)
+off 0x530  0x1d906c  IOThunderboltXDomainPath::getXDomainMaxHopID()
+off 0x538  0x1d9078  IOThunderboltXDomainPath::setSourceUUID(unsigned char*)
+off 0x540  0x1d9260  IOThunderboltXDomainPath::getSourceUUID(unsigned char*)
+off 0x548  0x1d9274  IOThunderboltXDomainPath::setSourceServiceUUID(unsigned char*)
+off 0x550  0x1d945c  IOThunderboltXDomainPath::getSourceServiceUUID(unsigned char*)
+off 0x558  0x1d9470  IOThunderboltXDomainPath::setRemotePathUUID(unsigned char*)
+off 0x560  0x1d9658  IOThunderboltXDomainPath::getRemotePathUUID(unsigned char*)
+off 0x568  0x1d966c  IOThunderboltXDomainPath::setAllocatedLocalHopID(unsigned short)
+off 0x570  0x1d96f0  IOThunderboltXDomainPath::getAllocatedLocalHopID()
+off 0x578  0x1d96fc  IOThunderboltXDomainPath::setAllocatedXDomainHopID(unsigned short)
+off 0x580  0x1d9780  IOThunderboltXDomainPath::getAllocatedXDomainHopID()
+off 0x588  0x1d978c  IOThunderboltXDomainPath::setAllocatedRemoteHopID(unsigned short)
+off 0x590  0x1d9810  IOThunderboltXDomainPath::getAllocatedRemoteHopID()
+off 0x598  0x1d981c  IOThunderboltXDomainPath::setMaxFrameSize(unsigned int)
+off 0x5a0  0x1d98a0  IOThunderboltXDomainPath::getMaxFrameSize()
+off 0x5a8  0x1d98ac  IOThunderboltXDomainPath::setServicePathID(unsigned int)
+off 0x5b0  0x1d99b4  IOThunderboltXDomainPath::getServicePathID()
+off 0x5b8  0x1d99c0  IOThunderboltXDomainPath::setServicePathIDPair(unsigned int)
+off 0x5c0  0x1d9ac8  IOThunderboltXDomainPath::getServicePathIDPair()
+off 0x5c8  0x1e21c4  IOThunderboltXDomainPath::getDescription()
+off 0x5d0  0x1de924  IOThunderboltXDomainPath::processRemoteActivateComplete(IOThunderboltReceiveCommand*)
+######## __ZTV32IOThunderboltXDomainTransmitPath
+vtable for IOThunderboltXDomainTransmitPath @ 0x299c78
+off 0x000  0x1d23b4  IOThunderboltXDomainTransmitPath::~IOThunderboltXDomainTransmitPath()
+off 0x008  0x1d23bc  IOThunderboltXDomainTransmitPath::~IOThunderboltXDomainTransmitPath()
+off 0x038  0x1d241c  IOThunderboltXDomainTransmitPath::getMetaClass() const
+off 0x060  <import> <flat-namespace>/__ZN8OSObject8DispatchE5IORPC
+off 0x0b0  0x1d79cc  IOThunderboltXDomainPath::free()
+off 0x138  0x1ec944  IOThunderboltAbstractPath::initWithController(IOThunderboltController*)
+off 0x140  0x1ec9cc  IOThunderboltAbstractPath::setInitialCredits(unsigned int)
+off 0x148  0x1eca0c  IOThunderboltAbstractPath::getInitialCredits()
+off 0x150  0x1ecbe0  IOThunderboltAbstractPath::setPriority(unsigned int)
+off 0x158  0x1ecc20  IOThunderboltAbstractPath::getPriority()
+off 0x160  0x1ecc2c  IOThunderboltAbstractPath::setWeight(unsigned int)
+off 0x168  0x1ecc6c  IOThunderboltAbstractPath::getWeight()
+off 0x170  0x1ecc78  IOThunderboltAbstractPath::setDropPacketEnable(unsigned int)
+off 0x178  0x1eccb8  IOThunderboltAbstractPath::getDropPacketEnable()
+off 0x180  0x1eccc4  IOThunderboltAbstractPath::setCounterEnable(unsigned int)
+off 0x188  0x1ecd04  IOThunderboltAbstractPath::getCounterEnable()
+off 0x190  0x1ecd10  IOThunderboltAbstractPath::setIngressFlowControlEnable(unsigned int)
+off 0x198  0x1ecd50  IOThunderboltAbstractPath::getIngressFlowControlEnable()
+off 0x1a0  0x1ecd5c  IOThunderboltAbstractPath::setEgressFlowControlEnable(unsigned int)
+off 0x1a8  0x1ecd9c  IOThunderboltAbstractPath::getEgressFlowControlEnable()
+off 0x1b0  0x1ecda8  IOThunderboltAbstractPath::setIngressSharedBufferingEnable(unsigned int)
+off 0x1b8  0x1ecde8  IOThunderboltAbstractPath::getIngressSharedBufferingEnable()
+off 0x1c0  0x1ecdf4  IOThunderboltAbstractPath::setEgressSharedBufferingEnable(unsigned int)
+off 0x1c8  0x1ece34  IOThunderboltAbstractPath::getEgressSharedBufferingEnable()
+off 0x1d0  0x1eca64  IOThunderboltAbstractPath::setNonFlowControlledCredits(unsigned int)
+off 0x1d8  0x1ecaa4  IOThunderboltAbstractPath::getNonFlowControlledCredits()
+off 0x1e0  0x1ece40  IOThunderboltAbstractPath::setFlags(unsigned int)
+off 0x1e8  0x1ece80  IOThunderboltAbstractPath::getFlags()
+off 0x1f0  0x1d89b4  IOThunderboltXDomainPath::setPathType(unsigned int)
+off 0x1f8  0x1d89c4  IOThunderboltXDomainPath::getPathType()
+off 0x200  0x1d9ad4  IOThunderboltXDomainPath::getState()
+off 0x208  0x1eced8  IOThunderboltAbstractPath::setActivationCompletion(IOThunderboltAbstractPath::Completion)
+off 0x210  0x1ecf24  IOThunderboltAbstractPath::getActivationCompletion()
+off 0x218  0x1ecf3c  IOThunderboltAbstractPath::setDeactivationCompletion(IOThunderboltAbstractPath::Completion)
+off 0x220  0x1ecf88  IOThunderboltAbstractPath::getDeactivationCompletion()
+off 0x228  0x1ecfa0  IOThunderboltAbstractPath::setUpdateCompletion(IOThunderboltAbstractPath::Completion)
+off 0x230  0x1ecfec  IOThunderboltAbstractPath::getUpdateCompletion()
+off 0x238  0x1d9fc4  IOThunderboltXDomainPath::activate()
+off 0x240  0x1e0010  IOThunderboltXDomainPath::deactivate(bool)
+off 0x248  0x1ed030  IOThunderboltAbstractPath::update()
+off 0x250  0x1ed01c  IOThunderboltAbstractPath::getUUID(unsigned char*)
+off 0x258  0x1ed004  IOThunderboltAbstractPath::setRefcon(void*)
+off 0x260  0x1ed010  IOThunderboltAbstractPath::getRefcon()
+off 0x268  0x1e1dec  IOThunderboltXDomainPath::sendActivationCompletion(int)
+off 0x270  0x1e1f34  IOThunderboltXDomainPath::sendDeactivationCompletion(int)
+off 0x278  0x1e207c  IOThunderboltXDomainPath::sendUpdateCompletion(int)
+off 0x380  0x1defb8  IOThunderboltXDomainPath::startCompleteActivation(int)
+off 0x388  0x1df790  IOThunderboltXDomainPath::finishCompleteActivation(int)
+off 0x390  0x1e1754  IOThunderboltXDomainPath::completeDeactivation(int)
+off 0x398  0x1d7b7c  IOThunderboltXDomainPath::createResources()
+off 0x3a0  0x1d862c  IOThunderboltXDomainPath::destroyResources()
+off 0x3a8  0x1ddc84  IOThunderboltXDomainPath::processPathSetupRequestResponse(void*, int, IOThunderboltConfigCommand*)
+off 0x3b0  0x1de200  IOThunderboltXDomainPath::processPathSetupCompleteResponse(void*, int, IOThunderboltConfigCommand*)
+off 0x3b8  0x1de7dc  IOThunderboltXDomainPath::processPathSetupCompleteResponseSuccess()
+off 0x3c0  0x1e1434  IOThunderboltXDomainPath::processRemoteDeactivateComplete(void*, int, IOThunderboltConfigCommand*)
+off 0x3c8  0x1dba0c  IOThunderboltXDomainPath::processLocalActivateComplete(void*, int, IOThunderboltAbstractPath*)
+off 0x3d0  0x1e0c88  IOThunderboltXDomainPath::processLocalDeactivateComplete(void*, int, IOThunderboltAbstractPath*)
+off 0x3d8  0x1d28f0  IOThunderboltXDomainTransmitPath::localMask(unsigned int)
+off 0x3e0  0x1d2904  IOThunderboltXDomainTransmitPath::remoteMask(unsigned int)
+off 0x3e8  0x1d2914  IOThunderboltXDomainTransmitPath::startActivation()
+off 0x3f0  0x1da2d4  IOThunderboltXDomainPath::startLocalPathActivation()
+off 0x3f8  0x1dbe90  IOThunderboltXDomainPath::startRemotePathActivation()
+off 0x400  0x1d2a58  IOThunderboltXDomainTransmitPath::startLocalPathActivationConfigure()
+off 0x408  0x1d3b10  IOThunderboltXDomainTransmitPath::startRemotePathActivationConfigure()
+off 0x410  0x1d3dd0  IOThunderboltXDomainTransmitPath::startCompleteActivationConfigure()
+off 0x418  0x1dcf6c  IOThunderboltXDomainPath::dispatchResubmitXDomainPathSetupRequestCommand()
+off 0x420  0x1dd2f8  IOThunderboltXDomainPath::dispatchResubmitXDomainPathSetupCompleteCommand()
+off 0x428  0x1dd684  IOThunderboltXDomainPath::resubmitXDomainPathSetupRequestCommand(IOThunderboltDispatchContext*)
+off 0x430  0x1dd984  IOThunderboltXDomainPath::resubmitXDomainPathSetupCompleteCommand(IOThunderboltDispatchContext*)
+off 0x438  0x1d3898  IOThunderboltXDomainTransmitPath::processLocalActivateCompleteSuccess()
+off 0x440  0x1d3e60  IOThunderboltXDomainTransmitPath::processRemoteActivateCompleteSuccess()
+off 0x448  0x1dfa74  IOThunderboltXDomainPath::cleanUpOnActivationError(int)
+off 0x450  0x1e0338  IOThunderboltXDomainPath::startDeactivation()
+off 0x458  0x1d40d0  IOThunderboltXDomainTransmitPath::startDeactivationInternal()
+off 0x460  0x1e095c  IOThunderboltXDomainPath::startLocalPathDeactivation()
+off 0x468  0x1e104c  IOThunderboltXDomainPath::startRemotePathDeactivation()
+off 0x470  0x1d4310  IOThunderboltXDomainTransmitPath::startLocalPathDeactivationFailed(int)
+off 0x478  0x1d4494  IOThunderboltXDomainTransmitPath::startRemotePathDeactivationFailed(int)
+off 0x480  0x1d4348  IOThunderboltXDomainTransmitPath::processLocalDeactivateCompleteSuccess()
+off 0x488  0x1d45d8  IOThunderboltXDomainTransmitPath::processRemoteDeactivateCompleteSuccess()
+off 0x490  0x1e1b38  IOThunderboltXDomainPath::printStatusInfo(char const*, int)
+off 0x498  0x1d7360  IOThunderboltXDomainPath::initWithXDomainLink(IOThunderboltXDomainLink*)
+off 0x4a0  0x1d9c90  IOThunderboltXDomainPath::activateSynchronous()
+off 0x4a8  0x1dfcd8  IOThunderboltXDomainPath::deactivateSynchronous()
+off 0x4b0  0x1d28d8  IOThunderboltXDomainTransmitPath::getIsReceivePath()
+off 0x4b8  0x1d28e4  IOThunderboltXDomainTransmitPath::getIsTransmitPath()
+off 0x4c0  0x1d89d0  IOThunderboltXDomainPath::setRemoteRequest(bool)
+off 0x4c8  0x1d8a54  IOThunderboltXDomainPath::getRemoteRequest()
+off 0x4d0  0x1d8a64  IOThunderboltXDomainPath::setRemotePortNumber(unsigned int)
+off 0x4d8  0x1d8ae8  IOThunderboltXDomainPath::getRemotePortNumber()
+off 0x4e0  0x1d8af4  IOThunderboltXDomainPath::setRemoteRouteString(unsigned long long)
+off 0x4e8  0x1d8b78  IOThunderboltXDomainPath::getRemoteRouteString()
+off 0x4f0  0x1d8b84  IOThunderboltXDomainPath::setDestinationUUID(unsigned char*)
+off 0x4f8  0x1d8d54  IOThunderboltXDomainPath::getDestinationUUID(unsigned char*)
+off 0x500  0x1d8d68  IOThunderboltXDomainPath::setDestinationServiceUUID(unsigned char*)
+off 0x508  0x1d8f38  IOThunderboltXDomainPath::getDestinationServiceUUID(unsigned char*)
+off 0x510  0x1d8f4c  IOThunderboltXDomainPath::getXDomainLink()
+off 0x518  0x1d8f58  IOThunderboltXDomainPath::setLocalPort(IOThunderboltPort*)
+off 0x520  0x1d8fdc  IOThunderboltXDomainPath::getLocalPort()
+off 0x528  0x1d8fe8  IOThunderboltXDomainPath::setXDomainMaxHopID(unsigned short)
+off 0x530  0x1d906c  IOThunderboltXDomainPath::getXDomainMaxHopID()
+off 0x538  0x1d9078  IOThunderboltXDomainPath::setSourceUUID(unsigned char*)
+off 0x540  0x1d9260  IOThunderboltXDomainPath::getSourceUUID(unsigned char*)
+off 0x548  0x1d9274  IOThunderboltXDomainPath::setSourceServiceUUID(unsigned char*)
+off 0x550  0x1d945c  IOThunderboltXDomainPath::getSourceServiceUUID(unsigned char*)
+off 0x558  0x1d9470  IOThunderboltXDomainPath::setRemotePathUUID(unsigned char*)
+off 0x560  0x1d9658  IOThunderboltXDomainPath::getRemotePathUUID(unsigned char*)
+off 0x568  0x1d966c  IOThunderboltXDomainPath::setAllocatedLocalHopID(unsigned short)
+off 0x570  0x1d96f0  IOThunderboltXDomainPath::getAllocatedLocalHopID()
+off 0x578  0x1d96fc  IOThunderboltXDomainPath::setAllocatedXDomainHopID(unsigned short)
+off 0x580  0x1d9780  IOThunderboltXDomainPath::getAllocatedXDomainHopID()
+off 0x588  0x1d978c  IOThunderboltXDomainPath::setAllocatedRemoteHopID(unsigned short)
+off 0x590  0x1d9810  IOThunderboltXDomainPath::getAllocatedRemoteHopID()
+off 0x598  0x1d981c  IOThunderboltXDomainPath::setMaxFrameSize(unsigned int)
+off 0x5a0  0x1d98a0  IOThunderboltXDomainPath::getMaxFrameSize()
+off 0x5a8  0x1d98ac  IOThunderboltXDomainPath::setServicePathID(unsigned int)
+off 0x5b0  0x1d99b4  IOThunderboltXDomainPath::getServicePathID()
+off 0x5b8  0x1d99c0  IOThunderboltXDomainPath::setServicePathIDPair(unsigned int)
+off 0x5c0  0x1d9ac8  IOThunderboltXDomainPath::getServicePathIDPair()
+off 0x5c8  0x1e21c4  IOThunderboltXDomainPath::getDescription()
+off 0x5d0  0x1de924  IOThunderboltXDomainPath::processRemoteActivateComplete(IOThunderboltReceiveCommand*)
+######## __ZTV22IOThunderboltLocalNode
+vtable for IOThunderboltLocalNode @ 0x28cd40
+off 0x000  0x17aee8  IOThunderboltLocalNode::~IOThunderboltLocalNode()
+off 0x008  0x17b004  IOThunderboltLocalNode::~IOThunderboltLocalNode()
+off 0x038  0x17b064  IOThunderboltLocalNode::getMetaClass() const
+off 0x060  <import> <flat-namespace>/__ZN9IOService8DispatchE5IORPC
+off 0x0b0  0x17ba64  IOThunderboltLocalNode::free()
+off 0x138  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPKcPK15IORegistryPlanej
+off 0x140  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSStringPK15IORegistryPlanej
+off 0x148  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSSymbolPK15IORegistryPlanej
+off 0x150  <import> <flat-namespace>/__ZNK15IORegistryEntry15copyParentEntryEPK15IORegistryPlane
+off 0x158  <import> <flat-namespace>/__ZNK15IORegistryEntry14copyChildEntryEPK15IORegistryPlane
+off 0x160  <import> <flat-namespace>/__ZN15IORegistryEntry17runPropertyActionEPFiP8OSObjectPvS2_S2_S2_ES1_S2_S2_S2_S2_
+off 0x268  <import> <flat-namespace>/__ZN9IOService4initEP12OSDictionary
+off 0x270  <import> <flat-namespace>/__ZN15IORegistryEntry16setPropertyTableEP12OSDictionary
+off 0x278  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPK8OSSymbolP8OSObject
+off 0x280  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPK8OSStringP8OSObject
+off 0x288  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcP8OSObject
+off 0x290  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcS1_
+off 0x298  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcb
+off 0x2a0  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcyj
+off 0x2a8  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcPvj
+off 0x2b0  <import> <flat-namespace>/__ZN15IORegistryEntry14removePropertyEPK8OSSymbol
+off 0x2b8  <import> <flat-namespace>/__ZN15IORegistryEntry14removePropertyEPK8OSString
+off 0x2c0  <import> <flat-namespace>/__ZN15IORegistryEntry14removePropertyEPKc
+off 0x2c8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSSymbol
+off 0x2d0  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSString
+off 0x2d8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPKc
+off 0x2e0  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSSymbolPK15IORegistryPlanej
+off 0x2e8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPK8OSStringPK15IORegistryPlanej
+off 0x2f0  <import> <flat-namespace>/__ZNK15IORegistryEntry11getPropertyEPKcPK15IORegistryPlanej
+off 0x2f8  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSSymbol
+off 0x300  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSString
+off 0x308  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPKc
+off 0x310  <import> <flat-namespace>/__ZNK15IORegistryEntry24dictionaryWithPropertiesEv
+off 0x318  <import> <flat-namespace>/__ZNK9IOService19serializePropertiesEP11OSSerialize
+off 0x320  <import> <flat-namespace>/__ZN15IORegistryEntry13setPropertiesEP8OSObject
+off 0x328  <import> <flat-namespace>/__ZNK15IORegistryEntry17getParentIteratorEPK15IORegistryPlane
+off 0x330  <import> <flat-namespace>/__ZNK15IORegistryEntry14applyToParentsEPFvPS_PvES1_PK15IORegistryPlane
+off 0x338  <import> <flat-namespace>/__ZNK15IORegistryEntry14getParentEntryEPK15IORegistryPlane
+off 0x340  <import> <flat-namespace>/__ZNK15IORegistryEntry16getChildIteratorEPK15IORegistryPlane
+off 0x348  <import> <flat-namespace>/__ZNK15IORegistryEntry15applyToChildrenEPFvPS_PvES1_PK15IORegistryPlane
+off 0x350  <import> <flat-namespace>/__ZNK15IORegistryEntry13getChildEntryEPK15IORegistryPlane
+off 0x358  <import> <flat-namespace>/__ZNK15IORegistryEntry7isChildEPS_PK15IORegistryPlaneb
+off 0x360  <import> <flat-namespace>/__ZNK15IORegistryEntry8isParentEPS_PK15IORegistryPlaneb
+off 0x368  <import> <flat-namespace>/__ZNK15IORegistryEntry7inPlaneEPK15IORegistryPlane
+off 0x370  <import> <flat-namespace>/__ZNK15IORegistryEntry8getDepthEPK15IORegistryPlane
+off 0x378  <import> <flat-namespace>/__ZN15IORegistryEntry14attachToParentEPS_PK15IORegistryPlane
+off 0x380  <import> <flat-namespace>/__ZN15IORegistryEntry16detachFromParentEPS_PK15IORegistryPlane
+off 0x388  <import> <flat-namespace>/__ZN15IORegistryEntry13attachToChildEPS_PK15IORegistryPlane
+off 0x390  <import> <flat-namespace>/__ZN15IORegistryEntry15detachFromChildEPS_PK15IORegistryPlane
+off 0x398  <import> <flat-namespace>/__ZN15IORegistryEntry11detachAboveEPK15IORegistryPlane
+off 0x3a0  <import> <flat-namespace>/__ZN15IORegistryEntry9detachAllEPK15IORegistryPlane
+off 0x3a8  <import> <flat-namespace>/__ZNK15IORegistryEntry7getNameEPK15IORegistryPlane
+off 0x3b0  <import> <flat-namespace>/__ZNK15IORegistryEntry8copyNameEPK15IORegistryPlane
+off 0x3b8  <import> <flat-namespace>/__ZNK15IORegistryEntry12compareNamesEP8OSObjectPP8OSString
+off 0x3c0  <import> <flat-namespace>/__ZNK15IORegistryEntry11compareNameEP8OSStringPS1_
+off 0x3c8  <import> <flat-namespace>/__ZN15IORegistryEntry7setNameEPK8OSSymbolPK15IORegistryPlane
+off 0x3d0  <import> <flat-namespace>/__ZN15IORegistryEntry7setNameEPKcPK15IORegistryPlane
+off 0x3d8  <import> <flat-namespace>/__ZNK15IORegistryEntry11getLocationEPK15IORegistryPlane
+off 0x3e0  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyLocationEPK15IORegistryPlane
+off 0x3e8  <import> <flat-namespace>/__ZN15IORegistryEntry11setLocationEPK8OSSymbolPK15IORegistryPlane
+off 0x3f0  <import> <flat-namespace>/__ZN15IORegistryEntry11setLocationEPKcPK15IORegistryPlane
+off 0x3f8  <import> <flat-namespace>/__ZNK15IORegistryEntry7getPathEPcPiPK15IORegistryPlane
+off 0x400  <import> <flat-namespace>/__ZNK15IORegistryEntry16getPathComponentEPcPiPK15IORegistryPlane
+off 0x408  <import> <flat-namespace>/__ZN15IORegistryEntry13childFromPathEPKcPK15IORegistryPlanePcPi
+off 0x410  <import> <flat-namespace>/__ZN9IOService4initEP15IORegistryEntryPK15IORegistryPlane
+off 0x418  <import> <flat-namespace>/__ZN9IOService16requestTerminateEPS_j
+off 0x420  <import> <flat-namespace>/__ZN9IOService13willTerminateEPS_j
+off 0x428  <import> <flat-namespace>/__ZN9IOService12didTerminateEPS_jPb
+off 0x430  <import> <flat-namespace>/__ZN9IOService15nextIdleTimeoutEyyj
+off 0x438  <import> <flat-namespace>/__ZN9IOService18systemWillShutdownEj
+off 0x440  <import> <flat-namespace>/__ZN9IOService22copyClientWithCategoryEPK8OSSymbol
+off 0x448  <import> <flat-namespace>/__ZN9IOService15configureReportEP19IOReportChannelListjPvS2_
+off 0x450  <import> <flat-namespace>/__ZN9IOService12updateReportEP19IOReportChannelListjPvS2_
+off 0x5d8  <import> <flat-namespace>/__ZNK9IOService8getStateEv
+off 0x5e0  0x17b64c  IOThunderboltLocalNode::registerService(unsigned int)
+off 0x5e8  <import> <flat-namespace>/__ZN9IOService5probeEPS_Pi
+off 0x5f0  <import> <flat-namespace>/__ZN9IOService5startEPS_
+off 0x5f8  <import> <flat-namespace>/__ZN9IOService4stopEPS_
+off 0x600  <import> <flat-namespace>/__ZN9IOService4openEPS_jPv
+off 0x608  <import> <flat-namespace>/__ZN9IOService5closeEPS_j
+off 0x610  <import> <flat-namespace>/__ZNK9IOService6isOpenEPKS_
+off 0x618  <import> <flat-namespace>/__ZN9IOService10handleOpenEPS_jPv
+off 0x620  <import> <flat-namespace>/__ZN9IOService11handleCloseEPS_j
+off 0x628  <import> <flat-namespace>/__ZNK9IOService12handleIsOpenEPKS_
+off 0x630  <import> <flat-namespace>/__ZN9IOService9terminateEj
+off 0x638  0x17b89c  IOThunderboltLocalNode::finalize(unsigned int)
+######## __ZTV26IOThunderboltDispatchQueue
+vtable for IOThunderboltDispatchQueue @ 0x2ab5e0
+off 0x000  0x24a150  IOThunderboltDispatchQueue::~IOThunderboltDispatchQueue()
+off 0x008  0x24a1cc  IOThunderboltDispatchQueue::~IOThunderboltDispatchQueue()
+off 0x038  0x24a22c  IOThunderboltDispatchQueue::getMetaClass() const
+off 0x060  <import> <flat-namespace>/__ZN8OSObject8DispatchE5IORPC
+off 0x0b0  0x24a5c0  IOThunderboltDispatchQueue::free()
+off 0x138  0x24a514  IOThunderboltDispatchQueue::initWithGate(IOThunderboltCommandGate*)
+off 0x140  0x24a644  IOThunderboltDispatchQueue::getGate()
+off 0x148  0x24b0e4  IOThunderboltDispatchQueue::dequeueContext()
+off 0x150  0x24b16c  IOThunderboltDispatchQueue::enqueueContext(IOThunderboltDispatchContextAbstract*)
+off 0x158  0x24b4e0  IOThunderboltDispatchQueue::startDispatchThread()
+off 0x160  0x24b7dc  IOThunderboltDispatchQueue::dispatchThread()
+off 0x168  0x24be34  IOThunderboltDispatchQueue::threadCleanup()
+off 0x170  0x24a650  IOThunderboltDispatchQueue::lock()
+off 0x178  0x24a65c  IOThunderboltDispatchQueue::unlock()
+off 0x180  0x24b4d4  IOThunderboltDispatchQueue::runningThreadCount()
+off 0x188  0x24b1b4  IOThunderboltDispatchQueue::dispatchAsync(IOThunderboltDispatchContextAbstract*)
+off 0x190  0x24d26c  IOThunderboltDispatchQueue::dispatchBlockAsync(void () block_pointer)
+off 0x198  0x24a668  IOThunderboltDispatchQueue::setMaxConcurrentThreads(unsigned int)
+off 0x1a0  0x24a704  IOThunderboltDispatchQueue::getMaxConcurrentThreads()
+off 0x1a8  0x24a7b8  IOThunderboltDispatchQueue::start()
+off 0x1b0  0x24aad4  IOThunderboltDispatchQueue::stop()
+off 0x1b8  0x24ae4c  IOThunderboltDispatchQueue::getState()
+off 0x1c0  0x24c110  IOThunderboltDispatchQueue::dispatchWait()
+off 0x1c8  0x24c3d4  IOThunderboltDispatchQueue::dispatchWait(_IOLock*, bool)
+off 0x1d0  0x24c724  IOThunderboltDispatchQueue::dispatchWait(_IORecursiveLock*)
+off 0x1d8  0x24ca38  IOThunderboltDispatchQueue::dispatchWait(IOCommandGate*)
+off 0x1e0  0x24cdbc  IOThunderboltDispatchQueue::dispatchSync(IOThunderboltDispatchContextAbstract*)
+off 0x1e8  0x24ce48  IOThunderboltDispatchQueue::dispatchSync(IOThunderboltDispatchContextAbstract*, _IOLock*, bool)
+off 0x1f0  0x24ceec  IOThunderboltDispatchQueue::dispatchSync(IOThunderboltDispatchContextAbstract*, _IORecursiveLock*)
+off 0x1f8  0x24cf80  IOThunderboltDispatchQueue::dispatchSync(IOThunderboltDispatchContextAbstract*, IOCommandGate*)
+off 0x200  0x24d2f8  IOThunderboltDispatchQueue::dispatchBlockSync(void () block_pointer)
+off 0x208  0x24d384  IOThunderboltDispatchQueue::dispatchBlockSync(_IOLock*, bool, void () block_pointer)
+off 0x210  0x24d428  IOThunderboltDispatchQueue::dispatchBlockSync(_IORecursiveLock*, void () block_pointer)
+off 0x218  0x24d4c4  IOThunderboltDispatchQueue::dispatchBlockSync(IOCommandGate*, void () block_pointer)
+off 0x220  0x24ae58  IOThunderboltDispatchQueue::addDispatchCallback(IOThunderboltDispatchCallback*)
+off 0x228  0x24af80  IOThunderboltDispatchQueue::removeDispatchCallback(IOThunderboltDispatchCallback*)
+off 0x230  0x24a710  IOThunderboltDispatchQueue::setThreadKeepAliveTime(unsigned int)
+off 0x238  0x24a7ac  IOThunderboltDispatchQueue::getThreadKeepAliveTime()
+off 0x240  0x24b3fc  IOThunderboltDispatchQueue::dispatchAsyncAndStop(IOThunderboltDispatchContextAbstract*)
+off 0x248  0x24d560  IOThunderboltDispatchQueue::dispatchBlockAsyncAndStop(void () block_pointer)
+off 0x250  0x24b270  IOThunderboltDispatchQueue::dispatchAsyncInternal(IOThunderboltDispatchContextAbstract*)
+off 0x258  0x24ab88  IOThunderboltDispatchQueue::stopInternal()
+off 0x2a0  (no fixup)
+off 0x2a8  (no fixup)
+off 0x2b0  (no fixup)
+off 0x2b8  0x24a054  IOThunderboltDispatchQueue::MetaClass::~MetaClass()
+off 0x2c0  0x24d5ec  IOThunderboltDispatchQueue::MetaClass::~MetaClass()
+off 0x2c8  <import> <flat-namespace>/__ZNK11OSMetaClass7releaseEi
+off 0x2d0  <import> <flat-namespace>/__ZNK11OSMetaClass14getRetainCountEv
+off 0x2d8  <import> <flat-namespace>/__ZNK11OSMetaClass6retainEv
+off 0x2e0  <import> <flat-namespace>/__ZNK11OSMetaClass7releaseEv
+off 0x2e8  <import> <flat-namespace>/__ZNK11OSMetaClass9serializeEP11OSSerialize
+off 0x2f0  <import> <flat-namespace>/__ZNK11OSMetaClass12getMetaClassEv
+off 0x300  <import> <flat-namespace>/__ZNK11OSMetaClass12taggedRetainEPKv
+off 0x308  <import> <flat-namespace>/__ZNK11OSMetaClass13taggedReleaseEPKv
+off 0x310  <import> <flat-namespace>/__ZNK11OSMetaClass13taggedReleaseEPKvi
+off 0x318  <import> <flat-namespace>/__ZN15OSMetaClassBase8DispatchE5IORPC
+off 0x360  0x24a288  IOThunderboltDispatchQueue::MetaClass::alloc() const
+off 0x3a8  (no fixup)
+off 0x3b0  0x26e108  IOThunderboltConfigXDomainLinkChangeRequestCommand::gMetaClass
+off 0x3b8  0x26d1b0  IOThunderboltConfigCommand::gMetaClass
+off 0x3c0  (no fixup)
+off 0x3c8  (no fixup)
+off 0x3d0  0x24d724  IOThunderboltConfigXDomainLinkChangeRequestCommand::~IOThunderboltConfigXDomainLinkChangeRequestCommand()
+off 0x3d8  0x24d72c  IOThunderboltConfigXDomainLinkChangeRequestCommand::~IOThunderboltConfigXDomainLinkChangeRequestCommand()
+off 0x3f8  0xac4dc  IOThunderboltCommand::release() const
+off 0x408  0x24d78c  IOThunderboltConfigXDomainLinkChangeRequestCommand::getMetaClass() const
+off 0x430  <import> <flat-namespace>/__ZN8OSObject8DispatchE5IORPC
+off 0x478  <import> <flat-namespace>/__ZN9IOCommand4initEv
+off 0x480  0x24dbe8  IOThunderboltConfigXDomainLinkChangeRequestCommand::free()
+off 0x508  0x24da68  IOThunderboltConfigXDomainLinkChangeRequestCommand::initWithController(IOThunderboltController*)
+off 0x590  0xd7ca8  IOThunderboltConfigCommand::setInProgress(bool)
+off 0x598  0x24dde4  IOThunderboltConfigXDomainLinkChangeRequestCommand::prepareForExecution(IOThunderboltTransmitCommand*)
+off 0x5a0  0xd7ed4  IOThunderboltConfigCommand::processRequestComplete(IOThunderboltTransmitCommand*)
+off 0x5a8  0x24e0b8  IOThunderboltConfigXDomainLinkChangeRequestCommand::processResponse(IOThunderboltReceiveCommand*)
+off 0x5b0  0x24ebf8  IOThunderboltConfigXDomainLinkChangeRequestCommand::complete(int)
+off 0x5b8  0xd92b8  IOThunderboltConfigCommand::getConfigQueue()
+off 0x5c0  0xd7c94  IOThunderboltConfigCommand::createResources()
+off 0x5c8  0xd7ca0  IOThunderboltConfigCommand::destroyResources()
+off 0x5d0  0xd7d00  IOThunderboltConfigCommand::setCompletion(IOThunderboltConfigCommand::Completion)
+off 0x5d8  0xd7d90  IOThunderboltConfigCommand::getCompletion()
+off 0x5e0  0xd7da8  IOThunderboltConfigCommand::setRouteString(unsigned long long)
+off 0x5e8  0xd7e2c  IOThunderboltConfigCommand::getRouteString()
+off 0x5f0  0xd7cf0  IOThunderboltConfigCommand::isInProgress()
+off 0x5f8  0xd92c4  IOThunderboltConfigCommand::submit()
+off 0x600  0xd935c  IOThunderboltConfigCommand::submitSynchronous()
+off 0x608  0xd7e38  IOThunderboltConfigCommand::getTimeout()
+off 0x610  0xd7e44  IOThunderboltConfigCommand::setTimeout(unsigned long long)
+off 0x618  0xd9448  IOThunderboltConfigCommand::getRetries()
+off 0x620  0xd9454  IOThunderboltConfigCommand::setRetries(unsigned char)
+off 0x628  0xd94d8  IOThunderboltConfigCommand::getRemainingRetries()
+off 0x630  0xd94e4  IOThunderboltConfigCommand::setRemainingRetries(unsigned char)
+######## __ZTV24IOThunderboltCommandGate
+vtable for IOThunderboltCommandGate @ 0x278220
+off 0x000  0xb87d0  IOThunderboltCommandGate::~IOThunderboltCommandGate()
+off 0x008  0xb87d8  IOThunderboltCommandGate::~IOThunderboltCommandGate()
+off 0x038  0xb8838  IOThunderboltCommandGate::getMetaClass() const
+off 0x060  <import> <flat-namespace>/__ZN8OSObject8DispatchE5IORPC
+off 0x0b0  <import> <flat-namespace>/__ZN13IOCommandGate4freeEv
+off 0x138  <import> <flat-namespace>/__ZN13IOEventSource4initEP8OSObjectPFvS1_zE
+off 0x140  <import> <flat-namespace>/__ZN13IOEventSource12checkForWorkEv
+off 0x148  <import> <flat-namespace>/__ZN13IOCommandGate11setWorkLoopEP10IOWorkLoop
+off 0x150  <import> <flat-namespace>/__ZN13IOEventSource7setNextEPS_
+off 0x158  <import> <flat-namespace>/__ZNK13IOEventSource7getNextEv
+off 0x160  <import> <flat-namespace>/__ZN13IOEventSource9setActionEPFvP8OSObjectzE
+off 0x168  <import> <flat-namespace>/__ZNK13IOEventSource9getActionEv
+off 0x170  <import> <flat-namespace>/__ZN13IOCommandGate6enableEv
+off 0x178  <import> <flat-namespace>/__ZN13IOCommandGate7disableEv
+off 0x180  <import> <flat-namespace>/__ZNK13IOEventSource9isEnabledEv
+off 0x188  <import> <flat-namespace>/__ZNK13IOEventSource11getWorkLoopEv
+off 0x190  <import> <flat-namespace>/__ZNK13IOEventSource8onThreadEv
+off 0x1d8  <import> <flat-namespace>/__ZN13IOCommandGate4initEP8OSObjectPFiS1_PvS2_S2_S2_E
+off 0x1e0  <import> <flat-namespace>/__ZN13IOCommandGate10runCommandEPvS0_S0_S0_
+off 0x1e8  <import> <flat-namespace>/__ZN13IOCommandGate9runActionEPFiP8OSObjectPvS2_S2_S2_ES2_S2_S2_S2_
+off 0x1f0  <import> <flat-namespace>/__ZN13IOCommandGate14attemptCommandEPvS0_S0_S0_
+off 0x1f8  <import> <flat-namespace>/__ZN13IOCommandGate13attemptActionEPFiP8OSObjectPvS2_S2_S2_ES2_S2_S2_S2_
+off 0x200  <import> <flat-namespace>/__ZN13IOCommandGate12commandSleepEPvj
+off 0x208  <import> <flat-namespace>/__ZN13IOCommandGate13commandWakeupEPvb
+off 0x210  <import> <flat-namespace>/__ZN13IOCommandGate12commandSleepEPvyj
+off 0x258  (no fixup)
+off 0x260  (no fixup)
+off 0x268  (no fixup)
+off 0x270  0xb8750  IOThunderboltCommandGate::MetaClass::~MetaClass()
+off 0x278  0xb8a84  IOThunderboltCommandGate::MetaClass::~MetaClass()
+off 0x280  <import> <flat-namespace>/__ZNK11OSMetaClass7releaseEi
+off 0x288  <import> <flat-namespace>/__ZNK11OSMetaClass14getRetainCountEv
+off 0x290  <import> <flat-namespace>/__ZNK11OSMetaClass6retainEv
+off 0x298  <import> <flat-namespace>/__ZNK11OSMetaClass7releaseEv
+off 0x2a0  <import> <flat-namespace>/__ZNK11OSMetaClass9serializeEP11OSSerialize
+off 0x2a8  <import> <flat-namespace>/__ZNK11OSMetaClass12getMetaClassEv
+off 0x2b8  <import> <flat-namespace>/__ZNK11OSMetaClass12taggedRetainEPKv
+off 0x2c0  <import> <flat-namespace>/__ZNK11OSMetaClass13taggedReleaseEPKv
+off 0x2c8  <import> <flat-namespace>/__ZNK11OSMetaClass13taggedReleaseEPKvi
+off 0x2d0  <import> <flat-namespace>/__ZN15OSMetaClassBase8DispatchE5IORPC
+off 0x318  0xb8894  IOThunderboltCommandGate::MetaClass::alloc() const
+off 0x360  (no fixup)
+off 0x368  0x26cf80  IOThunderboltControllerType7::gMetaClass
+off 0x370  0x26e158  IOThunderboltControllerGenericACIO::gMetaClass
+off 0x378  (no fixup)
+off 0x380  (no fixup)
+off 0x388  0xb8bbc  IOThunderboltControllerType7::~IOThunderboltControllerType7()
+off 0x390  0xb8bc4  IOThunderboltControllerType7::~IOThunderboltControllerType7()
+off 0x3c0  0xb8c24  IOThunderboltControllerType7::getMetaClass() const
+off 0x3e8  <import> <flat-namespace>/__ZN9IOService8DispatchE5IORPC
+off 0x438  0x8af88  IOThunderboltController::free()
+off 0x4c0  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPKcPK15IORegistryPlanej
+off 0x4c8  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSStringPK15IORegistryPlanej
+off 0x4d0  <import> <flat-namespace>/__ZNK15IORegistryEntry12copyPropertyEPK8OSSymbolPK15IORegistryPlanej
+off 0x4d8  <import> <flat-namespace>/__ZNK15IORegistryEntry15copyParentEntryEPK15IORegistryPlane
+off 0x4e0  <import> <flat-namespace>/__ZNK15IORegistryEntry14copyChildEntryEPK15IORegistryPlane
+off 0x4e8  <import> <flat-namespace>/__ZN15IORegistryEntry17runPropertyActionEPFiP8OSObjectPvS2_S2_S2_ES1_S2_S2_S2_S2_
+off 0x5f0  <import> <flat-namespace>/__ZN9IOService4initEP12OSDictionary
+off 0x5f8  <import> <flat-namespace>/__ZN15IORegistryEntry16setPropertyTableEP12OSDictionary
+off 0x600  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPK8OSSymbolP8OSObject
+off 0x608  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPK8OSStringP8OSObject
+off 0x610  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcP8OSObject
+off 0x618  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcS1_
+off 0x620  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcb
+off 0x628  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcyj
+off 0x630  <import> <flat-namespace>/__ZN15IORegistryEntry11setPropertyEPKcPvj
+off 0x638  <import> <flat-namespace>/__ZN15IORegistryEntry14removePropertyEPK8OSSymbol
+######## __ZTV34IOThunderboltMemoryDescriptorBuffer
+not found
