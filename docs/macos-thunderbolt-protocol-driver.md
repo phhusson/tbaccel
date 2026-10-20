@@ -1048,3 +1048,41 @@ when the in-kernel peer handles the op, so switching modes can leave stale
 PREPAREs for the next user client; and the peer reuses its result buffer as soon
 as the next op arrives because there is no outbound-drain fence yet.  Both
 disappear once fences become real events rather than slot ids.
+
+### 27.0.20 Imported user memory is not an IOBufferMemoryDescriptor
+
+`ktbAccelMethodImport` allocates kernel memory (an `IOBufferMemoryDescriptor`),
+so `getBytesNoCopy()` is valid on it.  `kTbAccelMethodImportSurface` instead
+builds `IOMemoryDescriptor::withAddressRange()` over the caller's pages.  The
+receive path stored both in the same field and called `getBytesNoCopy()` on it:
+
+```
+slot->region->buffer->md->getBytesNoCopy()    // md may be an IOMemoryDescriptor
+```
+
+That is a virtual call past the end of the real vtable.  With the kernel-memory
+peer it happened to land somewhere harmless; with the Metal peer, whose buffers
+are imported by address, the first inbound data frame panicked:
+
+```
+PAC failure from kernel with IA key while branching to x8 at pc ...b26c
+  peerDataChunk+0x84  <- ctlRxComplete+0x1e8
+```
+
+`TbAccelBuffer` now keeps the descriptor as `IOMemoryDescriptor *`, and imported
+memory is `prepare(kIODirectionInOut)`ed and mapped into the kernel
+(`createMappingInTask`); the mapping is cached as `kva` and released, together
+with `complete()`, in `TbAccelBuffer::free()`.  `bufferBytes()` selects `kva`
+when present and otherwise `OSDynamicCast`s to `IOBufferMemoryDescriptor` — a
+dynamic cast, not a reinterpret cast.  `opFree` also stopped releasing `md`
+itself: the buffer object owns it, and releasing twice freed it while `free()`
+still used it.
+
+With that, the Metal peer runs the reference workload:
+
+```
+peer: PREPARE id=1 -> prepared slot=3
+peer: MATMUL w=1 y_slot=7 64x64x64 -> matmul 64x64x64 done (metal)
+... 5 iterations ...
+TbAccelRxStat = "all50 ok15 bad0 type17 len32 ctlmax72 data7 dfr35"
+```
