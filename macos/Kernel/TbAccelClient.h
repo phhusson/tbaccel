@@ -84,6 +84,7 @@ private:
      */
     bool readPeerHops(uint16_t *inHop, uint16_t *outHop);
     bool tryPaths();
+    static void *bufferBytes(TbAccelBuffer *b);
 
     /* fabric bring-up is retried via a timer: the NHI/link is not always ready
      * at the moment the XDomainService matches. */

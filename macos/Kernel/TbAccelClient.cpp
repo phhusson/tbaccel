@@ -77,8 +77,27 @@ OSDefineMetaClassAndStructors(TbAccelBuffer,  OSObject)
  * is where the memory is actually released. */
 void TbAccelBuffer::free()
 {
-    if (md) { md->release(); md = nullptr; }
+    if (map) { map->release(); map = nullptr; kva = nullptr; }
+    if (md) {
+        if (prepared) { md->complete(); prepared = false; }
+        md->release();
+        md = nullptr;
+    }
     OSObject::free();
+}
+
+/*
+ * Bytes for CPU access.  Kernel buffers answer getBytesNoCopy(); imported user
+ * buffers only have the kernel mapping made in opImportSurface().
+ */
+void *TbAccelClient::bufferBytes(TbAccelBuffer *b)
+{
+    if (!b || !b->md)
+        return nullptr;
+    if (b->kva)
+        return b->kva;
+    IOBufferMemoryDescriptor *mb = OSDynamicCast(IOBufferMemoryDescriptor, b->md);
+    return mb ? mb->getBytesNoCopy() : nullptr;
 }
 
 OSDefineMetaClassAndStructors(TbAccelRegion,  OSObject)
@@ -1879,12 +1898,15 @@ IOReturn TbAccelClient::opGetInfo(tbaccel_info *info)
     return kIOReturnSuccess;
 }
 
-static TbAccelBuffer *newBuffer(uint64_t handle, IOBufferMemoryDescriptor *md, uint64_t size)
+static TbAccelBuffer *newBuffer(uint64_t handle, IOMemoryDescriptor *md, uint64_t size)
 {
     TbAccelBuffer *b = OSTypeAlloc(TbAccelBuffer);
-    if (!b) { md->release(); return nullptr; }
+    if (!b) return nullptr;   /* caller owns md */
     b->handle = handle;
     b->md = md;
+    b->map = nullptr;
+    b->kva = nullptr;
+    b->prepared = false;
     b->size = size;
     return b;
 }
@@ -1900,7 +1922,7 @@ IOReturn TbAccelClient::opImport(tbaccel_import *req)
 
     LOCK(); uint64_t handle = fNextId++; UNLOCK();
     TbAccelBuffer *b = newBuffer(handle, md, req->size);
-    if (!b) return kIOReturnNoMemory;
+    if (!b) { md->release(); return kIOReturnNoMemory; }
 
     LOCK(); fBuffers->setObject(b); UNLOCK();
     b->release();
@@ -1921,12 +1943,28 @@ IOReturn TbAccelClient::opImportSurface(tbaccel_import_surface *req)
     if (!md)
         return kIOReturnNoMemory;
 
+    /* Imported user memory is not an IOBufferMemoryDescriptor: wire it and make
+     * a kernel mapping, which is the only way to touch it from here. */
+    IOReturn kr = md->prepare(kIODirectionInOut);
+    if (kr != kIOReturnSuccess) {
+        md->release();
+        return kr;
+    }
+    IOMemoryMap *map = md->createMappingInTask(kernel_task, 0, kIOMapAnywhere,
+                                               0, req->size);
+    if (!map) {
+        md->complete();
+        md->release();
+        return kIOReturnNoMemory;
+    }
+
     LOCK(); uint64_t handle = fNextId++; UNLOCK();
-    TbAccelBuffer *b = OSTypeAlloc(TbAccelBuffer);
-    if (!b) { md->release(); return kIOReturnNoMemory; }
-    b->handle = handle;
-    b->md = (IOBufferMemoryDescriptor *)md;   /* reused field */
-    b->size = req->size;
+    TbAccelBuffer *b = newBuffer(handle, md, req->size);
+    if (!b) { map->release(); md->complete(); md->release(); return kIOReturnNoMemory; }
+    b->map = map;
+    b->kva = (void *)map->getAddress();
+    b->prepared = true;
+    setProperty("TbAccelSurfaceKva", (unsigned long long)(uintptr_t)b->kva);
 
     LOCK(); fBuffers->setObject(b); UNLOCK();
     b->release();
@@ -1970,7 +2008,7 @@ IOReturn TbAccelClient::opFree(const tbaccel_free *req)
         for (unsigned i = 0; i < fBuffers->getCount(); i++) {
             TbAccelBuffer *b = OSDynamicCast(TbAccelBuffer, fBuffers->getObject(i));
             if (b && b->handle == req->id) {
-                if (b->md) b->md->release();
+                /* TbAccelBuffer::free() unmaps and releases the descriptor. */
                 fBuffers->removeObject(i);
                 break;
             }
@@ -2208,7 +2246,7 @@ bool TbAccelClient::peerDataChunk(const uint8_t *data, uint32_t len)
     if (take > len)
         take = len;
 
-    uint8_t *dst = (uint8_t *)slot->region->buffer->md->getBytesNoCopy();
+    uint8_t *dst = (uint8_t *)bufferBytes(slot->region->buffer);
     if (!dst) {
         IOLockUnlock(fTableLock);
         return false;
@@ -2425,12 +2463,13 @@ void TbAccelClient::peerMatmul(TbAccelSlot *inSlot, const TbxMsg *op)
         fPeerY = r;
     }
 
-    const float *x  = (const float *)((const uint8_t *)inSlot->region->buffer->md->getBytesNoCopy()
-                                      + inSlot->region->offset);
-    const float *wm = (const float *)((const uint8_t *)w->region->buffer->md->getBytesNoCopy()
-                                      + w->region->offset);
-    float       *y  = (float *)fPeerY->buffer->md->getBytesNoCopy();
-    if (!x || !wm || !y) {
+    const uint8_t *xb = (const uint8_t *)bufferBytes(inSlot->region->buffer);
+    const uint8_t *wb = (const uint8_t *)bufferBytes(w->region->buffer);
+    uint8_t       *yb = (uint8_t *)bufferBytes(fPeerY->buffer);
+    const float *x  = (const float *)(xb + inSlot->region->offset);
+    const float *wm = (const float *)(wb + w->region->offset);
+    float       *y  = (float *)yb;
+    if (!xb || !wb || !yb) {
         fPeerErrs++;
         snprintf(fPeerErr, sizeof fPeerErr, "matmul-nomap");
         setProperty("TbAccelPeerErr", fPeerErr);
