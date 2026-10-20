@@ -1689,15 +1689,18 @@ void TbAccelClient::handleCtl(const TbAccelWire *w, const uint8_t *payload, uint
     }
     case TBACCEL_MSG_BLOB: {
         uint32_t blen = w->payload_len < payLen ? w->payload_len : payLen;
-        IOLockLock(fTableLock);
-        TbAccelBlob *blob = OSTypeAlloc(TbAccelBlob);
-        blob->slot = w->slot;
-        blob->len = blen;
-        memcpy(blob->data, payload, blen);
-        fBlobs->setObject(blob);
-        blob->release();
-        IOLockUnlock(fTableLock);
-        if (fGate) fGate->commandWakeup(fBlobs);
+        if (fUserPeer) {
+            IOLockLock(fTableLock);
+            TbAccelBlob *blob = OSTypeAlloc(TbAccelBlob);
+            blob->slot = w->slot;
+            blob->len = blen;
+            memcpy(blob->data, payload, blen);
+            fBlobs->setObject(blob);
+            setProperty("TbAccelBlobs", (unsigned long long)fBlobs->getCount());
+            blob->release();
+            IOLockUnlock(fTableLock);
+            if (fGate) fGate->commandWakeup(fBlobs);
+        }
         /* A peer receives its requests this way: PREPARE arrives as a blob and
          * is answered with a PREPARED blob.  With a user client attached the
          * blob has already been queued above for recv_ctrl, and the user-space
@@ -2254,7 +2257,7 @@ void TbAccelClient::deliverOp(TbAccelSlot *slot)
         peerSchedule();
         return;
     }
-    if (!slot->opLen)
+    if (!fUserPeer || !slot->opLen)
         return;
 
     TbAccelBlob *blob = OSTypeAlloc(TbAccelBlob);
