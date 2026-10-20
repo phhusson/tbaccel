@@ -52,6 +52,9 @@
 #include <linux/wait.h>
 #include <linux/atomic.h>
 #include <linux/delay.h>
+#include <linux/ktime.h>
+#include <linux/debugfs.h>
+#include <linux/seq_file.h>
 
 #include "thunderbolt_accel.h"
 
@@ -232,6 +235,8 @@ struct tbaccel_slot {
 	u64			armed_off;	/* next region offset to arm */
 	u8			*op;		/* op delivered at completion */
 	u32			op_len;
+	u64			t0;		/* ARM arrival, for latency accounting */
+	bool			queued;		/* ARM deferred behind another stream */
 };
 
 struct tbaccel_blob {
@@ -290,6 +295,13 @@ struct tbaccel_dev {
 	struct tbaccel_frame	*rx_frames;
 	bool			rx_data_mode;
 	struct tbaccel_slot	*rx_slot;
+	struct list_head	rx_pending;	/* ARMs that arrived mid-stream */
+	/* inbound transfer latency (ARM -> completion), no userspace involved */
+	u64			lat_count;
+	u64			lat_last_ns;
+	u64			lat_min_ns;
+	u64			lat_max_ns;
+	struct dentry		*dbg;
 };
 
 static DEFINE_IDA(tbaccel_indices);
@@ -472,6 +484,42 @@ static void tbaccel_flush_credit(struct tbaccel_dev *dev, bool force)
 
 /* -------------------------------------------------------------- rx dispatch */
 
+static void tbaccel_rx_complete(struct tbaccel_dev *dev, struct tbaccel_slot *slot);
+
+/*
+ * Only one inbound stream can be in flight: the wire carries no per-frame slot
+ * tag, so a frame belongs to whichever slot armed the descriptor it lands in.
+ * A second ARM therefore waits in rx_pending and is started - and ACKed - when
+ * the current stream completes.  That keeps a pipelining peer from having its
+ * ARM clobber the active slot's state.
+ */
+static void tbaccel_start_stream(struct tbaccel_dev *dev, struct tbaccel_slot *slot)
+{
+	u32 armed = 0;
+	u64 total;
+
+	mutex_lock(&dev->lock);
+	dev->rx_slot = slot;
+	dev->rx_data_mode = true;
+	slot->queued = false;
+	slot->t0 = ktime_get_ns();
+	while (slot->armed_off < slot->total &&
+	       armed < (u64) TBACCEL_WINDOW * TB_MAX_FRAME_SIZE) {
+		u32 c = tbaccel_arm_one(dev, slot, slot->armed_off);
+
+		if (!c)
+			break;
+		slot->armed_off += c;
+		armed += c;
+	}
+	total = slot->total;
+	mutex_unlock(&dev->lock);
+
+	tbaccel_send_ctl(dev, TBACCEL_MSG_ACK, slot->id, armed, &total, sizeof(total));
+	if (total == 0)
+		tbaccel_rx_complete(dev, slot);
+}
+
 static void tbaccel_rx_complete(struct tbaccel_dev *dev, struct tbaccel_slot *slot)
 {
 	if (slot->op) {
@@ -487,6 +535,17 @@ static void tbaccel_rx_complete(struct tbaccel_dev *dev, struct tbaccel_slot *sl
 			wake_up_interruptible(&dev->ctrl_wait);
 		}
 	}
+	if (slot->t0) {
+		u64 dt = ktime_get_ns() - slot->t0;
+
+		dev->lat_count++;
+		dev->lat_last_ns = dt;
+		if (!dev->lat_min_ns || dt < dev->lat_min_ns)
+			dev->lat_min_ns = dt;
+		if (dt > dev->lat_max_ns)
+			dev->lat_max_ns = dt;
+	}
+
 	dma_fence_signal(slot->fence);
 	dma_fence_put(slot->fence);
 	mutex_lock(&dev->lock);
@@ -498,6 +557,25 @@ static void tbaccel_rx_complete(struct tbaccel_dev *dev, struct tbaccel_slot *sl
 	dev->rx_slot = NULL;
 	dev->rx_data_mode = false;
 	tbaccel_flush_credit(dev, true);
+
+	/* Start the next deferred ARM, if the peer queued one. */
+	{
+		struct tbaccel_slot *next = NULL;
+
+		mutex_lock(&dev->lock);
+		if (!list_empty(&dev->rx_pending)) {
+			next = list_first_entry(&dev->rx_pending,
+						struct tbaccel_slot, list);
+			list_del(&next->list);
+			next->queued = false;
+		}
+		mutex_unlock(&dev->lock);
+
+		if (next) {
+			tbaccel_start_stream(dev, next);
+			return;
+		}
+	}
 	tbaccel_rx_post_ctrl(dev);
 }
 
@@ -511,7 +589,6 @@ static void tbaccel_rx_control(struct tbaccel_dev *dev, struct tbaccel_wire *w, 
 		u32 total_req = le32_to_cpu(w->len);
 		u32 oplen = min_t(u32, le32_to_cpu(w->pad2), len);
 		struct tbaccel_slot *slot;
-		u32 armed = 0;
 
 		mutex_lock(&dev->lock);
 		slot = tbaccel_find_slot(dev, slot_id);
@@ -521,28 +598,18 @@ static void tbaccel_rx_control(struct tbaccel_dev *dev, struct tbaccel_wire *w, 
 			kfree(slot->op);
 			slot->op = oplen ? kmemdup(payload, oplen, GFP_KERNEL) : NULL;
 			slot->op_len = oplen;
-			dev->rx_slot = slot;
-			dev->rx_data_mode = true;
-			/* the just-recycled ARM buffer is back in rx_free */
-			while (slot->armed_off < slot->total &&
-			       armed < (u64) TBACCEL_WINDOW * TB_MAX_FRAME_SIZE) {
-				u32 c = tbaccel_arm_one(dev, slot, slot->armed_off);
-
-				if (!c)
-					break;
-				slot->armed_off += c;
-				armed += c;
+			if (dev->rx_slot && dev->rx_slot != slot) {
+				/* another stream is active: queue this ARM */
+				slot->queued = true;
+				list_add_tail(&slot->list, &dev->rx_pending);
+				mutex_unlock(&dev->lock);
+				break;
 			}
 		}
 		mutex_unlock(&dev->lock);
 
-		if (slot) {
-			u64 total = slot->total;
-
-			tbaccel_send_ctl(dev, TBACCEL_MSG_ACK, slot_id, armed, &total, sizeof(total));
-			if (slot->total == 0)
-				tbaccel_rx_complete(dev, slot);
-		}
+		if (slot && !slot->queued)
+			tbaccel_start_stream(dev, slot);
 		break;
 	}
 	case TBACCEL_MSG_ACK: {
@@ -1491,6 +1558,36 @@ static void tbaccel_dev_put(struct tbaccel_dev *dev)
 	kref_put(&dev->kref, tbaccel_dev_release);
 }
 
+/* --------------------------------------------------------- debugfs counters */
+
+static struct dentry *tbaccel_dbg_root;
+
+static int tbaccel_stats_show(struct seq_file *m, void *v)
+{
+	struct tbaccel_dev *dev = m->private;
+
+	seq_printf(m, "transfers %llu\n", dev->lat_count);
+	seq_printf(m, "last_us %llu\n", dev->lat_last_ns / 1000);
+	seq_printf(m, "min_us %llu\n", dev->lat_min_ns / 1000);
+	seq_printf(m, "max_us %llu\n", dev->lat_max_ns / 1000);
+	seq_printf(m, "tx_chunk %u\n", chunk_size);
+	seq_printf(m, "rx_chunk %u\n", rx_chunk);
+	return 0;
+}
+
+static int tbaccel_stats_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, tbaccel_stats_show, inode->i_private);
+}
+
+static const struct file_operations tbaccel_stats_fops = {
+	.owner		= THIS_MODULE,
+	.open		= tbaccel_stats_open,
+	.read		= seq_read,
+	.llseek		= seq_lseek,
+	.release	= single_release,
+};
+
 static int tbaccel_probe(struct tb_service *svc, const struct tb_service_id *id)
 {
 	struct tbaccel_dev *dev;
@@ -1508,6 +1605,7 @@ static int tbaccel_probe(struct tb_service *svc, const struct tb_service_id *id)
 	init_waitqueue_head(&dev->ctrl_wait);
 	init_waitqueue_head(&dev->ack_wait);
 	init_waitqueue_head(&dev->credit_wait);
+	INIT_LIST_HEAD(&dev->rx_pending);
 	INIT_LIST_HEAD(&dev->buffers);
 	INIT_LIST_HEAD(&dev->regions);
 	INIT_LIST_HEAD(&dev->slots);
@@ -1541,6 +1639,10 @@ static int tbaccel_probe(struct tb_service *svc, const struct tb_service_id *id)
 		return ret;
 	}
 	tb_service_set_drvdata(svc, dev);
+	dev->dbg = debugfs_create_dir(dev->name, tbaccel_dbg_root);
+	if (!IS_ERR_OR_NULL(dev->dbg))
+		debugfs_create_file("stats", 0444, dev->dbg, dev,
+				    &tbaccel_stats_fops);
 	dev_info(&svc->dev, "tbaccel%d registered (single ring)\n", dev->index);
 	return 0;
 }
@@ -1558,6 +1660,8 @@ static void tbaccel_remove(struct tb_service *svc)
 	tbaccel_remove_properties(dev);
 	tb_service_properties_changed(dev->svc);
 	misc_deregister(&dev->misc);
+	debugfs_remove_recursive(dev->dbg);
+	dev->dbg = NULL;
 	tbaccel_dev_put(dev);
 }
 
@@ -1599,6 +1703,8 @@ static int __init tbaccel_init(void)
 	ret = tb_register_property_dir("accel", tbaccel_dir);
 	if (ret)
 		goto err_dir;
+	tbaccel_dbg_root = debugfs_create_dir("tbaccel", NULL);
+
 	ret = tb_register_service_driver(&tbaccel_driver);
 	if (ret)
 		goto err_prop;
@@ -1617,6 +1723,7 @@ static void __exit tbaccel_exit(void)
 	tb_unregister_property_dir("accel", tbaccel_dir);
 	tb_property_free_dir(tbaccel_dir);
 	ida_destroy(&tbaccel_indices);
+	debugfs_remove_recursive(tbaccel_dbg_root);
 }
 module_exit(tbaccel_exit);
 

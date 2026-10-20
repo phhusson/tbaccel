@@ -2,7 +2,13 @@
 /*
  * tbaccel client: the requester. Runs one matmul Y = X * W against the peer.
  *
- *   ./tbaccel_client [dev] [M] [N] [K]     (default /dev/tbaccel0 4 8 16)
+ *   ./tbaccel_client [dev] [M] [N] [K] [iters]
+ *       (default /dev/tbaccel0 4 8 16 1)
+ *
+ * With iters > 1 the weights and input stay loaded and only the matmul is
+ * repeated, timing SUBMIT -> result fence for each iteration and printing
+ * min/p50/p90/p99/max.  That is the steady state a real pipeline sees, and it
+ * is the number to compare against later zero-copy/MTLSharedEvent work.
  */
 #include <math.h>
 #include <stdint.h>
@@ -51,6 +57,7 @@ int main(int argc, char **argv)
 	uint32_t M = argc > 2 ? strtoul(argv[2], NULL, 0) : 4;
 	uint32_t N = argc > 3 ? strtoul(argv[3], NULL, 0) : 8;
 	uint32_t K = argc > 4 ? strtoul(argv[4], NULL, 0) : 16;
+	unsigned iters = argc > 5 ? (unsigned) strtoul(argv[5], NULL, 0) : 1;
 	size_t w_size = (size_t) N * K * sizeof(float);
 	size_t x_size = (size_t) M * K * sizeof(float);
 	size_t y_size = (size_t) M * N * sizeof(float);
@@ -201,6 +208,70 @@ int main(int argc, char **argv)
 	}
 
 	printf("OK: %ux%ux%u matmul verified over tbaccel\n", M, N, K);
+
+	if (iters > 1) {
+		uint64_t *s = calloc(iters, sizeof(*s));
+		unsigned done = 0, i, j;
+
+		for (i = 0; i < iters && s; i++) {
+			struct tbx_msg op = { TBX_MAGIC, TBX_MATMUL, 0, w_peer, 0,
+					      M, N, K, TBX_DTYPE_F32 };
+			struct timespec t0, t1;
+			uint64_t y_slot2;
+			int y_fence2 = -1, of = -1, r;
+
+			if (tbx_post_recv(fd, y_region, &y_slot2, &y_fence2)) {
+				perror("POST_RECV");
+				break;
+			}
+			op.b = y_slot2;
+
+			clock_gettime(CLOCK_MONOTONIC, &t0);
+			r = tbx_submit(fd, in_slot, x_region, &op, sizeof(op), -1, &of);
+			if (r) {
+				close(y_fence2);
+				break;
+			}
+			r = tbx_wait_fence(y_fence2, 5000);
+			clock_gettime(CLOCK_MONOTONIC, &t1);
+			close(of);
+			close(y_fence2);
+			if (r)
+				break;
+			s[done++] = (uint64_t)(t1.tv_sec - t0.tv_sec) * 1000000ull
+				  + (uint64_t)(t1.tv_nsec - t0.tv_nsec) / 1000ull;
+
+			{	/* consume the RESULT control message */
+				struct tbx_msg m;
+				uint64_t sl = 0;
+
+				tbx_recv_msg(fd, &m, &sl);
+			}
+		}
+
+		if (done) {
+			for (i = 1; i < done; i++) {
+				uint64_t v = s[i];
+
+				for (j = i; j > 0 && s[j - 1] > v; j--)
+					s[j] = s[j - 1];
+				s[j] = v;
+			}
+			printf("latency over %u iterations (submit -> result fence):\n", done);
+			printf("  min %llu us  p50 %llu us  p90 %llu us  p99 %llu us  max %llu us\n",
+			       (unsigned long long) s[0],
+			       (unsigned long long) s[done / 2],
+			       (unsigned long long) s[(done * 9) / 10],
+			       (unsigned long long) s[(done * 99) / 100],
+			       (unsigned long long) s[done - 1]);
+			if (done != iters)
+				printf("  (stopped after %u of %u)\n", done, iters);
+		} else {
+			printf("latency loop: no iterations completed\n");
+		}
+		free(s);
+	}
+
 	ret = 0;
 
 out:
