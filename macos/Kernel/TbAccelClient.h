@@ -110,6 +110,7 @@ private:
     void     peerOnBlob(const void *payload, uint32_t len);
     void     peerPrepare(const TbxMsg *m);
     void     peerDispatch(TbAccelSlot *slot);
+    void     deliverOp(TbAccelSlot *slot);
     static IOReturn sPeerDispatch(OSObject *, void *, void *, void *, void *);
     void     peerMatmul(TbAccelSlot *inSlot, const TbxMsg *op);
     /* The stream opened by an ARM: payload frames land in whichever receive

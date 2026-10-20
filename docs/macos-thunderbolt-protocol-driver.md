@@ -1015,3 +1015,36 @@ in `opRecvCtrl` as intended.
 Worth remembering for the event/IOSurface work: anything that returns a large
 structure through `externalMethod` will hit this, so large payloads belong in
 mapped memory (`clientMemoryForType`) rather than in the structure output.
+
+### 27.0.19 A user-space peer over the same ABI
+
+The kext can act as the compute peer in-kernel, or hand the work to a
+user-space process over `TbAccelUserClient` (the macOS analogue of
+`/dev/tbaccelN`).  `macos/User/tbaccel_peer.c` is the reference: it imports its
+own buffers, maps them back, posts receive slots, and answers TBX1 requests.
+
+```
+peer: PREPARE id=1 size=16384 → PREPARED slot=3
+peer: LOAD id=1 (ok)
+peer: MATMUL w=1 y_slot=7 64x64x64 → RESULT -> slot 7
+```
+
+Three things had to be right, each of which failed first:
+
+1. **Mode switch.**  `TbAccelUserClient::start()` sets `fUserPeer`; while it is
+   set the in-kernel peer stays out of PREPARE (`peerOnBlob`) and completion
+   dispatch is routed to `recv_ctrl` instead.  Otherwise both peers answer the
+   same request.
+2. **One receive mechanism for every slot.**  Data frames land in the
+   pre-posted control buffers, not in per-slot commands, so a user-owned slot
+   using `armWindow`/`dataRxComplete` never saw a frame (`bad10` and no op).
+   Every slot is now assembled by copying out of whichever buffer received it
+   (`peerDataChunk`) and a single `deliverOp()` decides in-kernel vs blob.
+3. **`recv_ctrl` needs a small buffer.**  See 27.0.18: input + output above a
+   page makes the kernel report `structureOutputSize = 0`.
+
+Known rough edges, deliberately left for the event work: blobs are queued even
+when the in-kernel peer handles the op, so switching modes can leave stale
+PREPAREs for the next user client; and the peer reuses its result buffer as soon
+as the next op arrives because there is no outbound-drain fence yet.  Both
+disappear once fences become real events rather than slot ids.

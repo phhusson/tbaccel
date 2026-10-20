@@ -1591,20 +1591,17 @@ void TbAccelClient::handleCtl(const TbAccelWire *w, const uint8_t *payload, uint
             if (slot->opLen && payload)
                 memcpy(slot->op, payload, slot->opLen);
             slot->t0 = mach_absolute_time();
-            if (slot->isPeer) {
-                /* Peer slots are assembled from the control buffers (see
-                 * ctlRxComplete): the ring FIFO hands the first frames to the
-                 * buffers that are already posted, so arming slot frames would
-                 * simply never see them. The window we grant is what the sender
-                 * may put in flight. */
+            /* Every slot - in-kernel peer or userspace peer - is assembled from
+             * the control buffers (see ctlRxComplete): the ring FIFO hands the
+             * first frames to the buffers that are already posted, so arming
+             * per-slot commands would simply never see them.  The window we
+             * grant is what the sender may put in flight. */
+            if (total) {
                 uint64_t window = (uint64_t)TBACCEL_WINDOW * TB_MAX_FRAME_SIZE;
                 fRxStreamSlot = slot;
                 fRxStreamOff = 0;
                 memset(fRxEv, 0, sizeof fRxEv);
                 armed = (uint32_t)(total < window ? total : window);
-            } else if (total) {
-                armWindow(slot);
-                armed = (uint32_t)slot->armed_off;
             } else {
                 slot->signaled = true;
                 armSlot = slot;
@@ -1794,28 +1791,7 @@ void TbAccelClient::dataRxComplete(void *target, void *refcon, IOReturn status,
             me->fRxData++;
             me->wireStat();
             me->wakeSlots();
-            if (slot->isPeer && !me->fUserPeer) {
-                /* Peer work runs off this work loop: handling a MATMUL means
-                 * waiting for the client's ACK, which arrives here. */
-                me->peerSchedule();
-            } else if (slot->opLen) {
-                /* User-space peer (or a plain posted slot): hand the operation
-                 * that rode the ARM to recv_ctrl, tagged with its slot. */
-                TbAccelBlob *blob = OSTypeAlloc(TbAccelBlob);
-
-                if (blob) {
-                    uint32_t n = slot->opLen < TBACCEL_CTRL_PAYLOAD
-                               ? slot->opLen : TBACCEL_CTRL_PAYLOAD;
-                    blob->slot = slot->id;
-                    blob->len = n;
-                    memcpy(blob->data, slot->op, n);
-                    IOLockLock(me->fTableLock);
-                    me->fBlobs->setObject(blob);
-                    IOLockUnlock(me->fTableLock);
-                    blob->release();
-                    if (me->fGate) me->fGate->commandWakeup(me->fBlobs);
-                }
-            }
+            me->deliverOp(slot);
         }
     }
 }
@@ -2262,10 +2238,44 @@ bool TbAccelClient::peerDataChunk(const uint8_t *data, uint32_t len)
     if (done) {
         fRxData++;
         wakeSlots();
-        if (slot->isPeer)
-            peerSchedule();
+        deliverOp(slot);
     }
     return true;
+}
+
+/* A completed transfer: run it in-kernel, or hand it to the user-space peer. */
+void TbAccelClient::deliverOp(TbAccelSlot *slot)
+{
+    if (!slot)
+        return;
+    if (slot->isPeer && !fUserPeer) {
+        /* Off this work loop: a MATMUL must wait for the client's ACK, which is
+         * delivered here. */
+        peerSchedule();
+        return;
+    }
+    if (!slot->opLen)
+        return;
+
+    TbAccelBlob *blob = OSTypeAlloc(TbAccelBlob);
+
+    if (!blob)
+        return;
+    {
+        uint32_t n = slot->opLen < TBACCEL_CTRL_PAYLOAD
+                   ? slot->opLen : TBACCEL_CTRL_PAYLOAD;
+
+        blob->slot = slot->id;
+        blob->len = n;
+        memcpy(blob->data, slot->op, n);
+    }
+    LOCK();
+    fBlobs->setObject(blob);
+    setProperty("TbAccelBlobs", (unsigned long long)fBlobs->getCount());
+    UNLOCK();
+    blob->release();
+    if (fGate)
+        fGate->commandWakeup(fBlobs);
 }
 
 void TbAccelClient::peerSchedule(){
@@ -2503,7 +2513,18 @@ IOReturn TbAccelClient::opRecvCtrl(tbaccel_recv_ctrl *req, void *out, uint32_t o
         }
         if (!fReady) return kIOReturnNotOpen;
         if (!fGate) return kIOReturnNotReady;
-        fGate->commandSleep(fBlobs, 0);
+        /* Bounded wait.  The two-argument commandSleep() overload takes
+         * (event, interruptible), not (event, deadline): passing 0 there means
+         * "interruptible = 0", which sleeps with no deadline and is not
+         * released by commandWakeup() - a userspace recv_ctrl blocked forever
+         * even though the blob had been queued.  A 100 ms deadline makes the
+         * loop self-healing and costs nothing when a blob is already waiting. */
+        {
+            AbsoluteTime deadline;
+
+            clock_interval_to_deadline(100, kMillisecondScale, &deadline);
+            fGate->commandSleep(fBlobs, deadline, THREAD_UNINT);
+        }
     }
 }
 
