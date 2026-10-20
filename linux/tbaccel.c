@@ -67,6 +67,29 @@ MODULE_IMPORT_NS("DMA_BUF");
 /* one PDF value for every frame; the RX callback dispatches on the wrapper */
 #define TBACCEL_PDF		1
 
+/*
+ * Payload bytes per data frame. TB_MAX_FRAME_SIZE is the ring's frame capacity,
+ * not what the peer can deliver: large frames are rejected by the receiver
+ * (kIOReturnIOError, no payload written). Module parameter so the threshold can
+ * be found by sweeping without rebuilding, and logged at bring-up.
+ *
+ * The macOS receiver must be built with the same value (TBACCEL_DATA_CHUNK).
+ */
+/*
+ * Send data frames from a module-owned DMA page instead of straight out of the
+ * imported dma-buf. Control frames (which always use a page) are received fine
+ * while data frames are rejected with kIOReturnIOError and no payload, and the
+ * only structural difference is the source buffer - so this isolates a bad
+ * dmabuf DMA mapping from a receiver-side problem.
+ */
+static bool bounce;
+module_param(bounce, bool, 0644);
+MODULE_PARM_DESC(bounce, "copy data frames through a DMA page (default 0)");
+
+static unsigned int chunk_size = 64;
+module_param_named(chunk, chunk_size, uint, 0644);
+MODULE_PARM_DESC(chunk, "payload bytes per data frame (default 2048)");
+
 static unsigned int ring_size = 64;
 module_param(ring_size, uint, 0644);
 MODULE_PARM_DESC(ring_size, "TX/RX ring size (default 64)");
@@ -87,8 +110,15 @@ MODULE_PARM_DESC(e2e, "enable E2E hop-counter flow control on the rings (default
 
 /* leave slack so the window never fills the ring */
 #define TBACCEL_WINDOW		(ring_size - 2)
-/* batch credits: emit one CREDIT once this much has been re-armed */
-#define TBACCEL_CREDIT_BATCH	(4 * 4096)
+/* Batch credits: emit one CREDIT once this much has been re-armed. This has to
+ * scale with the frame size: the receiver can only arm as many frames as it has
+ * buffers (ring_size, one held for control), so with small frames the window is
+ * a few KB and a 16 KB batch threshold would never be reached - the sender then
+ * starves waiting for credit that is never reported. */
+static inline u32 tbaccel_credit_batch(void)
+{
+	return chunk_size * 8;
+}
 
 struct tbaccel_wire {
 	__le32 magic;
@@ -162,6 +192,8 @@ struct tbaccel_buf {
 	struct dma_buf				*dmabuf;
 	struct dma_buf_attachment		*attach;
 	struct sg_table				*sgt;
+	struct iosys_map			vmap;	/* CPU view, for the bounce path */
+	void					*vaddr;
 	u64					size;
 	struct list_head			list;
 };
@@ -314,7 +346,7 @@ static u32 tbaccel_arm_one(struct tbaccel_dev *dev, struct tbaccel_slot *slot, u
 
 	if (off >= slot->total)
 		return 0;
-	chunk = min_t(u64, TB_MAX_FRAME_SIZE, slot->total - off);
+	chunk = min_t(u64, chunk_size, slot->total - off);
 	addr = tbaccel_sg_addr(slot->region->buf->sgt, slot->region->offset + off, &avail);
 	if (!addr || avail < chunk)
 		return 0;
@@ -386,6 +418,11 @@ static void tbaccel_tx_callback(struct tb_ring *ring, struct ring_frame *frame, 
 	struct tbaccel_xfer *xfer = tf->xfer;
 
 	if (tf->is_data) {
+		if (tf->page) {
+			dma_unmap_single(tf->dev->dma_dev, tf->page_phy,
+					 TB_MAX_FRAME_SIZE, DMA_TO_DEVICE);
+			free_page((unsigned long)tf->page);
+		}
 		kfree(tf);	/* no page, phy pointed into the source dma-buf */
 		if (xfer && atomic_dec_and_test(&xfer->frames)) {
 			if (!canceled && xfer->fence)
@@ -408,7 +445,7 @@ static void tbaccel_flush_credit(struct tbaccel_dev *dev, bool force)
 {
 	if (dev->pending_credit == 0)
 		return;
-	if (!force && dev->pending_credit < TBACCEL_CREDIT_BATCH)
+	if (!force && dev->pending_credit < tbaccel_credit_batch())
 		return;
 	tbaccel_send_ctl(dev, TBACCEL_MSG_CREDIT,
 			 dev->rx_slot ? dev->rx_slot->id : 0,
@@ -726,7 +763,8 @@ static int tbaccel_start(struct tbaccel_dev *dev)
 
 	if (e2e)
 		flags |= RING_FLAG_E2E;
-	dev_info(&xd->dev, "tbaccel: ring flags = 0x%x (e2e=%d)\n", flags, e2e);
+	dev_info(&xd->dev, "tbaccel: ring flags = 0x%x (e2e=%d, chunk=%u)\n",
+		 flags, e2e, chunk_size);
 
 	/*
 	 * If the peer already published its HopIDs use the mirror image of
@@ -894,7 +932,7 @@ static int tbaccel_stream(struct tbaccel_dev *dev, struct tbaccel_reg *region,
 	int ret;
 
 	while (sent < total) {
-		u32 chunk = min_t(u64, TB_MAX_FRAME_SIZE, total - sent);
+		u32 chunk = min_t(u64, chunk_size, total - sent);
 		struct tbaccel_frame *tf;
 		dma_addr_t addr;
 		u32 avail;
@@ -914,6 +952,24 @@ static int tbaccel_stream(struct tbaccel_dev *dev, struct tbaccel_reg *region,
 		tf->xfer = xfer;
 		tf->frame.buffer_phy = addr;
 		tf->frame.size = chunk;
+
+		if (bounce && region->buf->vaddr) {
+			tf->page = (void *)__get_free_page(GFP_KERNEL);
+			if (!tf->page) {
+				kfree(tf);
+				return -ENOMEM;
+			}
+			memcpy(tf->page,
+			       (u8 *)region->buf->vaddr + region->offset + sent, chunk);
+			tf->page_phy = dma_map_single(dev->dma_dev, tf->page,
+						      TB_MAX_FRAME_SIZE, DMA_TO_DEVICE);
+			if (dma_mapping_error(dev->dma_dev, tf->page_phy)) {
+				free_page((unsigned long)tf->page);
+				kfree(tf);
+				return -ENOMEM;
+			}
+			tf->frame.buffer_phy = tf->page_phy;
+		}
 		tf->frame.sof = TBACCEL_PDF;
 		tf->frame.eof = TBACCEL_PDF;
 		tf->frame.callback = tbaccel_tx_callback;
@@ -962,7 +1018,7 @@ static int tbaccel_transfer(struct tbaccel_dev *dev, struct tbaccel_reg *region,
 		 * signalled it. The TX callback drops this reference.
 		 */
 		dma_fence_get(xfer->fence);
-		atomic_set(&xfer->frames, DIV_ROUND_UP(total, TB_MAX_FRAME_SIZE));
+		atomic_set(&xfer->frames, DIV_ROUND_UP(total, chunk_size));
 		spin_lock(&dev->ctrl_lock);
 		dev->credit = armed;
 		spin_unlock(&dev->ctrl_lock);
@@ -1031,6 +1087,11 @@ static int tbaccel_ioctl_import(struct tbaccel_dev *dev, void __user *argp)
 		goto err_detach;
 	}
 	buf->size = buf->dmabuf->size;
+	if (dma_buf_vmap(buf->dmabuf, &buf->vmap))
+		iosys_map_clear(&buf->vmap);
+	buf->vaddr = iosys_map_is_set(&buf->vmap) ? buf->vmap.vaddr : NULL;
+	dev_info(&dev->xd->dev, "tbaccel: import size=%llu vmap=%s bounce=%d\n",
+		 (unsigned long long)buf->size, buf->vaddr ? "ok" : "FAILED", bounce);
 
 	mutex_lock(&dev->lock);
 	buf->handle = dev->next_id++;
@@ -1124,6 +1185,8 @@ static int tbaccel_ioctl_free(struct tbaccel_dev *dev, void __user *argp)
 		list_for_each_entry_safe(b, tmp, &dev->buffers, list)
 			if (b->handle == req.id) {
 				list_del(&b->list);
+				if (iosys_map_is_set(&b->vmap))
+					dma_buf_vunmap(b->dmabuf, &b->vmap);
 				dma_buf_unmap_attachment(b->attach, b->sgt, DMA_BIDIRECTIONAL);
 				dma_buf_detach(b->dmabuf, b->attach);
 				dma_buf_put(b->dmabuf);

@@ -47,6 +47,23 @@ struct TbAccelWire {
  * by which buffer it posted, not by the sof/eof value. */
 #define TBACCEL_PDF          1
 
+/* Payload bytes per data frame.
+ *
+ * TB_MAX_FRAME_SIZE (4096) is the ring's frame *capacity*, not the payload it
+ * can deliver: a full-size frame comes back from the NHI split into two
+ * completions (3840 + 252 = 4092) with kIOReturnIOError, i.e. four bytes per
+ * frame are consumed by per-frame trailer/accounting and the remainder does not
+ * fit. AppleThunderboltIP never sends a full-size frame either
+ * (TBNET_MAX_PAYLOAD_SIZE = TB_MAX_FRAME_SIZE - frame header). Both ends of
+ * tbaccel therefore use this chunk size; 4032 keeps a 64-byte aligned margin. */
+#define TBACCEL_DATA_CHUNK    64u
+
+/* Outbound frames must match what the peer arms with: Linux's tbaccel_arm_one()
+ * now uses its `chunk` parameter, so both directions run with the same proven
+ * frame size. Kept as a separate name because the two directions can diverge
+ * again once the frame-size ceiling is understood. */
+#define TBACCEL_TX_CHUNK      TBACCEL_DATA_CHUNK
+
 /* NHI ring size used for setRingSize(). AppleThunderboltIP uses 0x1000
  * (4096) here; the HAL creates a per-hop mapper sized by this, and a small
  * ring (64) fails to map -> allocate()/configure() fails. */
@@ -68,16 +85,51 @@ struct TbAccelWire {
 #define TBACCEL_PATH_HOP 9
 
 /* Shown as TbAccelBuildTag so the running build is identifiable from ioreg. */
-#define TBACCEL_BUILD_TAG "rx-data"
+#define TBACCEL_BUILD_TAG "peer-credit"
 
 /* NHI ring flags (mirror of Linux RING_FLAG_*; the family's ring manager
  * branches on bit0 = frame mode, bit1 = E2E). */
 #define TBACCEL_RING_FLAG_FRAME  0x1
 #define TBACCEL_RING_FLAG_E2E    0x2
 
+/* ---------------------------------------------------------------- TBX1 ops
+ *
+ * The operation protocol that rides on top of tbaccel, identical to
+ * linux/tbaccel_proto.h. PREPARE/PREPARED travel as BLOB control frames;
+ * LOAD/MATMUL ride the ARM that carries the payload they operate on, and the
+ * peer answers a MATMUL by ARMs its result into the client's posted slot.
+ *
+ * Used here so this kext can act as the *peer* (compute side) with a stock
+ * Linux tbaccel_client, and later by the Mac client path.
+ */
+#define TBX_MAGIC 0x31584254u /* "TBX1" */
+
+enum tbx_type {
+    TBX_PREPARE  = 1,
+    TBX_PREPARED = 2,
+    TBX_LOAD     = 3,
+    TBX_MATMUL   = 4,
+    TBX_RESULT   = 5,
+};
+
+#define TBX_DTYPE_F32 0
+
+struct TbxMsg {
+    uint32_t magic;
+    uint32_t type;
+    uint64_t id;
+    uint64_t a;
+    uint64_t b;
+    uint32_t m;
+    uint32_t n;
+    uint32_t k;
+    uint32_t dtype;
+} __attribute__((packed));
+
 class TbAccelBuffer : public OSObject {
     OSDeclareDefaultStructors(TbAccelBuffer)
 public:
+    void free() APPLE_KEXT_OVERRIDE;
     uint64_t                  handle;
     IOBufferMemoryDescriptor *md;
     uint64_t                  size;
@@ -100,6 +152,14 @@ public:
     uint64_t        total;       /* bytes to receive */
     uint64_t        armed_off;   /* next region-relative offset to arm */
     bool            signaled;
+    /* Peer-side state (only set when isPeer): the TBX buffer id this slot was
+     * PREPAREd for, the operation that rides the ARM that fills it, and the
+     * time the transfer started, for latency accounting. */
+    bool            isPeer;
+    uint64_t        peerId;
+    uint8_t         op[64];
+    uint32_t        opLen;
+    uint64_t        t0;
 };
 
 class TbAccelBlob : public OSObject {

@@ -14,6 +14,7 @@
 #include <IOKit/IOCommandGate.h>
 #include <IOKit/IOUserClient.h>
 #include <libkern/c++/OSArray.h>
+#include <kern/thread_call.h>
 
 #include "IOThunderboltFamily.h"
 #include "TbAccelInternal.h"
@@ -94,11 +95,30 @@ private:
     IOReturn armWindow(TbAccelSlot *slot);
     IOReturn streamRegion(TbAccelRegion *region, uint64_t total);
     IOReturn waitList(OSArray *list, void *event, uint32_t timeoutMs, uint64_t slot);
+    /* ARM + wait for the peer's ACK + stream. The op rides the ARM, which is
+     * what a Linux tbaccel receiver expects (tbaccel_transfer does the same). */
+    IOReturn submitOpToSlot(uint64_t slotId, TbAccelRegion *region, uint64_t total,
+                            const void *op, uint32_t opLen);
+
+    /* ---- peer (compute) side: TBX1 operations, no userspace involved ---- */
+    bool     peerAllocRegion(uint64_t size, TbAccelRegion **out);
+    void     peerOnBlob(const void *payload, uint32_t len);
+    void     peerPrepare(const TbxMsg *m);
+    void     peerDispatch(TbAccelSlot *slot);
+    static IOReturn sPeerDispatch(OSObject *, void *, void *, void *, void *);
+    void     peerMatmul(TbAccelSlot *inSlot, const TbxMsg *op);
+    /* The stream opened by an ARM: payload frames land in whichever receive
+     * buffer is at the head of the ring, so they are copied into the slot here. */
+    bool     peerDataChunk(const uint8_t *data);
+    void     peerSchedule();
+    static void peerThread(void *arg, thread_call_param_t param);
+    void     peerStats(uint64_t t0, uint64_t t1, uint64_t computeNs);
 
     /* lookups */
     TbAccelBuffer *findBuffer(uint64_t handle);
     TbAccelRegion *findRegion(uint64_t id);
     TbAccelSlot   *findSlot(uint64_t id);
+    TbAccelSlot   *findPeerSlot(uint64_t peerId);
     void           wakeSlots();
 
     /* completions */
@@ -157,8 +177,38 @@ private:
      * "the frame went out but the peer never answered". */
     uint32_t fTxSub, fTxDone, fTxSt, fTxLastType;
     uint32_t fRxAll, fRxOk, fRxBad, fRxLastType, fRxLastLen;
+    uint32_t fRxData;      /* completed data transfers (peer slots + streams) */
+    uint32_t fRxDataFrames;/* payload frames consumed into the open stream */
+    TbAccelSlot *fRxStreamSlot;  /* slot the current ARM opened, or null */
+    uint64_t     fRxStreamOff;
+    uint64_t     fRxCreditPending;   /* consumed bytes not yet reported */
+    /* Last few completions, unambiguously ordered (0 = most recent): the armed
+     * length vs the length the NHI reports is what tells a split frame from a
+     * rejected one. */
+    struct RxEv {
+        uint32_t armed, got, status, armedOff;
+        uint32_t head[2];   /* first 8 bytes of the received data */
+    } fRxEv[4];
+    uint32_t     fRxEvSeq;
+    void         rxTrace(uint32_t armed, uint32_t armedOff, uint32_t got,
+                         uint32_t status, const uint8_t *data);
     void     wireStat();
     void     probeXdc();
+
+    /* Peer-side bookkeeping and latency accounting. The operations run on a
+     * thread_call rather than in the RX completion context: a MATMUL has to
+     * wait for the client's ACK, and that ACK arrives on the same work loop
+     * the completion runs on. */
+    thread_call_t fPeerTC;
+    volatile bool fPeerBusy;
+    uint32_t fPeerRuns, fPeerSkips;   /* thread_call accounting */
+    uint32_t fPeerSched, fPeerEnterFail;
+    TbAccelRegion *fPeerY;          /* result buffer, grown on demand */
+    uint32_t fPeerOps;
+    uint32_t fPeerErrs;
+    uint64_t fPeerLastUs, fPeerMinUs, fPeerMaxUs;
+    uint64_t fPeerComputeUs, fPeerAckUs;
+    char     fPeerErr[64];
 };
 
 #endif /* TBACCEL_CLIENT_H */

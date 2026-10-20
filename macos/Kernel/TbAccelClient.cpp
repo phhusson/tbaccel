@@ -72,6 +72,15 @@ static void tbAccelXdcDeactPath(void *refcon, void *path, void *unused2, uint32_
 OSDefineMetaClassAndStructors(TbAccelClient, IOService)
 
 OSDefineMetaClassAndStructors(TbAccelBuffer,  OSObject)
+
+/* Buffers own their descriptor (newBuffer()/opImport() hand it over), so this
+ * is where the memory is actually released. */
+void TbAccelBuffer::free()
+{
+    if (md) { md->release(); md = nullptr; }
+    OSObject::free();
+}
+
 OSDefineMetaClassAndStructors(TbAccelRegion,  OSObject)
 OSDefineMetaClassAndStructors(TbAccelSlot,    OSObject)
 OSDefineMetaClassAndStructors(TbAccelBlob,    OSObject)
@@ -253,6 +262,26 @@ bool TbAccelClient::start(IOService *provider)
     if (fTimer && fWorkLoop)
         fWorkLoop->addEventSource(fTimer);
     setProperty("TbAccelTimer", fTimer != nullptr ? kOSBooleanTrue : kOSBooleanFalse);
+
+    /* Peer operations run here, not on the work loop: a MATMUL must wait for the
+     * client's ACK, and that ACK is delivered by the same work loop. */
+    fPeerTC = thread_call_allocate(&TbAccelClient::peerThread, this);
+    setProperty("TbAccelPeerTC", fPeerTC ? kOSBooleanTrue : kOSBooleanFalse);
+    fPeerBusy = false;
+    fPeerY = nullptr;
+    fPeerOps = fPeerErrs = 0;
+    fPeerRuns = fPeerSkips = 0;
+    fPeerSched = fPeerEnterFail = 0;
+    fRxStreamSlot = nullptr;
+    fRxStreamOff = 0;
+    fRxCreditPending = 0;
+    fRxDataFrames = 0;
+    memset(fRxEv, 0, sizeof fRxEv);
+    fRxEvSeq = 0;
+    fPeerLastUs = fPeerMinUs = fPeerMaxUs = 0;
+    fPeerComputeUs = fPeerAckUs = 0;
+    fPeerErr[0] = 0;
+
     fAttempts = 0;
     fPathsDone = false;
     fPeerHopsKnown = false;
@@ -313,6 +342,8 @@ void TbAccelClient::attemptBringup()
     fReady = true;
     fTxSub = fTxDone = fTxSt = fTxLastType = 0;
     fRxAll = fRxOk = fRxBad = fRxLastType = fRxLastLen = 0;
+    fRxData = 0;
+    fRxDataFrames = 0;
     wireStat();
 
     /* One-shot TX probe. Type 0x7f is not in Linux's rx_control switch, so the
@@ -359,6 +390,11 @@ void TbAccelClient::retryTimeout(OSObject *owner, IOTimerEventSource *timer)
 void TbAccelClient::stop(IOService *provider)
 {
     fReady = false;
+    if (fPeerTC) {
+        thread_call_cancel(fPeerTC);
+        thread_call_free(fPeerTC);
+        fPeerTC = nullptr;
+    }
     if (fTimer) {
         fTimer->cancelTimeout();
         if (fWorkLoop)
@@ -877,17 +913,27 @@ static IOThunderboltReceiveQueue *newRxQueue(TbAccelClient *me, IOThunderboltCon
     IOThunderboltReceiveQueue *q =
         IOThunderboltReceiveQueue::withControllerAndWorkLoop(ctrl, wl);
     if (!q) { me->setProperty("RxCreateFail", kOSBooleanTrue); return nullptr; }
-    q->setFlags(4);          /* IP's createTxPath: flags=4, type=2 */
+    /* AppleThunderboltIPConnection::createRxPath uses flags 0 for the receive
+     * queue (its transmit queue uses 4). We had copied the transmit value onto
+     * both queues; with flags=4 small control frames are delivered but every
+     * data frame comes back kIOReturnIOError with no payload written. */
+    q->setFlags(0);
     q->setQueueType(2);
     q->setRingSize(TBACCEL_NHI_RING_SIZE);
     q->setMaxFrameSize(TB_MAX_FRAME_SIZE);
     q->setSOFPDFBitmask((uint16_t)(1u << TBACCEL_PDF));
     q->setEOFPDFBitmask((uint16_t)(1u << TBACCEL_PDF));
-    /* No E2E: the peer's tbaccel rings do not use hop counters, and our path
-     * entry ends up with counter=None, so asking the NHI for E2E credits can
-     * only make it withhold/drop frames. */
-    (void)e2eHop;
-    q->enableE2EFlowControl(false);
+    /* End-to-end (hop counter) flow control, matching
+     * AppleThunderboltIPConnection::createRxPath: it sets the hop that credit
+     * returns go to - the transmit path's hop, which is why net->tx_ring->hop is
+     * what Linux's tb_ring_alloc_rx() is given - and then enables E2E.
+     *
+     * This is not optional when the peer is E2E: with the receive queue out of
+     * the accounting, frames arriving on the counter-enabled hop are dropped by
+     * the NHI before any completion is generated (RxStat stays all0 entirely).
+     * Non-E2E peers work either way, as the reverse direction shows. */
+    q->setTxE2EHopID(e2eHop);
+    q->enableE2EFlowControl(e2eHop != 0);
     {
         uint32_t rc = q->allocate();
         me->setProperty("RxAllocRc", (unsigned long long)rc);
@@ -920,6 +966,14 @@ static IOThunderboltReceiveQueue *newRxQueue(TbAccelClient *me, IOThunderboltCon
         }
     }
     me->setProperty("RxStart", kOSBooleanTrue);
+    {
+        char v[128];
+        snprintf(v, sizeof v, "flags0 type2 ring%u max%u sof%u eof%u e2e1 hop%u",
+                 (unsigned)TBACCEL_NHI_RING_SIZE, (unsigned)TB_MAX_FRAME_SIZE,
+                 (unsigned)(1u << TBACCEL_PDF), (unsigned)(1u << TBACCEL_PDF),
+                 (unsigned)e2eHop);
+        me->setProperty("TbAccelRxCfg", v);
+    }
     return q;
 }
 
@@ -1199,6 +1253,8 @@ bool TbAccelClient::tryPaths()
 
 void TbAccelClient::teardown()
 {
+    fRxStreamSlot = nullptr;
+    fRxStreamOff = 0;
     /* Disable the paths before stopping the rings, mirroring Thunderbolt-net's
      * teardown: a stopped ring zeroes its descriptor base and frees the frame
      * buffers, and the peer-side hop's 'pending' bit can never clear in that
@@ -1266,6 +1322,36 @@ bool TbAccelClient::startControlRx()
     return ok > 0;
 }
 
+/* Rolling record of the last completions, so a bad transfer is attributable
+ * from ioreg without another build: 'd'=data, 'c'=control, '?'=rejected, then
+ * the received length, then '!' when the status was not success. */
+void TbAccelClient::rxTrace(uint32_t armed, uint32_t armedOff, uint32_t got,
+                            uint32_t status, const uint8_t *data)
+{
+    for (int i = 3; i > 0; i--)
+        fRxEv[i] = fRxEv[i - 1];
+    fRxEv[0].armed = armed;
+    fRxEv[0].armedOff = armedOff;
+    fRxEv[0].got = got;
+    fRxEv[0].status = status;
+    fRxEv[0].head[0] = fRxEv[0].head[1] = 0;
+    if (data) {
+        memcpy(&fRxEv[0].head[0], data, 4);
+        memcpy(&fRxEv[0].head[1], data + 4, 4);
+    }
+    fRxEvSeq++;
+
+    for (int i = 0; i < 4; i++) {
+        char key[16], val[96];
+        snprintf(key, sizeof key, "TbAccelRx%d", i);
+        snprintf(val, sizeof val, "armed%u/%u got%u st0x%08x data%08x%08x",
+                 (unsigned)fRxEv[i].armed, (unsigned)fRxEv[i].armedOff,
+                 (unsigned)fRxEv[i].got, (unsigned)fRxEv[i].status,
+                 (unsigned)fRxEv[i].head[0], (unsigned)fRxEv[i].head[1]);
+        setProperty(key, val);
+    }
+}
+
 void TbAccelClient::ctlRxComplete(void *target, void *refcon, IOReturn status,
                                   IOThunderboltReceiveCommand *cmd)
 {
@@ -1278,20 +1364,34 @@ void TbAccelClient::ctlRxComplete(void *target, void *refcon, IOReturn status,
 
     uint64_t got = cmd->getReceivedLength();
     me->fRxAll++;
-    if (status == kIOReturnSuccess && got >= sizeof(TbAccelWire)) {
-        const TbAccelWire *w = (const TbAccelWire *)rx->md->getBytesNoCopy();
-        if (w && w->magic == TBACCEL_MAGIC) {
+    if (status == kIOReturnSuccess && got) {
+        const uint8_t *p = (const uint8_t *)rx->md->getBytesNoCopy();
+        const TbAccelWire *w = (const TbAccelWire *)p;
+
+        /* Control frames are recognised by their header, never by "am I in a
+         * stream": the peer sends PREPARE while the previous transfer is still
+         * draining, and treating that as payload corrupts both. */
+        bool isCtl = got >= sizeof(TbAccelWire) && w->magic == TBACCEL_MAGIC &&
+                     w->type >= TBACCEL_MSG_ARM && w->type <= TBACCEL_MSG_CREDIT;
+
+        if (isCtl) {
             me->fRxOk++;
             me->fRxLastType = w->type;
             me->fRxLastLen = (uint32_t)got;
-            me->handleCtl(w, (const uint8_t *)w + sizeof(*w),
-                          (uint32_t)(got - sizeof(*w)));
+            me->rxTrace((uint32_t)cmd->getLength(), (uint32_t)cmd->getOffset(), (uint32_t)got, status, p);
+            me->handleCtl(w, p + sizeof(*w), (uint32_t)(got - sizeof(*w)));
+        } else if (me->peerDataChunk(p)) {
+            me->fRxDataFrames++;
+            me->rxTrace((uint32_t)cmd->getLength(), (uint32_t)cmd->getOffset(), (uint32_t)got, status, p);
         } else {
             me->fRxBad++;
             me->fRxLastLen = (uint32_t)got;
+            me->rxTrace((uint32_t)cmd->getLength(), (uint32_t)cmd->getOffset(), (uint32_t)got, status, p);
         }
     } else {
         me->fRxBad++;
+        me->rxTrace((uint32_t)cmd->getLength(), (uint32_t)cmd->getOffset(),
+                    (uint32_t)got, status, nullptr);
     }
     me->wireStat();
 
@@ -1375,9 +1475,10 @@ void TbAccelClient::wireStat()
     snprintf(v, sizeof v, "sub%u done%u st0x%08x last%u",
              (unsigned)fTxSub, (unsigned)fTxDone, (unsigned)fTxSt, (unsigned)fTxLastType);
     setProperty("TbAccelTxStat", v);
-    snprintf(v, sizeof v, "all%u ok%u bad%u type%u len%u",
+    snprintf(v, sizeof v, "all%u ok%u bad%u type%u len%u data%u dfr%u",
              (unsigned)fRxAll, (unsigned)fRxOk, (unsigned)fRxBad,
-             (unsigned)fRxLastType, (unsigned)fRxLastLen);
+             (unsigned)fRxLastType, (unsigned)fRxLastLen, (unsigned)fRxData,
+             (unsigned)fRxDataFrames);
     setProperty("TbAccelRxStat", v);
 }
 
@@ -1422,6 +1523,17 @@ TbAccelSlot *TbAccelClient::findSlot(uint64_t id)
     return nullptr;
 }
 
+/* Peer slots are addressed by the *client's* buffer id (what PREPARED reported
+ * as the handle and MATMUL carries in .a), not by our slot id. */
+TbAccelSlot *TbAccelClient::findPeerSlot(uint64_t peerId)
+{
+    for (unsigned i = 0; i < fSlots->getCount(); i++) {
+        TbAccelSlot *s = OSDynamicCast(TbAccelSlot, fSlots->getObject(i));
+        if (s && s->isPeer && s->peerId == peerId) return s;
+    }
+    return nullptr;
+}
+
 void TbAccelClient::wakeSlots()
 {
     if (fGate) fGate->commandWakeup(fSlots);
@@ -1439,14 +1551,39 @@ void TbAccelClient::handleCtl(const TbAccelWire *w, const uint8_t *payload, uint
         uint64_t arm_len = w->len;
         uint32_t armed = 0;
         uint64_t total = 0;
+        TbAccelSlot *armSlot = nullptr;
         IOLockLock(fTableLock);
         TbAccelSlot *slot = findSlot(w->slot);
         if (slot) {
             total = arm_len < slot->region->size ? arm_len : slot->region->size;
             slot->total = total;
             slot->armed_off = 0;
-            armWindow(slot);
-            armed = (uint32_t)slot->armed_off;
+            slot->signaled = false;
+            /* The operation that this payload belongs to rides the ARM, which
+             * is how tbaccel_transfer() on Linux sends it (the receiver then
+             * sees it as the slot's op). */
+            slot->opLen = payLen < sizeof(slot->op) ? payLen : 0;
+            if (slot->opLen && payload)
+                memcpy(slot->op, payload, slot->opLen);
+            slot->t0 = mach_absolute_time();
+            if (slot->isPeer) {
+                /* Peer slots are assembled from the control buffers (see
+                 * ctlRxComplete): the ring FIFO hands the first frames to the
+                 * buffers that are already posted, so arming slot frames would
+                 * simply never see them. The window we grant is what the sender
+                 * may put in flight. */
+                uint64_t window = (uint64_t)TBACCEL_WINDOW * TB_MAX_FRAME_SIZE;
+                fRxStreamSlot = slot;
+                fRxStreamOff = 0;
+                memset(fRxEv, 0, sizeof fRxEv);
+                armed = (uint32_t)(total < window ? total : window);
+            } else if (total) {
+                armWindow(slot);
+                armed = (uint32_t)slot->armed_off;
+            } else {
+                slot->signaled = true;
+                armSlot = slot;
+            }
         } else {
             /* No Mac-side slot for this id. That is the normal state while the
              * Mac userspace client is not running, and it used to make us ACK
@@ -1468,8 +1605,22 @@ void TbAccelClient::handleCtl(const TbAccelWire *w, const uint8_t *payload, uint
             setProperty("TbAccelArmNoSlot", v);
         }
         IOLockUnlock(fTableLock);
+        {
+            char v[96];
+            snprintf(v, sizeof v, "slot%llu len%llu total%llu armed%u peer%d",
+                     (unsigned long long)w->slot, (unsigned long long)arm_len,
+                     (unsigned long long)total, (unsigned)armed,
+                     (slot && slot->isPeer) ? 1 : 0);
+            setProperty("TbAccelArm", v);
+        }
         /* ACK carries armed-window bytes plus the total in the payload */
         sendCtl(TBACCEL_MSG_ACK, w->slot, armed, &total, sizeof(total));
+        if (armSlot) {
+            /* Zero-length payload: the op is complete as soon as it arrives. */
+            wakeSlots();
+            if (armSlot->isPeer)
+                peerSchedule();
+        }
         break;
     }
     case TBACCEL_MSG_ACK: {
@@ -1525,6 +1676,10 @@ void TbAccelClient::handleCtl(const TbAccelWire *w, const uint8_t *payload, uint
         blob->release();
         IOLockUnlock(fTableLock);
         if (fGate) fGate->commandWakeup(fBlobs);
+        /* A peer receives its requests this way: PREPARE arrives as a blob and
+         * is answered with a PREPARED blob. */
+        if (blen >= sizeof(TbxMsg))
+            peerOnBlob(payload, blen);
         break;
     }
     default:
@@ -1541,8 +1696,8 @@ IOReturn TbAccelClient::armOne(TbAccelSlot *slot, uint64_t off)
         return kIOReturnSuccess;
 
     uint64_t chunk = slot->total - off;
-    if (chunk > TB_MAX_FRAME_SIZE)
-        chunk = TB_MAX_FRAME_SIZE;
+    if (chunk > TBACCEL_DATA_CHUNK)
+        chunk = TBACCEL_DATA_CHUNK;
 
     IOThunderboltReceiveCommand *cmd = OSTypeAlloc(IOThunderboltReceiveCommand);
     if (!cmd || !cmd->initWithControllerAndQueue(fController, fRxQ)) {
@@ -1591,18 +1746,32 @@ void TbAccelClient::dataRxComplete(void *target, void *refcon, IOReturn status,
     uint64_t off = cmd->getOffset();
     cmd->release();
 
+    bool complete = false;
     if (slot && me->fReady) {
         TbAccelRegion *region = slot->region;
         uint64_t rel = off >= region->offset ? off - region->offset : 0;
-        uint64_t chunk = TB_MAX_FRAME_SIZE;
         IOLockLock(me->fTableLock);
-        if (rel + chunk < slot->total) {
+        if (rel + TB_MAX_FRAME_SIZE < slot->total) {
             /* re-arm at the current tail and hand the sender credit */
             uint64_t off2 = slot->armed_off;
             if (me->armOne(slot, off2) == kIOReturnSuccess)
                 me->sendCtl(TBACCEL_MSG_CREDIT, slot->id, (uint32_t)TB_MAX_FRAME_SIZE, nullptr, 0);
+        } else {
+            /* last frame of this transfer */
+            slot->signaled = true;
+            slot->armed_off = slot->total;
+            complete = true;
         }
         IOLockUnlock(me->fTableLock);
+        if (complete) {
+            me->fRxData++;
+            me->wireStat();
+            me->wakeSlots();
+            /* Peer work runs off this work loop: handling a MATMUL means
+             * waiting for the client's ACK, which arrives here. */
+            if (slot->isPeer)
+                me->peerSchedule();
+        }
     }
 }
 
@@ -1611,15 +1780,15 @@ IOReturn TbAccelClient::streamRegion(TbAccelRegion *region, uint64_t total)
     TbAccelXfer *xfer = OSTypeAlloc(TbAccelXfer);
     if (!xfer)
         return kIOReturnNoMemory;
-    xfer->frames = (uint32_t)((total + TB_MAX_FRAME_SIZE - 1) / TB_MAX_FRAME_SIZE);
+    xfer->frames = (uint32_t)((total + TBACCEL_TX_CHUNK - 1) / TBACCEL_TX_CHUNK);
     xfer->status = 0;
     xfer->outSlot = nullptr;
 
     uint64_t sent = 0;
     while (sent < total) {
         uint64_t chunk = total - sent;
-        if (chunk > TB_MAX_FRAME_SIZE)
-            chunk = TB_MAX_FRAME_SIZE;
+        if (chunk > TBACCEL_TX_CHUNK)
+            chunk = TBACCEL_TX_CHUNK;
 
         /* wait until the receiver has credited enough bytes */
         AbsoluteTime deadline;
@@ -1805,6 +1974,10 @@ IOReturn TbAccelClient::opPostRecv(tbaccel_post_recv *req)
     slot->total = 0;
     slot->armed_off = 0;
     slot->signaled = false;
+    slot->isPeer = false;
+    slot->peerId = 0;
+    slot->opLen = 0;
+    slot->t0 = 0;
 
     LOCK(); fSlots->setObject(slot); UNLOCK();
     slot->release();
@@ -1814,21 +1987,18 @@ IOReturn TbAccelClient::opPostRecv(tbaccel_post_recv *req)
     return kIOReturnSuccess;
 }
 
-IOReturn TbAccelClient::opSubmit(const tbaccel_submit *req, const void *blob, uint32_t blobLen)
+/* ARM + ACK wait + stream, with the operation riding the ARM. This is what a
+ * Linux receiver expects (tbaccel_transfer() sends the op as the ARM payload),
+ * and what a Mac peer needs in order to hand a MATMUL's result back together
+ * with its RESULT message. */
+IOReturn TbAccelClient::submitOpToSlot(uint64_t slotId, TbAccelRegion *region,
+                                       uint64_t total, const void *op, uint32_t opLen)
 {
-    TbAccelRegion *region = nullptr;
-    uint64_t total = 0, armed = 0;
+    uint64_t armed = 0;
 
-    if (blobLen > TBACCEL_CTRL_PAYLOAD)
-        return kIOReturnBadArgument;
-
-    if (req->region != TBACCEL_NONE) {
-        LOCK(); region = findRegion(req->region); UNLOCK();
-        if (!region) return kIOReturnNotFound;
-    }
-
-    /* ARM, then wait for the matching ACK */
-    IOReturn r = sendCtl(TBACCEL_MSG_ARM, req->slot, region ? (uint32_t)region->size : 0, nullptr, 0);
+    IOReturn r = sendCtl(TBACCEL_MSG_ARM, slotId,
+                         region ? (uint32_t)(total ? total : region->size) : 0,
+                         op, opLen);
     if (r != kIOReturnSuccess)
         return r;
 
@@ -1839,13 +2009,15 @@ IOReturn TbAccelClient::opSubmit(const tbaccel_submit *req, const void *blob, ui
         LOCK();
         for (unsigned i = 0; i < fAcks->getCount(); i++) {
             TbAccelAck *a = OSDynamicCast(TbAccelAck, fAcks->getObject(i));
-            if (a && a->slot == req->slot) { a->retain(); fAcks->removeObject(i); found = a; break; }
+            if (a && a->slot == slotId) { a->retain(); fAcks->removeObject(i); found = a; break; }
         }
         UNLOCK();
         if (found) {
             armed = found->len;
-            total = found->total;
+            uint64_t peerTotal = found->total;
             found->release();
+            if (region && total == 0)
+                total = peerTotal;
             break;
         }
         if (fGate->commandSleep(fAcks, deadline, THREAD_UNINT) == THREAD_TIMED_OUT)
@@ -1863,9 +2035,22 @@ IOReturn TbAccelClient::opSubmit(const tbaccel_submit *req, const void *blob, ui
                 return r;
         }
     }
+    return kIOReturnSuccess;
+}
 
-    /* DONE carries the opaque op blob */
-    return sendCtl(TBACCEL_MSG_DONE, req->slot, 0, blob, blobLen);
+IOReturn TbAccelClient::opSubmit(const tbaccel_submit *req, const void *blob, uint32_t blobLen)
+{
+    TbAccelRegion *region = nullptr;
+
+    if (blobLen > TBACCEL_CTRL_PAYLOAD)
+        return kIOReturnBadArgument;
+
+    if (req->region != TBACCEL_NONE) {
+        LOCK(); region = findRegion(req->region); UNLOCK();
+        if (!region) return kIOReturnNotFound;
+    }
+
+    return submitOpToSlot(req->slot, region, region ? region->size : 0, blob, blobLen);
 }
 
 IOReturn TbAccelClient::opSendCtrl(const tbaccel_send_ctrl *req, const void *blob)
@@ -1874,6 +2059,358 @@ IOReturn TbAccelClient::opSendCtrl(const tbaccel_send_ctrl *req, const void *blo
         return kIOReturnBadArgument;
     return sendCtl(TBACCEL_MSG_BLOB, req->slot, 0, blob, req->len);
 }
+
+/* ------------------------------------------------------------- peer (compute)
+ *
+ * Mirrors linux/tbaccel_peer.c without userspace: PREPARE allocates a kernel
+ * buffer and a slot, LOAD/MATMUL ride the ARM of the transfer that carries their
+ * payload, and a MATMUL answers by ARMing the result into the client's posted
+ * slot (which is what makes the client's out-fence fire).
+ *
+ * The point of this path is latency measurement: it is the same code that will
+ * later be replaced by MTL/ANE work, so the numbers include everything except
+ * the compute itself (published separately).
+ */
+
+bool TbAccelClient::peerAllocRegion(uint64_t size, TbAccelRegion **out)
+{
+    if (!size || size > (64ull << 20))
+        return false;
+
+    IOBufferMemoryDescriptor *md = IOBufferMemoryDescriptor::inTaskWithOptions(
+        kernel_task, kIODirectionInOut, (vm_size_t)size, PAGE_SIZE);
+    if (!md)
+        return false;
+    uint64_t len = md->getLength();
+
+    uint64_t handle;
+    LOCK(); handle = fNextId++; UNLOCK();
+    TbAccelBuffer *b = newBuffer(handle, md, len);
+    if (!b)
+        return false;
+
+    TbAccelRegion *r = OSTypeAlloc(TbAccelRegion);
+    if (!r) { b->release(); return false; }
+    LOCK(); r->id = fNextId++; UNLOCK();
+    r->buffer = b;
+    r->offset = 0;
+    r->size = len;
+
+    LOCK();
+    fBuffers->setObject(b);
+    fRegions->setObject(r);
+    UNLOCK();
+    b->release();
+    *out = r;                /* fRegions keeps it alive */
+    r->release();
+    return true;
+}
+
+void TbAccelClient::peerOnBlob(const void *payload, uint32_t len)
+{
+    if (!payload || len < sizeof(TbxMsg))
+        return;
+    const TbxMsg *m = (const TbxMsg *)payload;
+    if (m->magic != TBX_MAGIC)
+        return;
+    if (m->type == TBX_PREPARE)
+        peerPrepare(m);
+}
+
+void TbAccelClient::peerPrepare(const TbxMsg *m)
+{
+    TbAccelRegion *region = nullptr;
+    if (!peerAllocRegion(m->a, &region)) {
+        fPeerErrs++;
+        snprintf(fPeerErr, sizeof fPeerErr, "prepare-nomem size%llu",
+                 (unsigned long long)m->a);
+        setProperty("TbAccelPeerErr", fPeerErr);
+        return;
+    }
+
+    TbAccelSlot *slot = OSTypeAlloc(TbAccelSlot);
+    if (!slot) { fPeerErrs++; return; }
+    slot->region = region;
+    LOCK(); slot->id = fNextId++; UNLOCK();
+    slot->total = 0;
+    slot->armed_off = 0;
+    slot->signaled = false;
+    slot->isPeer = true;
+    slot->peerId = m->id;
+    slot->opLen = 0;
+    slot->t0 = 0;
+
+    uint64_t slotId = slot->id;
+    LOCK(); fSlots->setObject(slot); UNLOCK();
+    slot->release();
+
+    TbxMsg r = {};
+    r.magic = TBX_MAGIC;
+    r.type  = TBX_PREPARED;
+    r.id    = m->id;
+    r.a     = m->id;        /* handle: we address buffers by the client's id */
+    r.b     = slotId;
+    sendCtl(TBACCEL_MSG_BLOB, 0, 0, &r, sizeof r);
+
+    char v[96];
+    snprintf(v, sizeof v, "id%llu size%llu slot%llu",
+             (unsigned long long)m->id, (unsigned long long)m->a,
+             (unsigned long long)slotId);
+    setProperty("TbAccelPeerPrepared", v);
+}
+
+/* Take the next chunk of the open stream. The size is dictated by the protocol
+ * - the sender fills frames of TB_MAX_FRAME_SIZE - not by what this completion
+ * reports: the NHI returns a non-success status and an unusable length for
+ * received data frames (Linux ignores the status entirely), so trusting it
+ * would either drop the transfer or desynchronise the offsets. */
+bool TbAccelClient::peerDataChunk(const uint8_t *data)
+{
+    bool done = false;
+    TbAccelSlot *slot;
+
+    IOLockLock(fTableLock);
+    slot = fRxStreamSlot;
+    if (!slot || !data || !slot->total || fRxStreamOff >= slot->total) {
+        IOLockUnlock(fTableLock);
+        return false;
+    }
+
+    uint64_t take = slot->total - fRxStreamOff;
+    if (take > TBACCEL_DATA_CHUNK)
+        take = TBACCEL_DATA_CHUNK;
+
+    uint8_t *dst = (uint8_t *)slot->region->buffer->md->getBytesNoCopy();
+    if (!dst) {
+        IOLockUnlock(fTableLock);
+        return false;
+    }
+    memcpy(dst + slot->region->offset + fRxStreamOff, data, (size_t)take);
+    fRxStreamOff += take;
+
+    if (fRxStreamOff >= slot->total) {
+        slot->signaled = true;
+        slot->armed_off = slot->total;
+        fRxStreamSlot = nullptr;
+        fRxStreamOff = 0;
+        fRxCreditPending = 0;
+        done = true;
+    } else {
+        /* Report consumed credit in batches. Sending one CREDIT per frame is
+         * what broke the reverse direction: the peer posts a single control
+         * receive buffer, so a burst of hundreds of CREDIT frames starves it
+         * and the next real control frame (our result ARM) is dropped, leaving
+         * the peer to time out waiting for an ACK that was never sent. The
+         * window granted in the ACK covers the whole transfer in any case. */
+        fRxCreditPending += take;
+        if (fRxCreditPending >= (64u * 1024u)) {
+            sendCtl(TBACCEL_MSG_CREDIT, slot->id, (uint32_t)fRxCreditPending, nullptr, 0);
+            fRxCreditPending = 0;
+        }
+    }
+    IOLockUnlock(fTableLock);
+
+    if (done) {
+        fRxData++;
+        wakeSlots();
+        if (slot->isPeer)
+            peerSchedule();
+    }
+    return true;
+}
+
+void TbAccelClient::peerSchedule(){
+    if (fPeerTC)
+        thread_call_enter(fPeerTC);
+}
+
+void TbAccelClient::peerThread(void *arg, thread_call_param_t param)
+{
+    (void)param;
+    /* thread_call_allocate(fn, refcon) delivers the refcon as the *first*
+     * argument; thread_call_enter() passes 0 as the second. Reading the second
+     * made this thread a no-op that silently dropped every operation. */
+    TbAccelClient *me = (TbAccelClient *)arg;
+    if (!me)
+        return;
+    if (me->fPeerBusy) {
+        /* A completion arrived while the previous pass was still running. The
+         * slot stays marked, so re-arm the call instead of dropping the work. */
+        me->fPeerSkips++;
+        thread_call_enter(me->fPeerTC);
+        return;
+    }
+    me->fPeerBusy = true;
+    me->fPeerRuns++;
+
+    /* One operation at a time; the client submits serially anyway. The actual
+     * work runs through the command gate because it waits for the client's ACK
+     * and for transmit credits with commandSleep, which is only valid with the
+     * gate held. Sleeping there releases the gate, so the work loop stays free
+     * to deliver exactly those completions. */
+    for (;;) {
+        TbAccelSlot *slot = nullptr;
+        IOLockLock(me->fTableLock);
+        for (unsigned i = 0; i < me->fSlots->getCount(); i++) {
+            TbAccelSlot *s = OSDynamicCast(TbAccelSlot, me->fSlots->getObject(i));
+            if (s && s->isPeer && s->signaled && s->opLen) { s->retain(); slot = s; break; }
+        }
+        IOLockUnlock(me->fTableLock);
+        if (!slot)
+            break;
+        if (me->fGate)
+            me->fGate->runAction(&TbAccelClient::sPeerDispatch, slot);
+        slot->release();
+    }
+
+    me->fPeerBusy = false;
+}
+
+IOReturn TbAccelClient::sPeerDispatch(OSObject *owner, void *arg0, void *, void *, void *)
+{
+    TbAccelClient *me = (TbAccelClient *)owner;
+    TbAccelSlot *slot = (TbAccelSlot *)arg0;
+    if (me && slot)
+        me->peerDispatch(slot);
+    return kIOReturnSuccess;
+}
+
+void TbAccelClient::peerDispatch(TbAccelSlot *slot)
+{
+    if (!slot) {
+        setProperty("TbAccelPeerOp", "no-slot");
+        return;
+    }
+    {
+        char v[96];
+        snprintf(v, sizeof v, "len%u slot%llu peer%d",
+                 (unsigned)slot->opLen, (unsigned long long)slot->id,
+                 slot->isPeer ? 1 : 0);
+        setProperty("TbAccelPeerOp", v);
+    }
+    if (slot->opLen < sizeof(TbxMsg))
+        return;
+
+    TbxMsg op;
+    memcpy(&op, slot->op, sizeof op);
+    slot->opLen = 0;                 /* consumed */
+
+    {
+        char v[96];
+        snprintf(v, sizeof v, "type%u magic0x%08x m%u n%u k%u",
+                 op.type, op.magic, op.m, op.n, op.k);
+        setProperty("TbAccelPeerMsg", v);
+    }
+    if (op.magic != TBX_MAGIC) {
+        fPeerErrs++;
+        snprintf(fPeerErr, sizeof fPeerErr, "bad-magic 0x%08x", op.magic);
+        setProperty("TbAccelPeerErr", fPeerErr);
+        return;
+    }
+
+    switch (op.type) {
+    case TBX_LOAD:
+        /* The payload is already in the slot's buffer; nothing to do but say
+         * so, which is what the peer does on Linux as well. */
+        setProperty("TbAccelPeerLoad", "ok");
+        break;
+    case TBX_MATMUL:
+        peerMatmul(slot, &op);
+        break;
+    default:
+        break;
+    }
+}
+
+void TbAccelClient::peerMatmul(TbAccelSlot *inSlot, const TbxMsg *op)
+{
+    TbAccelSlot *w = findPeerSlot(op->a);
+    if (!w || !inSlot || !op->m || !op->n || !op->k) {
+        fPeerErrs++;
+        snprintf(fPeerErr, sizeof fPeerErr, "matmul-missing w%llu",
+                 (unsigned long long)op->a);
+        setProperty("TbAccelPeerErr", fPeerErr);
+        return;
+    }
+
+    uint64_t need = (uint64_t)op->m * op->n * sizeof(float);
+    if (!fPeerY || fPeerY->size < need) {
+        TbAccelRegion *r = nullptr;
+        if (!peerAllocRegion(need, &r)) {
+            fPeerErrs++;
+            snprintf(fPeerErr, sizeof fPeerErr, "matmul-nomem %llu",
+                     (unsigned long long)need);
+            setProperty("TbAccelPeerErr", fPeerErr);
+            return;
+        }
+        fPeerY = r;
+    }
+
+    const float *x  = (const float *)((const uint8_t *)inSlot->region->buffer->md->getBytesNoCopy()
+                                      + inSlot->region->offset);
+    const float *wm = (const float *)((const uint8_t *)w->region->buffer->md->getBytesNoCopy()
+                                      + w->region->offset);
+    float       *y  = (float *)fPeerY->buffer->md->getBytesNoCopy();
+    if (!x || !wm || !y) {
+        fPeerErrs++;
+        snprintf(fPeerErr, sizeof fPeerErr, "matmul-nomap");
+        setProperty("TbAccelPeerErr", fPeerErr);
+        return;
+    }
+
+    uint64_t c0 = mach_absolute_time();
+    for (uint32_t m = 0; m < op->m; m++) {
+        for (uint32_t n = 0; n < op->n; n++) {
+            float acc = 0.0f;
+            for (uint32_t k = 0; k < op->k; k++)
+                acc += x[m * op->k + k] * wm[n * op->k + k];
+            y[m * op->n + n] = acc;
+        }
+    }
+    uint64_t c1 = mach_absolute_time();
+
+    TbxMsg res = {};
+    res.magic = TBX_MAGIC;
+    res.type  = TBX_RESULT;
+    res.b     = op->b;            /* the client's posted result slot */
+
+    IOReturn r = submitOpToSlot(op->b, fPeerY, need, &res, sizeof res);
+    uint64_t c2 = mach_absolute_time();
+
+    if (r != kIOReturnSuccess) {
+        fPeerErrs++;
+        snprintf(fPeerErr, sizeof fPeerErr, "result 0x%08x", (unsigned)r);
+        setProperty("TbAccelPeerErr", fPeerErr);
+        return;
+    }
+
+    uint64_t computeNs = 0;
+    absolutetime_to_nanoseconds(c1 - c0, &computeNs);
+    peerStats(inSlot->t0, c2, computeNs);
+}
+
+void TbAccelClient::peerStats(uint64_t t0, uint64_t t1, uint64_t computeNs)
+{
+    if (!t0 || t1 <= t0)
+        return;
+    uint64_t ns = 0;
+    absolutetime_to_nanoseconds(t1 - t0, &ns);
+    uint64_t us = ns / 1000;
+    if (!fPeerOps || us < fPeerMinUs) fPeerMinUs = us;
+    if (us > fPeerMaxUs) fPeerMaxUs = us;
+    fPeerLastUs = us;
+    fPeerComputeUs = computeNs / 1000;
+    fPeerOps++;
+
+    char v[160];
+    snprintf(v, sizeof v, "ops%u err%u runs%u skips%u last%lluus min%lluus max%lluus compute%lluus",
+             (unsigned)fPeerOps, (unsigned)fPeerErrs,
+             (unsigned)fPeerRuns, (unsigned)fPeerSkips,
+             (unsigned long long)fPeerLastUs, (unsigned long long)fPeerMinUs,
+             (unsigned long long)fPeerMaxUs, (unsigned long long)fPeerComputeUs);
+    setProperty("TbAccelPeer", v);
+}
+
 
 IOReturn TbAccelClient::opRecvCtrl(tbaccel_recv_ctrl *req, void *out, uint32_t outCap)
 {
