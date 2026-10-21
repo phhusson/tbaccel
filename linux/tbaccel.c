@@ -370,6 +370,16 @@ static bool tbaccel_rx_post_ctrl(struct tbaccel_dev *dev)
 	fr->frame.eof = TBACCEL_PDF_EOF;
 	fr->frame.callback = tbaccel_rx_callback;
 	tb_ring_rx(dev->rx, &fr->frame);
+	return true;
+}
+
+static void tbaccel_rx_post_ctrl_refill(struct tbaccel_dev *dev)
+{
+	while (dev->ctrl_posted < TBACCEL_CTRL_BUFS) {
+		if (!tbaccel_rx_post_ctrl(dev))
+			break;
+		dev->ctrl_posted++;
+	}
 }
 
 /*
