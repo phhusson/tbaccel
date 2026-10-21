@@ -1086,3 +1086,49 @@ peer: MATMUL w=1 y_slot=7 64x64x64 -> matmul 64x64x64 done (metal)
 ... 5 iterations ...
 TbAccelRxStat = "all50 ok15 bad0 type17 len32 ctlmax72 data7 dfr35"
 ```
+
+### 27.0.21 Compute fences: a value the GPU writes, waited on in the kext
+
+The peer's matmul used to end with `waitUntilCompleted` (~200 us for a kernel
+that runs in microseconds) or with a userspace spin on an `MTLSharedEvent`
+(~70-110 us).  Neither can be handed to a kext: a kext has no KPI to observe an
+`MTLSharedEvent` (`MTLSharedEventHandle` only encodes through an NSXPCCoder),
+and although IOGPU*s* event machinery is real - `IOGPUDevice::create_mtlevent`,
+`IOGPUMTLEvent`, `kIOGPUIOKernelCommandWaitSharedEvent`, and an event port name
+that a command queue sleeps on - it is private to IOGPUFamily.
+
+So the peer writes the fence itself.  A one-thread MSL kernel runs after the
+matmul in the same command buffer:
+
+```
+kernel void signal_event(device atomic<uint, thread_scope_device> *ev,
+                         constant uint &value)
+{
+    atomic_store_explicit(ev, value, memory_order_release, mem_flags::mem_device);
+}
+```
+
+and the page is imported with `flags = 1`, which makes `opImportSurface` map it
+`kIOMapInhibitCache` for the kernel.  SUBMIT then carries `{page handle, value,
+timeout}` as scalar inputs, and `submitOpToSlot` orders it as:
+
+```
+send ARM  ->  wait for the peer's ACK  ->  wait for the GPU value  ->  stream
+```
+
+The ARM round trip and the compute overlap, and once the value appears the kext
+streams with no userspace hop.  `TbAccelGpuWait` reports how long it actually
+blocked ("h1 want6 now6 waited135875ns" on a 64x64x64).
+
+Measured on the reference workload (Linux client, 5 iterations, submit ->
+result fence):
+
+```
+before (peer spun on MTLSharedEvent):  p50 882 us
+after  (kext waits on the page):       p50 483 us
+peer steady state 338-377 us = drain 5 + metal 18-28 + submit 291-304 + other 25
+```
+
+The remaining submit cost is the ARM/ACK round trip plus the streamed frames;
+removing it needs the submit to become asynchronous, which is what the drain
+fence (27.0.19) was built for.
