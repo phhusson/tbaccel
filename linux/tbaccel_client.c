@@ -5,10 +5,12 @@
  *   ./tbaccel_client [dev] [M] [N] [K] [iters]
  *       (default /dev/tbaccel0 4 8 16 1)
  *
- * With iters > 1 the weights and input stay loaded and only the matmul is
- * repeated, timing SUBMIT -> result fence for each iteration and printing
- * min/p50/p90/p99/max.  That is the steady state a real pipeline sees, and it
- * is the number to compare against later zero-copy/MTLSharedEvent work.
+ * With iters > 1 the weights and input stay loaded and the matmul is repeated.
+ * A window of P operations is kept in flight (SUBMIT returns as soon as the
+ * transfer is queued), and the loop times SUBMIT -> result fence for each one,
+ * printing min/p50/p90/p99/max plus the pipeline throughput.  The per-op
+ * latency now includes queueing behind the other in-flight operations; the
+ * throughput is what a compute graph actually sees.
  */
 #include <math.h>
 #include <stdint.h>
@@ -20,6 +22,14 @@
 
 #define ID_W 1
 #define ID_X 2
+
+static uint64_t now_us(void)
+{
+	struct timespec ts;
+
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (uint64_t) ts.tv_sec * 1000000ull + (uint64_t) ts.tv_nsec / 1000ull;
+}
 
 /* wait for a PREPARED message with the given id */
 static int expect_prepared(int fd, uint64_t id, uint64_t *handle, uint64_t *slot)
@@ -209,67 +219,152 @@ int main(int argc, char **argv)
 
 	printf("OK: %ux%ux%u matmul verified over tbaccel\n", M, N, K);
 
+	/*
+	 * Pipelined steady state.  The peer's SUBMIT returns as soon as the
+	 * transfer is queued, so several operations can be in flight: keep a
+	 * window of P operations submitted and wait for the oldest.  Latency is
+	 * still submit -> result fence for each operation, now including the
+	 * queueing behind the other in-flight ones, and the completion rate is
+	 * the pipeline throughput.
+	 */
 	if (iters > 1) {
-		uint64_t *s = calloc(iters, sizeof(*s));
-		unsigned done = 0, i, j;
+		enum { P = 4 };
+		struct pbuf_y {
+			void *ptr;
+			uint64_t region;
+			uint64_t slot;
+			int fence;
+		} yp[P];
+		uint64_t *t_sub = calloc(iters, sizeof(*t_sub));
+		uint64_t *lat = calloc(iters, sizeof(*lat));
+		unsigned submitted = 0, completed = 0, i;
+		uint64_t t_first = 0, t_last = 0;
+		int failed = 0;
 
-		for (i = 0; i < iters && s; i++) {
-			struct tbx_msg op = { TBX_MAGIC, TBX_MATMUL, 0, w_peer, 0,
-					      M, N, K, TBX_DTYPE_F32 };
-			struct timespec t0, t1;
-			uint64_t y_slot2;
-			int y_fence2 = -1, of = -1, r;
+		memset(yp, 0, sizeof(yp));
+		if (!t_sub || !lat) {
+			free(t_sub);
+			free(lat);
+			goto out;
+		}
 
-			if (tbx_post_recv(fd, y_region, &y_slot2, &y_fence2)) {
-				perror("POST_RECV");
+		for (i = 0; i < P; i++) {
+			uint64_t yh, ign;
+			int yfd = tbx_alloc_dmabuf(y_size, &yp[i].ptr);
+
+			yp[i].fence = -1;
+			if (yfd < 0 || tbx_import(fd, yfd, &yh, &ign) < 0 ||
+			    tbx_region(fd, yh, 0, y_size, &yp[i].region) < 0 ||
+			    tbx_post_recv(fd, yp[i].region, &yp[i].slot, &yp[i].fence)) {
+				TBX_ERR("client: pipeline buffer %u setup failed", i);
+				failed = 1;
 				break;
-			}
-			op.b = y_slot2;
-
-			clock_gettime(CLOCK_MONOTONIC, &t0);
-			r = tbx_submit(fd, in_slot, x_region, &op, sizeof(op), -1, &of);
-			if (r) {
-				close(y_fence2);
-				break;
-			}
-			r = tbx_wait_fence(y_fence2, 5000);
-			clock_gettime(CLOCK_MONOTONIC, &t1);
-			close(of);
-			close(y_fence2);
-			if (r)
-				break;
-			s[done++] = (uint64_t)(t1.tv_sec - t0.tv_sec) * 1000000ull
-				  + (uint64_t)(t1.tv_nsec - t0.tv_nsec) / 1000ull;
-
-			{	/* consume the RESULT control message */
-				struct tbx_msg m;
-				uint64_t sl = 0;
-
-				tbx_recv_msg(fd, &m, &sl);
 			}
 		}
 
-		if (done) {
-			for (i = 1; i < done; i++) {
-				uint64_t v = s[i];
+		while (!failed && completed < iters) {
+			/* keep the window full */
+			while (submitted < iters && submitted - completed < P) {
+				unsigned j = submitted % P;
+				struct tbx_msg op = { TBX_MAGIC, TBX_MATMUL, 0, w_peer,
+						      yp[j].slot, M, N, K, TBX_DTYPE_F32 };
+				int of = -1;
 
-				for (j = i; j > 0 && s[j - 1] > v; j--)
-					s[j] = s[j - 1];
-				s[j] = v;
+				t_sub[submitted] = now_us();
+				if (submitted == 0)
+					t_first = t_sub[submitted];
+				if (tbx_submit(fd, in_slot, x_region, &op, sizeof(op),
+					       -1, &of)) {
+					TBX_ERR("client: SUBMIT %u failed", submitted);
+					failed = 1;
+					break;
+				}
+				close(of);
+				submitted++;
 			}
-			printf("latency over %u iterations (submit -> result fence):\n", done);
+			if (failed)
+				break;
+
+			{
+				unsigned j = completed % P;
+				struct tbx_msg m;
+				uint64_t sl = 0;
+				const float *x = x_ptr, *w = w_ptr, *y = yp[j].ptr;
+				int bad = 0;
+
+				if (tbx_wait_fence(yp[j].fence, 5000)) {
+					TBX_ERR("client: result %u fence timed out", completed);
+					failed = 1;
+					break;
+				}
+				t_last = now_us();
+				lat[completed] = t_last - t_sub[completed];
+				close(yp[j].fence);
+				yp[j].fence = -1;
+
+				/* one RESULT control message per completed operation */
+				tbx_recv_msg(fd, &m, &sl);
+
+				for (uint32_t mm = 0; mm < M && !bad; mm++)
+					for (uint32_t nn = 0; nn < N; nn++) {
+						float acc = 0.0f;
+
+						for (uint32_t kk = 0; kk < K; kk++)
+							acc += x[mm * K + kk] * w[nn * K + kk];
+						if (fabsf(y[mm * N + nn] - acc) > 1e-3f) {
+							TBX_ERR("client: op %u mismatch y[%u][%u]=%f want %f",
+								completed, mm, nn,
+								y[mm * N + nn], acc);
+							bad = 1;
+							break;
+						}
+					}
+				if (bad) {
+					failed = 1;
+					break;
+				}
+
+				completed++;
+
+				/* recycle this result buffer for the next operation */
+				if (submitted < iters &&
+				    tbx_post_recv(fd, yp[j].region, &yp[j].slot, &yp[j].fence)) {
+					TBX_ERR("client: re-post %u failed", j);
+					failed = 1;
+					break;
+				}
+			}
+		}
+
+		if (completed) {
+			for (i = 1; i < completed; i++) {
+				uint64_t v = lat[i];
+				unsigned j;
+
+				for (j = i; j > 0 && lat[j - 1] > v; j--)
+					lat[j] = lat[j - 1];
+				lat[j] = v;
+			}
+			printf("latency over %u iterations (submit -> result fence, %d in flight):\n",
+			       completed, P);
 			printf("  min %llu us  p50 %llu us  p90 %llu us  p99 %llu us  max %llu us\n",
-			       (unsigned long long) s[0],
-			       (unsigned long long) s[done / 2],
-			       (unsigned long long) s[(done * 9) / 10],
-			       (unsigned long long) s[(done * 99) / 100],
-			       (unsigned long long) s[done - 1]);
-			if (done != iters)
-				printf("  (stopped after %u of %u)\n", done, iters);
+			       (unsigned long long) lat[0],
+			       (unsigned long long) lat[completed / 2],
+			       (unsigned long long) lat[(completed * 9) / 10],
+			       (unsigned long long) lat[(completed * 99) / 100],
+			       (unsigned long long) lat[completed - 1]);
+			if (t_last > t_first)
+				printf("  throughput: %u ops in %llu us = %llu us/op\n",
+				       completed,
+				       (unsigned long long) (t_last - t_first),
+				       (unsigned long long) ((t_last - t_first) / completed));
+			if (completed != iters)
+				printf("  (stopped after %u of %u)\n", completed, iters);
 		} else {
 			printf("latency loop: no iterations completed\n");
 		}
-		free(s);
+		free(t_sub);
+		free(lat);
 	}
 
 	ret = 0;

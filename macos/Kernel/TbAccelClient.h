@@ -36,19 +36,18 @@ public:
     IOReturn opRegion(tbaccel_region *req);
     IOReturn opFree(const tbaccel_free *req);
     IOReturn opPostRecv(tbaccel_post_recv *req);
+    /* Queues the operation and returns its transfer fence; the worker thread
+     * does the ARM, the GPU fence and the streaming. */
     IOReturn opSubmit(const tbaccel_submit *req, const void *blob, uint32_t blobLen,
                       uint64_t waitHandle, uint64_t waitValue, uint32_t waitMs,
-                      TbAccelRegion **outRegion);
-    IOReturn opSubmitFinish(uint64_t slot, TbAccelRegion *region,
-                            const void *blob, uint32_t blobLen);
-    void     opSubmitAbort(TbAccelRegion *region);
+                      uint64_t *outSeq);
     IOReturn opRecvCtrl(tbaccel_recv_ctrl *req, void *out, uint32_t outCap);
     IOReturn opSendCtrl(const tbaccel_send_ctrl *req, const void *blob);
     IOReturn opWaitSlot(uint64_t slot, uint32_t timeoutMs);
     IOReturn opMapBuffer(uint64_t handle, IOMemoryDescriptor **md);
     IOReturn opImportSurface(tbaccel_import_surface *req);
     IOReturn opEvent(tbaccel_event *req);
-    /* Wait until every transmit command queued at 'fence' has completed. */
+    /* Wait until transfer 'fence' (as returned by SUBMIT) has fully drained. */
     IOReturn opDrainWait(uint64_t fence, uint32_t timeoutMs, uint64_t *drained);
     IOReturn waitGpuValue(uint64_t handle, uint64_t value, uint32_t timeoutMs);
     uint64_t drainFence() const { return fTxSubmitted; }
@@ -75,8 +74,7 @@ public:
     static IOReturn sImportSurface(OSObject *, void *, void *, void *, void *);
     static IOReturn sEvent(OSObject *, void *, void *, void *, void *);
     static IOReturn sDrain(OSObject *, void *, void *, void *, void *);
-    static IOReturn sSubmitFinish(OSObject *, void *, void *, void *, void *);
-    static IOReturn sSubmitAbort(OSObject *, void *, void *, void *, void *);
+
 
 private:
     /* setup */
@@ -211,6 +209,26 @@ private:
      */
     volatile uint64_t fTxSubmitted;
     volatile uint64_t fTxCompleted;
+
+    /*
+     * Async submit queue.  fTxSeqNext is the next transfer id, fTxSeqDone the
+     * last transfer whose frames have all left.  A transfer's drain mark is the
+     * fTxSubmitted value observed after its frames were queued; transfer ids are
+     * streamed in order, so advancing fTxSeqDone is a simple walk.
+     */
+#define TBACCEL_TXQ      128
+#define TBACCEL_TXMARKS  256
+    OSArray          *fTxReqs;
+    thread_call_t     fTxTC;
+    volatile uint64_t fTxSeqNext;
+    volatile uint64_t fTxSeqDone;
+    struct TxMark {
+        volatile bool set;
+        uint64_t      mark;
+    } fTxMark[TBACCEL_TXMARKS];
+    static void txWorker(void *self, void *arg);
+    void        txAdvanceDrain();
+    void        txFlushQueue();
     uint32_t fRxAll, fRxOk, fRxBad, fRxLastType, fRxLastLen;
     uint32_t fRxData;      /* completed data transfers (peer slots + streams) */
     uint32_t fRxCtlMax;    /* largest control frame delivered intact */

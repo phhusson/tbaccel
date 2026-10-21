@@ -125,35 +125,12 @@ IOReturn TbAccelUserClient::externalMethod(uint32_t selector, IOExternalMethodAr
         a.wait_value  = args->scalarInputCount > 1 ? args->scalarInput[1] : 0;
         a.wait_ms     = args->scalarInputCount > 2 ? (uint32_t)args->scalarInput[2] : 0;
 
-        /* Phase 1: send the ARM. */
+        /* Queues the transfer and returns its fence; the worker thread sends the
+         * ARM, waits for the GPU value and streams, so this call does not block
+         * on the wire. */
         IOReturn r = gate->runAction(TbAccelClient::sSubmit, &a);
-        if (r != kIOReturnSuccess)
-            return r;
-
-        /* Phase 2: the GPU fence, deliberately outside the gate - the work
-         * loop must stay free to deliver the peer's ACK and TX completions
-         * while we wait. */
-        if (a.wait_handle) {
-            uint64_t t0 = mach_absolute_time(), ns = 0;
-
-            r = fOwner->waitGpuValue(a.wait_handle, a.wait_value, a.wait_ms);
-            absolutetime_to_nanoseconds(mach_absolute_time() - t0, &ns);
-            a.gpu_ns = ns;
-            if (r != kIOReturnSuccess) {
-                gate->runAction(TbAccelClient::sSubmitAbort, &a);
-                return r;
-            }
-        }
-
-        /* Phase 3: collect the ACK and stream. */
-        r = gate->runAction(TbAccelClient::sSubmitFinish, &a);
-        if (r != kIOReturnSuccess)
-            return r;
-
-        /* The fence is the number of transmit commands queued by this submit;
-         * kTbAccelMethodDrain waits for them to complete. */
-        if (args->scalarOutput && args->scalarOutputCount >= 1) {
-            args->scalarOutput[0] = fOwner->drainFence();
+        if (r == kIOReturnSuccess && args->scalarOutput && args->scalarOutputCount >= 1) {
+            args->scalarOutput[0] = a.fence;
             args->scalarOutputCount = 1;
         }
         return r;

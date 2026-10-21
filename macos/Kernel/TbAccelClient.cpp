@@ -100,6 +100,14 @@ void *TbAccelClient::bufferBytes(TbAccelBuffer *b)
     return mb ? mb->getBytesNoCopy() : nullptr;
 }
 
+OSDefineMetaClassAndStructors(TbAccelTxReq,  OSObject)
+
+void TbAccelTxReq::free()
+{
+    if (region) { region->release(); region = nullptr; }
+    OSObject::free();
+}
+
 OSDefineMetaClassAndStructors(TbAccelRegion,  OSObject)
 OSDefineMetaClassAndStructors(TbAccelSlot,    OSObject)
 OSDefineMetaClassAndStructors(TbAccelBlob,    OSObject)
@@ -286,6 +294,11 @@ bool TbAccelClient::start(IOService *provider)
      * client's ACK, and that ACK is delivered by the same work loop. */
     fPeerTC = thread_call_allocate(&TbAccelClient::peerThread, this);
     setProperty("TbAccelPeerTC", fPeerTC ? kOSBooleanTrue : kOSBooleanFalse);
+    fTxReqs = OSArray::withCapacity(16);
+    fTxTC   = thread_call_allocate(&TbAccelClient::txWorker, this);
+    fTxSeqNext = fTxSeqDone = 0;
+    memset(fTxMark, 0, sizeof fTxMark);
+    setProperty("TbAccelTxTC", fTxTC ? kOSBooleanTrue : kOSBooleanFalse);
     fPeerBusy = false;
     fUserPeer = false;
     fPeerY = nullptr;
@@ -417,6 +430,13 @@ void TbAccelClient::stop(IOService *provider)
         thread_call_free(fPeerTC);
         fPeerTC = nullptr;
     }
+    if (fTxTC) {
+        thread_call_cancel(fTxTC);
+        thread_call_free(fTxTC);
+        fTxTC = nullptr;
+    }
+    txFlushQueue();
+    if (fTxReqs) { fTxReqs->release(); fTxReqs = nullptr; }
     if (fTimer) {
         fTimer->cancelTimeout();
         if (fWorkLoop)
@@ -1510,6 +1530,7 @@ void TbAccelClient::ctlTxComplete(void *target, void *refcon, IOReturn status,
         me->fTxCompleted++;
         if (me->fGate)
             me->fGate->commandWakeup((void *)&me->fTxCompleted);
+        me->txAdvanceDrain();
         me->wireStat();
     }
     if (md) md->release();
@@ -1881,6 +1902,7 @@ void TbAccelClient::dataTxComplete(void *target, void *refcon, IOReturn status,
         me->fTxCompleted++;
         if (me->fGate)
             me->fGate->commandWakeup((void *)&me->fTxCompleted);
+        me->txAdvanceDrain();
     }
     if (cmd) cmd->release();
     if (!xfer) return;
@@ -2150,46 +2172,125 @@ IOReturn TbAccelClient::submitOpToSlot(uint64_t slotId, TbAccelRegion *region,
 
 IOReturn TbAccelClient::opSubmit(const tbaccel_submit *req, const void *blob, uint32_t blobLen,
                                  uint64_t waitHandle, uint64_t waitValue, uint32_t waitMs,
-                                 TbAccelRegion **outRegion)
+                                 uint64_t *outSeq)
 {
-    TbAccelRegion *region = nullptr;
-
     if (blobLen > TBACCEL_CTRL_PAYLOAD)
         return kIOReturnBadArgument;
+    if (!fTxReqs || !fTxTC)
+        return kIOReturnNotReady;
+    if (fTxReqs->getCount() >= TBACCEL_TXQ)
+        return kIOReturnNoResources;
 
+    TbAccelRegion *region = nullptr;
     if (req->region != TBACCEL_NONE) {
-        LOCK(); region = findRegion(req->region); UNLOCK();
+        LOCK(); region = findRegion(req->region); if (region) region->retain(); UNLOCK();
         if (!region) return kIOReturnNotFound;
     }
 
-    /* The GPU fence is waited on by the caller, outside the gate, between this
-     * arm phase and opSubmitFinish(). */
-    if (region)
-        region->retain();
-    IOReturn r = submitArm(req->slot, region, region ? region->size : 0, blob, blobLen);
-    if (r != kIOReturnSuccess) {
-        if (region)
-            region->release();
-        return r;
-    }
-    *outRegion = region;
+    TbAccelTxReq *t = OSTypeAlloc(TbAccelTxReq);
+    if (!t) { if (region) region->release(); return kIOReturnNoMemory; }
+    t->region = region;
+    t->slot = req->slot;
+    t->opLen = blobLen;
+    if (blobLen)
+        memcpy(t->op, blob, blobLen);
+    t->wait_handle = waitHandle;
+    t->wait_value  = waitValue;
+    t->wait_ms     = waitMs;
+
+    uint64_t seq;
+    LOCK();
+    seq = ++fTxSeqNext;
+    t->seq = seq;
+    fTxReqs->setObject(t);
+    UNLOCK();
+    t->release();
+
+    /* The transfer's frames are not queued yet, so its drain mark is unknown;
+     * the worker records it after streaming. */
+    thread_call_enter(fTxTC);
+    if (outSeq)
+        *outSeq = seq;
     return kIOReturnSuccess;
 }
 
-void TbAccelClient::opSubmitAbort(TbAccelRegion *region)
+void TbAccelClient::txFlushQueue()
 {
-    if (region)
-        region->release();
+    if (!fTxReqs)
+        return;
+    for (;;) {
+        TbAccelTxReq *t = nullptr;
+        LOCK();
+        if (fTxReqs->getCount()) {
+            t = OSDynamicCast(TbAccelTxReq, fTxReqs->getObject(0));
+            if (t) { t->retain(); fTxReqs->removeObject(0); }
+        }
+        UNLOCK();
+        if (!t)
+            break;
+        t->release();
+    }
 }
 
-IOReturn TbAccelClient::opSubmitFinish(uint64_t slot, TbAccelRegion *region,
-                                       const void *blob, uint32_t blobLen)
+/* Called with the transfer's frames queued: remember what completion count
+ * means "this transfer has left", then advance the in-order drain walk. */
+void TbAccelClient::txAdvanceDrain()
 {
-    IOReturn r = submitStream(slot, region, region ? region->size : 0, blob, blobLen);
-    if (region)
-        region->release();
-    return r;
+    for (;;) {
+        uint64_t next = fTxSeqDone + 1;
+        struct TxMark *m = &fTxMark[next % TBACCEL_TXMARKS];
+        if (!m->set || fTxCompleted < m->mark)
+            break;
+        m->set = false;
+        fTxSeqDone = next;
+    }
+    if (fGate)
+        fGate->commandWakeup((void *)&fTxSeqDone);
 }
+
+void TbAccelClient::txWorker(void *self, void *arg)
+{
+    TbAccelClient *me = (TbAccelClient *)self;
+
+    if (!me)
+        return;
+
+    for (;;) {
+        TbAccelTxReq *t = nullptr;
+
+        IOLockLock(me->fTableLock);
+        if (me->fTxReqs && me->fTxReqs->getCount()) {
+            t = OSDynamicCast(TbAccelTxReq, me->fTxReqs->getObject(0));
+            if (t) { t->retain(); me->fTxReqs->removeObject(0); }
+        }
+        IOLockUnlock(me->fTableLock);
+        if (!t)
+            break;
+
+        uint64_t total = t->region ? t->region->size : 0;
+        IOReturn r = me->submitArm(t->slot, t->region, total, t->op, t->opLen);
+
+        /* The GPU fence waits here, on the worker thread: no gate is held, so
+         * the work loop keeps delivering ACKs and TX completions. */
+        if (r == kIOReturnSuccess && t->wait_handle)
+            r = me->waitGpuValue(t->wait_handle, t->wait_value, t->wait_ms);
+        if (r == kIOReturnSuccess)
+            r = me->submitStream(t->slot, t->region, total, t->op, t->opLen);
+
+        if (r != kIOReturnSuccess) {
+            char v[64];
+            snprintf(v, sizeof v, "seq%llu rc0x%x", (unsigned long long)t->seq, (unsigned)r);
+            me->setProperty("TbAccelTxErr", v);
+        }
+
+        struct TxMark *m = &me->fTxMark[t->seq % TBACCEL_TXMARKS];
+        m->mark = me->fTxSubmitted;
+        m->set = true;
+        me->txAdvanceDrain();
+        t->release();
+    }
+}
+
 
 IOReturn TbAccelClient::opSendCtrl(const tbaccel_send_ctrl *req, const void *blob)
 {
@@ -2723,26 +2824,26 @@ IOReturn TbAccelClient::opDrainWait(uint64_t fence, uint32_t timeoutMs, uint64_t
     if (!fGate)
         return kIOReturnNotReady;
 
-    uint64_t target = fence ? fence : fTxSubmitted;
+    uint64_t target = fence ? fence : fTxSeqNext;
     AbsoluteTime deadline;
     clock_interval_to_deadline(timeoutMs ? timeoutMs : 2000, kMillisecondScale, &deadline);
 
-    while (fTxCompleted < target) {
-        if (fGate->commandSleep((void *)&fTxCompleted, deadline, THREAD_UNINT) == THREAD_TIMED_OUT) {
+    while (fTxSeqDone < target) {
+        if (fGate->commandSleep((void *)&fTxSeqDone, deadline, THREAD_UNINT) == THREAD_TIMED_OUT) {
             char v[64];
             snprintf(v, sizeof v, "timeout%llu/%llu", (unsigned long long)target,
-                     (unsigned long long)fTxCompleted);
+                     (unsigned long long)fTxSeqDone);
             setProperty("TbAccelFence", v);
             return kIOReturnTimeout;
         }
     }
 
     if (drained)
-        *drained = fTxCompleted;
+        *drained = fTxSeqDone;
     {
         char v[64];
         snprintf(v, sizeof v, "%llu/%llu", (unsigned long long)target,
-                 (unsigned long long)fTxCompleted);
+                 (unsigned long long)fTxSeqDone);
         setProperty("TbAccelFence", v);
     }
     return kIOReturnSuccess;
@@ -2828,11 +2929,9 @@ IOReturn TbAccelClient::sPostRecv(OSObject *o, void *a, void *, void *, void *)
 IOReturn TbAccelClient::sSubmit(OSObject *o, void *a, void *, void *, void *)
 {
     TbAccelSubmitArgs *p = (TbAccelSubmitArgs *)a;
-    IOReturn r = ((TbAccelClient *)o)->opSubmit(&p->req, p->blob, p->blobLen,
-                                                p->wait_handle, p->wait_value, p->wait_ms,
-                                                &p->region);
-    p->fence = (r == kIOReturnSuccess) ? ((TbAccelClient *)o)->drainFence() : 0;
-    return r;
+    return ((TbAccelClient *)o)->opSubmit(&p->req, p->blob, p->blobLen,
+                                          p->wait_handle, p->wait_value, p->wait_ms,
+                                          &p->fence);
 }
 IOReturn TbAccelClient::sRecvCtrl(OSObject *o, void *a, void *, void *, void *)
 {
@@ -2858,19 +2957,6 @@ IOReturn TbAccelClient::sImportSurface(OSObject *o, void *a, void *, void *, voi
 { return ((TbAccelClient *)o)->opImportSurface((tbaccel_import_surface *)a); }
 IOReturn TbAccelClient::sEvent(OSObject *o, void *a, void *, void *, void *)
 { return ((TbAccelClient *)o)->opEvent((tbaccel_event *)a); }
-IOReturn TbAccelClient::sSubmitAbort(OSObject *o, void *a, void *, void *, void *)
-{
-    TbAccelSubmitArgs *p = (TbAccelSubmitArgs *)a;
-    ((TbAccelClient *)o)->opSubmitAbort(p->region);
-    p->region = nullptr;
-    return kIOReturnSuccess;
-}
-IOReturn TbAccelClient::sSubmitFinish(OSObject *o, void *a, void *, void *, void *)
-{
-    TbAccelSubmitArgs *p = (TbAccelSubmitArgs *)a;
-    return ((TbAccelClient *)o)->opSubmitFinish(p->req.slot, p->region,
-                                                p->blob, p->blobLen);
-}
 IOReturn TbAccelClient::sDrain(OSObject *o, void *a, void *, void *, void *)
 {
     TbAccelDrainArgs *p = (TbAccelDrainArgs *)a;

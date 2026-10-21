@@ -94,7 +94,7 @@ struct TbAccelWire {
 #define TBACCEL_PATH_HOP 9
 
 /* Shown as TbAccelBuildTag so the running build is identifiable from ioreg. */
-#define TBACCEL_BUILD_TAG "gpuout"
+#define TBACCEL_BUILD_TAG "async"
 
 /* NHI ring flags (mirror of Linux RING_FLAG_*; the family's ring manager
  * branches on bit0 = frame mode, bit1 = E2E). */
@@ -212,6 +212,25 @@ class TbAccelCtrlRx : public OSObject {
 public:
     IOBufferMemoryDescriptor   *md;
     IOThunderboltReceiveCommand *cmd;
+};
+
+/*
+ * One queued outbound operation for the asynchronous submit path.  The user
+ * client hands it over and returns; a thread_call does ARM -> GPU fence ->
+ * stream, and the drain fence reports when its frames have left.
+ */
+class TbAccelTxReq : public OSObject {
+    OSDeclareDefaultStructors(TbAccelTxReq)
+public:
+    void free() APPLE_KEXT_OVERRIDE;
+    TbAccelRegion *region;      /* retained until the worker is done */
+    uint64_t       slot;
+    uint64_t       seq;         /* 1-based transfer id (the submit fence) */
+    uint64_t       wait_handle;
+    uint64_t       wait_value;
+    uint32_t       wait_ms;
+    uint32_t       opLen;
+    uint8_t        op[TBACCEL_CTRL_PAYLOAD];
 };
 
 /* driver-side mirror of an MTLSharedEvent */

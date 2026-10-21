@@ -83,7 +83,15 @@ struct pbuf {
 
 static struct pbuf bufs[MAX_BUFS];
 static int nbufs;
-static struct pbuf ybuf;  /* result buffer, grown on demand */
+/*
+ * Result buffers.  SUBMIT returns as soon as the transfer is queued, so the
+ * result of op N is still being read by the DMA engine while op N+1 computes;
+ * each pool entry carries the fence of the transfer that wrote it and is only
+ * reused once that fence has drained.
+ */
+#define YPOOL 4
+static struct pbuf ypool[YPOOL];
+static int ynext;
 
 static id<MTLDevice>              mtl_device;
 static id<MTLCommandQueue>        mtl_queue;
@@ -568,27 +576,29 @@ static void peer_matmul(io_connect_t conn, const struct tbx_msg *op, uint64_t in
     uint64_t t_drain = 0, t_metal0 = 0, t_metal = 0, t_submit = 0;
     uint32_t gpu_value = 0;
 
-    if (ybuf.ptr && ybuf.fence) {
+    struct pbuf *y = &ypool[ynext++ % YPOOL];
+
+    if (y->ptr && y->fence) {
         uint64_t t0 = now_us(), drained = 0;
 
-        if (drain_wait(conn, ybuf.fence, 2000, &drained) == 0) {
+        if (drain_wait(conn, y->fence, 2000, &drained) == 0) {
             uint64_t dt = now_us() - t0;
 
             t_drain = dt;
             if (dt >= 50)
                 LOG(1, "drain fence %llu done (%llu us)\n",
-                    (unsigned long long) ybuf.fence, (unsigned long long) dt);
+                    (unsigned long long) y->fence, (unsigned long long) dt);
             else
                 LOG(2, "drain fence %llu already done (%llu us)\n",
-                    (unsigned long long) ybuf.fence, (unsigned long long) dt);
+                    (unsigned long long) y->fence, (unsigned long long) dt);
         }
-        ybuf.fence = 0;
+        y->fence = 0;
     }
 
-    if (!ybuf.ptr || ybuf.size < need) {
-        free_buffer(&ybuf);
-        memset(&ybuf, 0, sizeof(ybuf));
-        if (make_region(conn, need, &ybuf)) {
+    if (!y->ptr || y->size < need) {
+        free_buffer(y);
+        memset(y, 0, sizeof(*y));
+        if (make_region(conn, need, y)) {
             LOG(0, "matmul: cannot allocate result buffer\n");
             return;
         }
@@ -598,7 +608,7 @@ static void peer_matmul(io_connect_t conn, const struct tbx_msg *op, uint64_t in
     {
         uint32_t value = ++gpu_seq;
 
-        if (metal_matmul_signal(w, x, &ybuf, op->m, op->n, op->k, value)) {
+        if (metal_matmul_signal(w, x, y, op->m, op->n, op->k, value)) {
             LOG(0, "matmul: metal encode failed\n");
             return;
         }
@@ -614,7 +624,7 @@ static void peer_matmul(io_connect_t conn, const struct tbx_msg *op, uint64_t in
 
         memset(&in, 0, sizeof(in));
         in.sub.slot = op->b;            /* the client's posted result slot */
-        in.sub.region = ybuf.region;
+        in.sub.region = y->region;
         in.sub.in_fence_fd = -1;
         memcpy(&in.msg, &res, sizeof(res));
 
@@ -635,7 +645,7 @@ static void peer_matmul(io_connect_t conn, const struct tbx_msg *op, uint64_t in
         if (kr != KERN_SUCCESS) {
             LOG(0, "matmul: result SUBMIT failed: 0x%x\n", kr);
         } else {
-            ybuf.fence = fence;
+            y->fence = fence;
             t_submit = now_us() - t_sub0;
             LOG(1, "matmul %ux%ux%u done (metal), RESULT -> slot %llu (fence %llu)\n",
                 op->m, op->n, op->k, (unsigned long long) op->b,
