@@ -968,7 +968,7 @@ static void tbaccel_stop(struct tbaccel_dev *dev)
 
 /* ------------------------------------------------------------- data transfer */
 
-static int tbaccel_wait_credit(struct tbaccel_dev *dev, u64 need)
+static int __maybe_unused tbaccel_wait_credit(struct tbaccel_dev *dev, u64 need)
 {
 	long t = wait_event_interruptible_timeout(dev->credit_wait,
 			({ u64 c;
@@ -1021,9 +1021,13 @@ static int tbaccel_stream(struct tbaccel_dev *dev, struct tbaccel_reg *region,
 		dma_addr_t addr;
 		u32 avail;
 
-		ret = tbaccel_wait_credit(dev, sent + chunk);
-		if (ret)
-			return ret;
+		/*
+		 * No credit gate: the TB fabric's per-hop credits pace the frames
+		 * (tb_ring_tx queues anything the ring cannot take yet), and the
+		 * transfer's length is already known from the ARM.  The software
+		 * window could only restate that, and it deadlocked for transfers
+		 * larger than the window.
+		 */
 		addr = tbaccel_sg_addr(region->buf->sgt, region->offset + sent, &avail);
 		if (!addr || avail < chunk)
 			return -EINVAL;

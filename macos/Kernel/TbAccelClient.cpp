@@ -1859,11 +1859,22 @@ IOReturn TbAccelClient::streamRegion(TbAccelRegion *region, uint64_t total)
         if (chunk > TBACCEL_TX_CHUNK)
             chunk = TBACCEL_TX_CHUNK;
 
-        /* wait until the receiver has credited enough bytes */
+        /*
+         * Pace on our transmit ring, not on receiver credits.  The ring has
+         * TBACCEL_RING_SIZE descriptors, and the fabric's per-hop credits
+         * already stop us from outrunning the receiver's ring; the software
+         * window could only express the same thing less accurately (and
+         * deadlocked as soon as a transfer was larger than the window).
+         */
         AbsoluteTime deadline;
         clock_interval_to_deadline(5000, kMillisecondScale, &deadline);
-        while (fCredit < sent + chunk) {
-            if (fGate->commandSleep(&fCredit, deadline, THREAD_UNINT) == THREAD_TIMED_OUT) {
+        for (;;) {
+            uint64_t outstanding = fTxSubmitted > fTxCompleted
+                                 ? fTxSubmitted - fTxCompleted : 0;
+
+            if (outstanding < (uint64_t)(TBACCEL_RING_SIZE - 2))
+                break;
+            if (fGate->commandSleep((void *)&fTxCompleted, deadline, THREAD_UNINT) == THREAD_TIMED_OUT) {
                 xfer->release();
                 return kIOReturnTimeout;
             }
@@ -2463,17 +2474,10 @@ bool TbAccelClient::peerDataChunk(const uint8_t *data, uint32_t len)
         fRxCreditPending = 0;
         done = true;
     } else {
-        /* Report consumed credit in batches. Sending one CREDIT per frame is
-         * what broke the reverse direction: the peer posts a single control
-         * receive buffer, so a burst of hundreds of CREDIT frames starves it
-         * and the next real control frame (our result ARM) is dropped, leaving
-         * the peer to time out waiting for an ACK that was never sent. The
-         * window granted in the ACK covers the whole transfer in any case. */
+        /* No CREDIT frames: flow control is the fabric's job (hop credits +
+         * the receiver's ring), and a transfer is bounded by the length in its
+         * ARM.  fRxCreditPending is kept only for diagnostics. */
         fRxCreditPending += take;
-        if (fRxCreditPending >= (64u * 1024u)) {
-            sendCtl(TBACCEL_MSG_CREDIT, slot->id, (uint32_t)fRxCreditPending, nullptr, 0);
-            fRxCreditPending = 0;
-        }
     }
     IOLockUnlock(fTableLock);
 

@@ -228,19 +228,32 @@ int main(int argc, char **argv)
 	 * the pipeline throughput.
 	 */
 	if (iters > 1) {
-		enum { P = 4 };
+		unsigned P = 4;
 		struct pbuf_y {
 			void *ptr;
 			uint64_t region;
 			uint64_t slot;
 			int fence;
-		} yp[P];
+		} yp[16];
 		uint64_t *t_sub = calloc(iters, sizeof(*t_sub));
 		uint64_t *lat = calloc(iters, sizeof(*lat));
 		unsigned submitted = 0, completed = 0, i;
 		uint64_t t_first = 0, t_last = 0;
+		uint64_t submit_us = 0;
 		int failed = 0;
 
+		{
+			const char *pe = getenv("TBX_PIPE");
+
+			if (pe) {
+				long v = strtol(pe, NULL, 0);
+
+				if (v >= 1 && v <= 16)
+					P = (unsigned) v;
+			}
+			if (P > iters)
+				P = iters;
+		}
 		memset(yp, 0, sizeof(yp));
 		if (!t_sub || !lat) {
 			free(t_sub);
@@ -273,11 +286,16 @@ int main(int argc, char **argv)
 				t_sub[submitted] = now_us();
 				if (submitted == 0)
 					t_first = t_sub[submitted];
-				if (tbx_submit(fd, in_slot, x_region, &op, sizeof(op),
-					       -1, &of)) {
-					TBX_ERR("client: SUBMIT %u failed", submitted);
-					failed = 1;
-					break;
+				{
+					uint64_t s0 = now_us();
+
+					if (tbx_submit(fd, in_slot, x_region, &op, sizeof(op),
+						       -1, &of)) {
+						TBX_ERR("client: SUBMIT %u failed", submitted);
+						failed = 1;
+						break;
+					}
+					submit_us += now_us() - s0;
 				}
 				close(of);
 				submitted++;
@@ -345,7 +363,7 @@ int main(int argc, char **argv)
 					lat[j] = lat[j - 1];
 				lat[j] = v;
 			}
-			printf("latency over %u iterations (submit -> result fence, %d in flight):\n",
+			printf("latency over %u iterations (submit -> result fence, %u in flight):\n",
 			       completed, P);
 			printf("  min %llu us  p50 %llu us  p90 %llu us  p99 %llu us  max %llu us\n",
 			       (unsigned long long) lat[0],
@@ -358,6 +376,9 @@ int main(int argc, char **argv)
 				       completed,
 				       (unsigned long long) (t_last - t_first),
 				       (unsigned long long) ((t_last - t_first) / completed));
+			printf("  submit calls: %llu us total (%llu us/op)\n",
+			       (unsigned long long) submit_us,
+			       (unsigned long long) (completed ? submit_us / completed : 0));
 			if (completed != iters)
 				printf("  (stopped after %u of %u)\n", completed, iters);
 		} else {
