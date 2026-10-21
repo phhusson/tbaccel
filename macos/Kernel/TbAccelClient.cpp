@@ -2152,8 +2152,32 @@ IOReturn TbAccelClient::submitStream(uint64_t slotId, TbAccelRegion *region,
     return kIOReturnSuccess;
 }
 
-/* Arm + stream without a GPU fence: used by the in-kernel peer, which runs on a
- * thread_call (no gate) and has no GPU work to wait for. */
+/*
+ * submitStream() calls commandSleep() on the gate, which is only legal while
+ * holding it.  Thread-call contexts (the async worker, the in-kernel peer) do
+ * not hold the gate, so they enter it explicitly: the action runs in the
+ * caller's thread with the gate held, and commandSleep releases it while
+ * sleeping, so completions and ACKs keep flowing.
+ */
+IOReturn TbAccelClient::streamViaGate(uint64_t slotId, TbAccelRegion *region,
+                                      uint64_t total, const void *op, uint32_t opLen)
+{
+    if (!fGate)
+        return kIOReturnNotReady;
+    TbAccelStreamArgs a = { slotId, region, total, op, opLen };
+
+    return fGate->runAction(&TbAccelClient::sStreamGate, &a);
+}
+
+IOReturn TbAccelClient::sStreamGate(OSObject *o, void *a, void *, void *, void *)
+{
+    TbAccelStreamArgs *p = (TbAccelStreamArgs *)a;
+
+    return ((TbAccelClient *)o)->submitStream(p->slot, p->region, p->total,
+                                              p->op, p->opLen);
+}
+
+/* Arm + stream without a GPU fence: used by the in-kernel peer. */
 IOReturn TbAccelClient::submitOpToSlot(uint64_t slotId, TbAccelRegion *region,
                                        uint64_t total, const void *op, uint32_t opLen,
                                        uint64_t waitHandle, uint64_t waitValue,
@@ -2167,7 +2191,7 @@ IOReturn TbAccelClient::submitOpToSlot(uint64_t slotId, TbAccelRegion *region,
         if (r != kIOReturnSuccess)
             return r;
     }
-    return submitStream(slotId, region, total, op, opLen);
+    return streamViaGate(slotId, region, total, op, opLen);
 }
 
 IOReturn TbAccelClient::opSubmit(const tbaccel_submit *req, const void *blob, uint32_t blobLen,
@@ -2275,7 +2299,7 @@ void TbAccelClient::txWorker(void *self, void *arg)
         if (r == kIOReturnSuccess && t->wait_handle)
             r = me->waitGpuValue(t->wait_handle, t->wait_value, t->wait_ms);
         if (r == kIOReturnSuccess)
-            r = me->submitStream(t->slot, t->region, total, t->op, t->opLen);
+            r = me->streamViaGate(t->slot, t->region, total, t->op, t->opLen);
 
         if (r != kIOReturnSuccess) {
             char v[64];

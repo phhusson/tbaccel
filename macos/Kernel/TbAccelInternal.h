@@ -94,7 +94,7 @@ struct TbAccelWire {
 #define TBACCEL_PATH_HOP 9
 
 /* Shown as TbAccelBuildTag so the running build is identifiable from ioreg. */
-#define TBACCEL_BUILD_TAG "async"
+#define TBACCEL_BUILD_TAG "async2"
 
 /* NHI ring flags (mirror of Linux RING_FLAG_*; the family's ring manager
  * branches on bit0 = frame mode, bit1 = E2E). */
@@ -250,5 +250,7 @@ struct TbAccelSendCtrlArgs { tbaccel_send_ctrl req; const void *blob; };
 struct TbAccelWaitSlotArgs { uint64_t slot; uint32_t timeout; };
 struct TbAccelMapBufferArgs{ uint64_t handle; IOMemoryDescriptor **md; };
 struct TbAccelDrainArgs    { uint64_t fence; uint32_t timeout; uint64_t drained; };
+struct TbAccelStreamArgs   { uint64_t slot; TbAccelRegion *region; uint64_t total;
+                             const void *op; uint32_t opLen; };
 
 #endif /* TBACCEL_INTERNAL_H */

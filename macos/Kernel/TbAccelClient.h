@@ -74,6 +74,7 @@ public:
     static IOReturn sImportSurface(OSObject *, void *, void *, void *, void *);
     static IOReturn sEvent(OSObject *, void *, void *, void *, void *);
     static IOReturn sDrain(OSObject *, void *, void *, void *, void *);
+    static IOReturn sStreamGate(OSObject *, void *, void *, void *, void *);
 
 
 private:
@@ -117,6 +118,10 @@ private:
                        const void *op, uint32_t opLen);
     IOReturn submitStream(uint64_t slotId, TbAccelRegion *region, uint64_t total,
                           const void *op, uint32_t opLen);
+    /* submitStream sleeps on the gate (ACK, credits), so it must run inside a
+     * gate action when called from a thread that does not hold the gate. */
+    IOReturn streamViaGate(uint64_t slotId, TbAccelRegion *region, uint64_t total,
+                           const void *op, uint32_t opLen);
     IOReturn submitOpToSlot(uint64_t slotId, TbAccelRegion *region, uint64_t total,
                             const void *op, uint32_t opLen,
                             uint64_t waitHandle, uint64_t waitValue, uint32_t waitMs);
