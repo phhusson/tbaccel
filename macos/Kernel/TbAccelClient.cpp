@@ -2814,9 +2814,16 @@ IOReturn TbAccelClient::opRecvCtrl(tbaccel_recv_ctrl *req, void *out, uint32_t o
          * loop self-healing and costs nothing when a blob is already waiting. */
         {
             AbsoluteTime deadline;
+            int wr;
 
             clock_interval_to_deadline(100, kMillisecondScale, &deadline);
-            fGate->commandSleep(fBlobs, deadline, THREAD_UNINT);
+            /* Interruptible: a peer that is blocked here must remain killable.
+             * With THREAD_UNINT the process sat in an uninterruptible sleep and
+             * survived SIGKILL, holding its user client (and flipping
+             * fUserPeer out from under the next peer when it finally died). */
+            wr = fGate->commandSleep(fBlobs, deadline, THREAD_INTERRUPTIBLE);
+            if (wr == THREAD_INTERRUPTED || wr == THREAD_RESTART)
+                return kIOReturnAborted;
         }
     }
 }
@@ -2911,6 +2918,22 @@ IOReturn TbAccelClient::opReset()
 {
     fReady = false;
     teardown();
+
+    /* The reset exists for a restarted peer: its old buffers, slots, queued
+     * blobs and acks are meaningless and would be replayed into the new
+     * process (a stale MATMUL arriving before its PREPARE is exactly how the
+     * "missing W/X" failure looked).  The caller must re-import. */
+    LOCK();
+    if (fBlobs)   while (fBlobs->getCount())   fBlobs->removeObject(0);
+    if (fAcks)    while (fAcks->getCount())    fAcks->removeObject(0);
+    if (fSlots)   while (fSlots->getCount())   fSlots->removeObject(0);
+    if (fRegions) while (fRegions->getCount()) fRegions->removeObject(0);
+    if (fBuffers) while (fBuffers->getCount()) fBuffers->removeObject(0);
+    if (fEvents)  while (fEvents->getCount())  fEvents->removeObject(0);
+    UNLOCK();
+    fPeerY = nullptr;
+    fRxStreamSlot = nullptr;
+    fRxStreamOff = 0;
     fAttempts = 0;
     fPathAttempted = false;
     fPathPolls = 0;
