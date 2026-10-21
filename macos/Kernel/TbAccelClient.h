@@ -37,7 +37,11 @@ public:
     IOReturn opFree(const tbaccel_free *req);
     IOReturn opPostRecv(tbaccel_post_recv *req);
     IOReturn opSubmit(const tbaccel_submit *req, const void *blob, uint32_t blobLen,
-                      uint64_t waitHandle, uint64_t waitValue, uint32_t waitMs);
+                      uint64_t waitHandle, uint64_t waitValue, uint32_t waitMs,
+                      TbAccelRegion **outRegion);
+    IOReturn opSubmitFinish(uint64_t slot, TbAccelRegion *region,
+                            const void *blob, uint32_t blobLen);
+    void     opSubmitAbort(TbAccelRegion *region);
     IOReturn opRecvCtrl(tbaccel_recv_ctrl *req, void *out, uint32_t outCap);
     IOReturn opSendCtrl(const tbaccel_send_ctrl *req, const void *blob);
     IOReturn opWaitSlot(uint64_t slot, uint32_t timeoutMs);
@@ -71,6 +75,8 @@ public:
     static IOReturn sImportSurface(OSObject *, void *, void *, void *, void *);
     static IOReturn sEvent(OSObject *, void *, void *, void *, void *);
     static IOReturn sDrain(OSObject *, void *, void *, void *, void *);
+    static IOReturn sSubmitFinish(OSObject *, void *, void *, void *, void *);
+    static IOReturn sSubmitAbort(OSObject *, void *, void *, void *, void *);
 
 private:
     /* setup */
@@ -109,6 +115,10 @@ private:
     IOReturn waitList(OSArray *list, void *event, uint32_t timeoutMs, uint64_t slot);
     /* ARM + wait for the peer's ACK + stream. The op rides the ARM, which is
      * what a Linux tbaccel receiver expects (tbaccel_transfer does the same). */
+    IOReturn submitArm(uint64_t slotId, TbAccelRegion *region, uint64_t total,
+                       const void *op, uint32_t opLen);
+    IOReturn submitStream(uint64_t slotId, TbAccelRegion *region, uint64_t total,
+                          const void *op, uint32_t opLen);
     IOReturn submitOpToSlot(uint64_t slotId, TbAccelRegion *region, uint64_t total,
                             const void *op, uint32_t opLen,
                             uint64_t waitHandle, uint64_t waitValue, uint32_t waitMs);

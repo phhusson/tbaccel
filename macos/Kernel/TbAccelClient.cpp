@@ -2070,34 +2070,29 @@ IOReturn TbAccelClient::opPostRecv(tbaccel_post_recv *req)
  * Linux receiver expects (tbaccel_transfer() sends the op as the ARM payload),
  * and what a Mac peer needs in order to hand a MATMUL's result back together
  * with its RESULT message. */
-IOReturn TbAccelClient::submitOpToSlot(uint64_t slotId, TbAccelRegion *region,
-                                       uint64_t total, const void *op, uint32_t opLen,
-                                       uint64_t waitHandle, uint64_t waitValue,
-                                       uint32_t waitMs)
+/*
+ * Sending one operation to a peer slot is deliberately split in two:
+ *
+ *   submitArm()     sends the ARM (a control frame)
+ *   [GPU fence wait - MUST happen outside the command gate]
+ *   submitStream()  collects the peer's ACK and streams the region
+ *
+ * The GPU wait must not run inside a gate action: while it spins it would hold
+ * the gate, and the work loop's commandWakeup() calls (TX completions, ACKs,
+ * drain fence) block on that gate - stalling the very pipeline the wait is
+ * trying to overlap with.
+ */
+IOReturn TbAccelClient::submitArm(uint64_t slotId, TbAccelRegion *region,
+                                  uint64_t total, const void *op, uint32_t opLen)
+{
+    return sendCtl(TBACCEL_MSG_ARM, slotId,
+                   region ? (uint32_t)(total ? total : region->size) : 0, op, opLen);
+}
+
+IOReturn TbAccelClient::submitStream(uint64_t slotId, TbAccelRegion *region,
+                                     uint64_t total, const void *op, uint32_t opLen)
 {
     uint64_t armed = 0;
-
-    IOReturn r = sendCtl(TBACCEL_MSG_ARM, slotId,
-                         region ? (uint32_t)(total ? total : region->size) : 0,
-                         op, opLen);
-    if (r != kIOReturnSuccess)
-        return r;
-
-    /* The GPU fence is waited on *before* the peer's ACK: the ACK is buffered
-     * by handleCtl, so waiting for the GPU first overlaps the wire round trip
-     * with the compute instead of adding them. */
-    uint64_t tAfterArm = mach_absolute_time();
-    uint64_t gpuNs = 0, ackNs = 0;
-    if (waitHandle) {
-        r = waitGpuValue(waitHandle, waitValue, waitMs);
-        absolutetime_to_nanoseconds(mach_absolute_time() - tAfterArm, &gpuNs);
-        if (r != kIOReturnSuccess) {
-            char v[80];
-            snprintf(v, sizeof v, "gpu-fail 0x%x", (unsigned)r);
-            setProperty("TbAccelSubmitWait", v);
-            return r;
-        }
-    }
 
     AbsoluteTime deadline;
     clock_interval_to_deadline(2000, kMillisecondScale, &deadline);
@@ -2120,14 +2115,6 @@ IOReturn TbAccelClient::submitOpToSlot(uint64_t slotId, TbAccelRegion *region,
         if (fGate->commandSleep(fAcks, deadline, THREAD_UNINT) == THREAD_TIMED_OUT)
             return kIOReturnTimeout;
     }
-    absolutetime_to_nanoseconds(mach_absolute_time() - tAfterArm, &ackNs);
-    {
-        char v[80];
-        snprintf(v, sizeof v, "gpu%lluns ack%lluns (ack after gpu %lld)",
-                 (unsigned long long)gpuNs, (unsigned long long)(ackNs - gpuNs),
-                 (long long)((int64_t)ackNs - (int64_t)gpuNs));
-        setProperty("TbAccelSubmitWait", v);
-    }
 
     if (region) {
         if (total == 0 || total > region->size)
@@ -2135,7 +2122,7 @@ IOReturn TbAccelClient::submitOpToSlot(uint64_t slotId, TbAccelRegion *region,
         LOCK(); fCredit = armed; UNLOCK();
         if (fGate) fGate->commandWakeup(&fCredit);
         if (total) {
-            r = streamRegion(region, total);
+            IOReturn r = streamRegion(region, total);
             if (r != kIOReturnSuccess)
                 return r;
         }
@@ -2143,8 +2130,27 @@ IOReturn TbAccelClient::submitOpToSlot(uint64_t slotId, TbAccelRegion *region,
     return kIOReturnSuccess;
 }
 
+/* Arm + stream without a GPU fence: used by the in-kernel peer, which runs on a
+ * thread_call (no gate) and has no GPU work to wait for. */
+IOReturn TbAccelClient::submitOpToSlot(uint64_t slotId, TbAccelRegion *region,
+                                       uint64_t total, const void *op, uint32_t opLen,
+                                       uint64_t waitHandle, uint64_t waitValue,
+                                       uint32_t waitMs)
+{
+    IOReturn r = submitArm(slotId, region, total, op, opLen);
+    if (r != kIOReturnSuccess)
+        return r;
+    if (waitHandle) {
+        r = waitGpuValue(waitHandle, waitValue, waitMs);
+        if (r != kIOReturnSuccess)
+            return r;
+    }
+    return submitStream(slotId, region, total, op, opLen);
+}
+
 IOReturn TbAccelClient::opSubmit(const tbaccel_submit *req, const void *blob, uint32_t blobLen,
-                                 uint64_t waitHandle, uint64_t waitValue, uint32_t waitMs)
+                                 uint64_t waitHandle, uint64_t waitValue, uint32_t waitMs,
+                                 TbAccelRegion **outRegion)
 {
     TbAccelRegion *region = nullptr;
 
@@ -2156,8 +2162,33 @@ IOReturn TbAccelClient::opSubmit(const tbaccel_submit *req, const void *blob, ui
         if (!region) return kIOReturnNotFound;
     }
 
-    return submitOpToSlot(req->slot, region, region ? region->size : 0, blob, blobLen,
-                          waitHandle, waitValue, waitMs);
+    /* The GPU fence is waited on by the caller, outside the gate, between this
+     * arm phase and opSubmitFinish(). */
+    if (region)
+        region->retain();
+    IOReturn r = submitArm(req->slot, region, region ? region->size : 0, blob, blobLen);
+    if (r != kIOReturnSuccess) {
+        if (region)
+            region->release();
+        return r;
+    }
+    *outRegion = region;
+    return kIOReturnSuccess;
+}
+
+void TbAccelClient::opSubmitAbort(TbAccelRegion *region)
+{
+    if (region)
+        region->release();
+}
+
+IOReturn TbAccelClient::opSubmitFinish(uint64_t slot, TbAccelRegion *region,
+                                       const void *blob, uint32_t blobLen)
+{
+    IOReturn r = submitStream(slot, region, region ? region->size : 0, blob, blobLen);
+    if (region)
+        region->release();
+    return r;
 }
 
 IOReturn TbAccelClient::opSendCtrl(const tbaccel_send_ctrl *req, const void *blob)
@@ -2798,7 +2829,8 @@ IOReturn TbAccelClient::sSubmit(OSObject *o, void *a, void *, void *, void *)
 {
     TbAccelSubmitArgs *p = (TbAccelSubmitArgs *)a;
     IOReturn r = ((TbAccelClient *)o)->opSubmit(&p->req, p->blob, p->blobLen,
-                                                p->wait_handle, p->wait_value, p->wait_ms);
+                                                p->wait_handle, p->wait_value, p->wait_ms,
+                                                &p->region);
     p->fence = (r == kIOReturnSuccess) ? ((TbAccelClient *)o)->drainFence() : 0;
     return r;
 }
@@ -2826,6 +2858,19 @@ IOReturn TbAccelClient::sImportSurface(OSObject *o, void *a, void *, void *, voi
 { return ((TbAccelClient *)o)->opImportSurface((tbaccel_import_surface *)a); }
 IOReturn TbAccelClient::sEvent(OSObject *o, void *a, void *, void *, void *)
 { return ((TbAccelClient *)o)->opEvent((tbaccel_event *)a); }
+IOReturn TbAccelClient::sSubmitAbort(OSObject *o, void *a, void *, void *, void *)
+{
+    TbAccelSubmitArgs *p = (TbAccelSubmitArgs *)a;
+    ((TbAccelClient *)o)->opSubmitAbort(p->region);
+    p->region = nullptr;
+    return kIOReturnSuccess;
+}
+IOReturn TbAccelClient::sSubmitFinish(OSObject *o, void *a, void *, void *, void *)
+{
+    TbAccelSubmitArgs *p = (TbAccelSubmitArgs *)a;
+    return ((TbAccelClient *)o)->opSubmitFinish(p->req.slot, p->region,
+                                                p->blob, p->blobLen);
+}
 IOReturn TbAccelClient::sDrain(OSObject *o, void *a, void *, void *, void *)
 {
     TbAccelDrainArgs *p = (TbAccelDrainArgs *)a;

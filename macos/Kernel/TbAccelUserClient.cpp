@@ -118,15 +118,42 @@ IOReturn TbAccelUserClient::externalMethod(uint32_t selector, IOExternalMethodAr
         a.blob    = (const uint8_t *)args->structureInput + sizeof(tbaccel_submit);
         a.blobLen = args->structureInputSize - sizeof(tbaccel_submit);
         a.fence   = 0;
+        a.region  = nullptr;
+        a.gpu_ns  = 0;
         /* Optional GPU fence: scalarInput = { event page handle, value, ms }. */
         a.wait_handle = args->scalarInputCount > 0 ? args->scalarInput[0] : 0;
         a.wait_value  = args->scalarInputCount > 1 ? args->scalarInput[1] : 0;
         a.wait_ms     = args->scalarInputCount > 2 ? (uint32_t)args->scalarInput[2] : 0;
+
+        /* Phase 1: send the ARM. */
         IOReturn r = gate->runAction(TbAccelClient::sSubmit, &a);
+        if (r != kIOReturnSuccess)
+            return r;
+
+        /* Phase 2: the GPU fence, deliberately outside the gate - the work
+         * loop must stay free to deliver the peer's ACK and TX completions
+         * while we wait. */
+        if (a.wait_handle) {
+            uint64_t t0 = mach_absolute_time(), ns = 0;
+
+            r = fOwner->waitGpuValue(a.wait_handle, a.wait_value, a.wait_ms);
+            absolutetime_to_nanoseconds(mach_absolute_time() - t0, &ns);
+            a.gpu_ns = ns;
+            if (r != kIOReturnSuccess) {
+                gate->runAction(TbAccelClient::sSubmitAbort, &a);
+                return r;
+            }
+        }
+
+        /* Phase 3: collect the ACK and stream. */
+        r = gate->runAction(TbAccelClient::sSubmitFinish, &a);
+        if (r != kIOReturnSuccess)
+            return r;
+
         /* The fence is the number of transmit commands queued by this submit;
          * kTbAccelMethodDrain waits for them to complete. */
-        if (r == kIOReturnSuccess && args->scalarOutput && args->scalarOutputCount >= 1) {
-            args->scalarOutput[0] = a.fence;
+        if (args->scalarOutput && args->scalarOutputCount >= 1) {
+            args->scalarOutput[0] = fOwner->drainFence();
             args->scalarOutputCount = 1;
         }
         return r;
