@@ -94,7 +94,7 @@ MODULE_IMPORT_NS("DMA_BUF");
  */
 static bool bounce;
 module_param(bounce, bool, 0644);
-MODULE_PARM_DESC(bounce, "copy data frames through a DMA page (default 0)");
+MODULE_PARM_DESC(bounce, "copy data frames through a DMA page (default 0; a chunk that does not fit its scatter-gather segment is always bounced)");
 
 static unsigned int chunk_size = 1024;
 module_param_named(chunk, chunk_size, uint, 0644);
@@ -366,19 +366,28 @@ static void tbaccel_rx_post_ctrl(struct tbaccel_dev *dev)
 	tb_ring_rx(dev->rx, &fr->frame);
 }
 
-/* one data buffer, zero-copy into the slot region */
+/*
+ * One data buffer.  Receive into a whole page and copy into the slot region on
+ * completion, rather than DMAing straight into the region.
+ *
+ * The zero-copy version armed the dma-buf at off with a fixed chunk (3840 B),
+ * which does not fit the buffer's scatter-gather segments: at a 64 KiB segment
+ * boundary only 256 bytes remain, arm_one() refused, and arming stopped after
+ * 17 frames.  A 256 KiB transfer then had 52 frames with no home and never
+ * completed (the fabric's hop credits are set at path creation and do not know
+ * how many descriptors the receiver has actually posted).  A 4 KiB memcpy per
+ * frame is ~1 us against ~78 us of per-frame latency.
+ */
 static u32 tbaccel_arm_one(struct tbaccel_dev *dev, struct tbaccel_slot *slot, u64 off)
 {
 	struct tbaccel_frame *fr;
-	dma_addr_t addr;
-	u32 chunk, avail;
+	u32 chunk;
 
 	if (off >= slot->total)
 		return 0;
 	chunk = min_t(u64, rx_chunk, slot->total - off);
-	addr = tbaccel_sg_addr(slot->region->buf->sgt, slot->region->offset + off, &avail);
-	if (!addr || avail < chunk)
-		return 0;
+	if (chunk > TB_MAX_FRAME_SIZE)		/* the receive buffer is one page */
+		chunk = TB_MAX_FRAME_SIZE;
 
 	spin_lock(&dev->ctrl_lock);
 	fr = list_first_entry_or_null(&dev->rx_free, struct tbaccel_frame, node);
@@ -391,7 +400,7 @@ static u32 tbaccel_arm_one(struct tbaccel_dev *dev, struct tbaccel_slot *slot, u
 	fr->is_data = true;
 	fr->slot = slot;
 	fr->off = off;
-	fr->frame.buffer_phy = addr;
+	fr->frame.buffer_phy = fr->page_phy;
 	fr->frame.size = 0;
 	fr->frame.sof = TBACCEL_PDF_SOF;
 	fr->frame.eof = TBACCEL_PDF_EOF;
@@ -682,12 +691,24 @@ static void tbaccel_rx_callback(struct tb_ring *ring, struct ring_frame *frame, 
 	{
 		struct tbaccel_slot *slot = tf->slot;
 		u64 off = tf->off;
+		u32 got = frame->size;
+
+		/* the frame was received into tf->page: deliver it to the slot */
+		if (slot && got && slot->region->buf->vaddr &&
+		    off + got <= slot->total) {
+			dma_sync_single_for_cpu(dev->dma_dev, tf->page_phy,
+						TB_MAX_FRAME_SIZE, DMA_FROM_DEVICE);
+			memcpy((u8 *)slot->region->buf->vaddr +
+			       slot->region->offset + off, tf->page, got);
+			dma_sync_single_for_device(dev->dma_dev, tf->page_phy,
+						   TB_MAX_FRAME_SIZE, DMA_FROM_DEVICE);
+		}
 
 		spin_lock(&dev->ctrl_lock);
 		list_add_tail(&tf->node, &dev->rx_free);
 		spin_unlock(&dev->ctrl_lock);
 
-		if (slot && off + chunk < slot->total) {
+		if (slot && got && off + got < slot->total) {
 			u32 c = tbaccel_arm_one(dev, slot, slot->armed_off);
 
 			if (c) {
@@ -695,7 +716,7 @@ static void tbaccel_rx_callback(struct tb_ring *ring, struct ring_frame *frame, 
 				dev->pending_credit += c;
 				tbaccel_flush_credit(dev, false);
 			}
-		} else if (slot) {
+		} else if (slot && got) {
 			tbaccel_rx_complete(dev, slot);
 		}
 	}
@@ -1029,7 +1050,9 @@ static int tbaccel_stream(struct tbaccel_dev *dev, struct tbaccel_reg *region,
 		 * larger than the window.
 		 */
 		addr = tbaccel_sg_addr(region->buf->sgt, region->offset + sent, &avail);
-		if (!addr || avail < chunk)
+		if (!addr)
+			return -EINVAL;
+		if (avail < chunk && !region->buf->vaddr)
 			return -EINVAL;
 
 		tf = kzalloc(sizeof(*tf), GFP_KERNEL);
@@ -1041,7 +1064,10 @@ static int tbaccel_stream(struct tbaccel_dev *dev, struct tbaccel_reg *region,
 		tf->frame.buffer_phy = addr;
 		tf->frame.size = chunk;
 
-		if (bounce && region->buf->vaddr) {
+		/* Frame boundaries are fixed (the receiver arms chunks at off), so a
+		 * segment that cannot hold the whole chunk has to be bounced through
+		 * a page; clamping the chunk instead would desynchronise the offsets. */
+		if ((bounce || avail < chunk) && region->buf->vaddr) {
 			tf->page = (void *)__get_free_page(GFP_KERNEL);
 			if (!tf->page) {
 				kfree(tf);
