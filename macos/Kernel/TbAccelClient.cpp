@@ -2303,14 +2303,25 @@ void TbAccelClient::txWorker(void *self, void *arg)
             break;
 
         uint64_t total = t->region ? t->region->size : 0;
+        char stage[48];
+        snprintf(stage, sizeof stage, "seq%llu arm", (unsigned long long)t->seq);
+        me->setProperty("TbAccelTxStage", stage);
         IOReturn r = me->submitArm(t->slot, t->region, total, t->op, t->opLen);
 
         /* The GPU fence waits here, on the worker thread: no gate is held, so
          * the work loop keeps delivering ACKs and TX completions. */
-        if (r == kIOReturnSuccess && t->wait_handle)
+        if (r == kIOReturnSuccess && t->wait_handle) {
+            snprintf(stage, sizeof stage, "seq%llu gpu", (unsigned long long)t->seq);
+            me->setProperty("TbAccelTxStage", stage);
             r = me->waitGpuValue(t->wait_handle, t->wait_value, t->wait_ms);
-        if (r == kIOReturnSuccess)
+        }
+        if (r == kIOReturnSuccess) {
+            snprintf(stage, sizeof stage, "seq%llu stream", (unsigned long long)t->seq);
+            me->setProperty("TbAccelTxStage", stage);
             r = me->streamViaGate(t->slot, t->region, total, t->op, t->opLen);
+        }
+        snprintf(stage, sizeof stage, "seq%llu rc0x%x", (unsigned long long)t->seq, (unsigned)r);
+        me->setProperty("TbAccelTxStage", stage);
 
         if (r != kIOReturnSuccess) {
             char v[64];
