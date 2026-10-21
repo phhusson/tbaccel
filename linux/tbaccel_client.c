@@ -241,6 +241,7 @@ int main(int argc, char **argv)
 		uint64_t t_first = 0, t_last = 0;
 		uint64_t submit_us = 0;
 		int failed = 0;
+		int verify = getenv("TBX_VERIFY") != NULL;
 
 		{
 			const char *pe = getenv("TBX_PIPE");
@@ -297,6 +298,15 @@ int main(int argc, char **argv)
 					}
 					submit_us += now_us() - s0;
 				}
+				/* The wire carries one inbound stream at a time (frames are
+				 * not tagged with a slot), so let this upload finish before
+				 * queueing the next one; results still pipeline. */
+				if (tbx_wait_fence(of, 2000)) {
+					TBX_ERR("client: submit %u out-fence timed out", submitted);
+					close(of);
+					failed = 1;
+					break;
+				}
 				close(of);
 				submitted++;
 			}
@@ -323,7 +333,11 @@ int main(int argc, char **argv)
 				/* one RESULT control message per completed operation */
 				tbx_recv_msg(fd, &m, &sl);
 
-				for (uint32_t mm = 0; mm < M && !bad; mm++)
+				/* The CPU check is ~4M MACs for a 256x256x64 tile and would
+				 * dominate the pipeline timings; verify the last op by default
+				 * and everything with TBX_VERIFY=1. */
+				for (uint32_t mm = 0;
+				     (verify || completed + 1 == iters) && mm < M && !bad; mm++)
 					for (uint32_t nn = 0; nn < N; nn++) {
 						float acc = 0.0f;
 
