@@ -2083,6 +2083,22 @@ IOReturn TbAccelClient::submitOpToSlot(uint64_t slotId, TbAccelRegion *region,
     if (r != kIOReturnSuccess)
         return r;
 
+    /* The GPU fence is waited on *before* the peer's ACK: the ACK is buffered
+     * by handleCtl, so waiting for the GPU first overlaps the wire round trip
+     * with the compute instead of adding them. */
+    uint64_t tAfterArm = mach_absolute_time();
+    uint64_t gpuNs = 0, ackNs = 0;
+    if (waitHandle) {
+        r = waitGpuValue(waitHandle, waitValue, waitMs);
+        absolutetime_to_nanoseconds(mach_absolute_time() - tAfterArm, &gpuNs);
+        if (r != kIOReturnSuccess) {
+            char v[80];
+            snprintf(v, sizeof v, "gpu-fail 0x%x", (unsigned)r);
+            setProperty("TbAccelSubmitWait", v);
+            return r;
+        }
+    }
+
     AbsoluteTime deadline;
     clock_interval_to_deadline(2000, kMillisecondScale, &deadline);
     for (;;) {
@@ -2104,13 +2120,13 @@ IOReturn TbAccelClient::submitOpToSlot(uint64_t slotId, TbAccelRegion *region,
         if (fGate->commandSleep(fAcks, deadline, THREAD_UNINT) == THREAD_TIMED_OUT)
             return kIOReturnTimeout;
     }
-
-    /* The ARM handshake above is a wire round trip; waiting for the GPU now
-     * means that round trip and the compute overlap instead of serialising. */
-    if (waitHandle) {
-        IOReturn wr = waitGpuValue(waitHandle, waitValue, waitMs);
-        if (wr != kIOReturnSuccess)
-            return wr;
+    absolutetime_to_nanoseconds(mach_absolute_time() - tAfterArm, &ackNs);
+    {
+        char v[80];
+        snprintf(v, sizeof v, "gpu%lluns ack%lluns (ack after gpu %lld)",
+                 (unsigned long long)gpuNs, (unsigned long long)(ackNs - gpuNs),
+                 (long long)((int64_t)ackNs - (int64_t)gpuNs));
+        setProperty("TbAccelSubmitWait", v);
     }
 
     if (region) {
