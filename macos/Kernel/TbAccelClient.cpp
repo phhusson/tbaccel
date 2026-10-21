@@ -2893,6 +2893,43 @@ IOReturn TbAccelClient::waitGpuValue(uint64_t handle, uint64_t value, uint32_t t
     return kIOReturnSuccess;
 }
 
+/*
+ * Full fabric reset.  Everything the bring-up cached is dropped and the retry
+ * timer runs attemptBringup() again: new paths, new rings, new RX commands.
+ * The caller must re-import its buffers afterwards (they are not touched here).
+ */
+void TbAccelClient::retryPaths()
+{
+    sPathGaveUp[0] = sPathGaveUp[1] = false;
+    sPathPorts[0] = sPathPorts[1] = -1;
+    sHopPairKnown[0] = sHopPairKnown[1] = false;
+    fPathAttempted = false;
+    armRetry(0);
+}
+
+IOReturn TbAccelClient::opReset()
+{
+    fReady = false;
+    teardown();
+    fAttempts = 0;
+    fPathAttempted = false;
+    fPathPolls = 0;
+    fPeerHopsKnown = false;
+    sHopPairKnown[0] = sHopPairKnown[1] = false;
+    sPathGaveUp[0] = sPathGaveUp[1] = false;
+    sPathPorts[0] = sPathPorts[1] = -1;
+    sPeerPort = nullptr;
+    sDownPort = nullptr;
+    setProperty("TbAccelReset", kOSBooleanTrue);
+    armRetry(0);
+    return kIOReturnSuccess;
+}
+
+IOReturn TbAccelClient::sReset(OSObject *o, void *, void *, void *, void *)
+{
+    return ((TbAccelClient *)o)->opReset();
+}
+
 IOReturn TbAccelClient::opDrainWait(uint64_t fence, uint32_t timeoutMs, uint64_t *drained)
 {
     if (!fGate)

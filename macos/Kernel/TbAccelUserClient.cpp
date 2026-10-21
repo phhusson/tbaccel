@@ -26,8 +26,14 @@ bool TbAccelUserClient::start(IOService *provider)
     if (!super::start(provider))
         return false;
     fOwner = OSDynamicCast(TbAccelClient, provider);
-    if (fOwner)
+    if (fOwner) {
         fOwner->setUserPeer(true);
+        /* A new peer often means the other end restarted; if the previous
+         * attempt left the paths down, allow it to be tried again even though
+         * the hop ids are unchanged. */
+        if (!fOwner->pathsDone())
+            fOwner->retryPaths();
+    }
     return fOwner != nullptr;
 }
 
@@ -158,6 +164,9 @@ IOReturn TbAccelUserClient::externalMethod(uint32_t selector, IOExternalMethodAr
         a.blob = (const uint8_t *)args->structureInput + sizeof(tbaccel_send_ctrl);
         return gate->runAction(TbAccelClient::sSendCtrl, &a);
     }
+
+    case kTbAccelMethodReset:
+        return gate->runAction(TbAccelClient::sReset);
 
     case kTbAccelMethodDrain: {
         TbAccelDrainArgs a;

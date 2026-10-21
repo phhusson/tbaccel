@@ -50,11 +50,16 @@ public:
     /* Wait until transfer 'fence' (as returned by SUBMIT) has fully drained. */
     IOReturn opDrainWait(uint64_t fence, uint32_t timeoutMs, uint64_t *drained);
     IOReturn waitGpuValue(uint64_t handle, uint64_t value, uint32_t timeoutMs);
+    /* Tear the fabric down and run bring-up again.  The peer restarts after a
+     * Linux reboot with identical hop ids, so nothing else would reset us. */
+    IOReturn opReset();
     uint64_t drainFence() const { return fTxSubmitted; }
 
     /* With a user client attached the TBX1 operations are delivered through
      * recv_ctrl instead of being executed in-kernel. */
     void setUserPeer(bool on) { fUserPeer = on; }
+    bool pathsDone() const { return fPathsDone; }
+    void retryPaths();
     bool userPeer() const { return fUserPeer; }
 
     IOCommandGate *getGate()       const { return fGate; }
@@ -74,6 +79,7 @@ public:
     static IOReturn sImportSurface(OSObject *, void *, void *, void *, void *);
     static IOReturn sEvent(OSObject *, void *, void *, void *, void *);
     static IOReturn sDrain(OSObject *, void *, void *, void *, void *);
+    static IOReturn sReset(OSObject *, void *, void *, void *, void *);
     static IOReturn sStreamGate(OSObject *, void *, void *, void *, void *);
 
 

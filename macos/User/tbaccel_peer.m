@@ -693,6 +693,21 @@ int main(int argc, char **argv)
         return 0;
     }
 
+    /*
+     * Recover from a peer-side restart (e.g. a Linux reboot): the hop ids come
+     * back identical, so the driver has no handshake to notice, and its cached
+     * paths refer to a session that no longer exists.
+     */
+    if (argc > 1 && !strcmp(argv[1], "reset")) {
+        kern_return_t kr = IOConnectCallMethod(conn, kTbAccelMethodReset,
+                                               NULL, 0, NULL, 0, NULL, NULL,
+                                               NULL, NULL);
+
+        printf("reset: 0x%x\n", kr);
+        IOServiceClose(conn);
+        return kr == KERN_SUCCESS ? 0 : 1;
+    }
+
     if (metal_init()) {
         IOServiceClose(conn);
         return 1;
