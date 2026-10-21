@@ -376,6 +376,9 @@ void TbAccelClient::attemptBringup()
     fTxSub = fTxDone = fTxSt = fTxLastType = 0;
     fTxSubmitted = fTxCompleted = 0;
     fTxDataDone = fTxDataErr = 0;
+    fArmCount = fAckCount = 0;
+    fAckRc = 0;
+    fArmLastSlot = 0;
     fRxAll = fRxOk = fRxBad = fRxLastType = fRxLastLen = 0;
     fRxData = 0;
     fRxDataFrames = 0;
@@ -1684,7 +1687,20 @@ void TbAccelClient::handleCtl(const TbAccelWire *w, const uint8_t *payload, uint
             setProperty("TbAccelArm", v);
         }
         /* ACK carries armed-window bytes plus the total in the payload */
-        sendCtl(TBACCEL_MSG_ACK, w->slot, armed, &total, sizeof(total));
+        {
+            IOReturn ar = sendCtl(TBACCEL_MSG_ACK, w->slot, armed, &total, sizeof(total));
+            char v[96];
+
+            fArmCount++;
+            fArmLastSlot = w->slot;
+            fAckRc = (uint32_t)ar;
+            if (ar == kIOReturnSuccess)
+                fAckCount++;
+            snprintf(v, sizeof v, "arms%u acks%u rc0x%08x slot%llu armed%u",
+                     (unsigned)fArmCount, (unsigned)fAckCount, (unsigned)fAckRc,
+                     (unsigned long long)fArmLastSlot, (unsigned)armed);
+            setProperty("TbAccelArmStat", v);
+        }
         if (armSlot) {
             /* Zero-length payload: the op is complete as soon as it arrives. */
             wakeSlots();

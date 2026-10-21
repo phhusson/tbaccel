@@ -210,6 +210,9 @@ private:
      * "the frame went out but the peer never answered". */
     uint32_t fTxSub, fTxDone, fTxSt, fTxLastType;
     uint32_t fTxDataDone, fTxDataErr;   /* data-frame completions / last error */
+    uint32_t fArmCount, fAckCount;      /* ARMs seen / ACKs sent */
+    uint32_t fAckRc;                    /* last ACK sendCtl result */
+    uint64_t fArmLastSlot;
     /*
      * Drain fence: every transmit command (control or data frame) bumps
      * fTxSubmitted when it is queued and fTxCompleted when the NHI reports it

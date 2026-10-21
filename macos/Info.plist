@@ -15,9 +15,9 @@
 	<key>CFBundlePackageType</key>
 	<string>KEXT</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.48</string>
+	<string>1.0.49</string>
 	<key>CFBundleVersion</key>
-	<string>1.0.48</string>
+	<string>1.0.49</string>
 	<key>CFBundleSupportedPlatforms</key>
 	<array>
 		<string>MacOSX</string>
