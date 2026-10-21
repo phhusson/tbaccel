@@ -2152,6 +2152,13 @@ IOReturn TbAccelClient::submitStream(uint64_t slotId, TbAccelRegion *region,
             found->release();
             if (region && total == 0)
                 total = peerTotal;
+            {
+                char v[96];
+                snprintf(v, sizeof v, "armed%llu peerTotal%llu total%llu",
+                         (unsigned long long)armed, (unsigned long long)peerTotal,
+                         (unsigned long long)total);
+                setProperty("TbAccelTxAck", v);
+            }
             break;
         }
         if (fGate->commandSleep(fAcks, deadline, THREAD_UNINT) == THREAD_TIMED_OUT)
@@ -2312,6 +2319,15 @@ void TbAccelClient::txWorker(void *self, void *arg)
             break;
 
         uint64_t total = t->region ? t->region->size : 0;
+        {
+            char info[96];
+            snprintf(info, sizeof info, "seq%llu slot%llu region%s size%llu total%llu",
+                     (unsigned long long)t->seq, (unsigned long long)t->slot,
+                     t->region ? "ok" : "NULL",
+                     (unsigned long long)(t->region ? t->region->size : 0),
+                     (unsigned long long)total);
+            me->setProperty("TbAccelTxInfo", info);
+        }
         char stage[48];
         snprintf(stage, sizeof stage, "seq%llu arm", (unsigned long long)t->seq);
         me->setProperty("TbAccelTxStage", stage);
@@ -2325,9 +2341,19 @@ void TbAccelClient::txWorker(void *self, void *arg)
             r = me->waitGpuValue(t->wait_handle, t->wait_value, t->wait_ms);
         }
         if (r == kIOReturnSuccess) {
-            snprintf(stage, sizeof stage, "seq%llu stream", (unsigned long long)t->seq);
+            uint64_t q0 = me->fTxSubmitted;
+
+            snprintf(stage, sizeof stage, "seq%llu stream q%llu", (unsigned long long)t->seq,
+                     (unsigned long long)q0);
             me->setProperty("TbAccelTxStage", stage);
             r = me->streamViaGate(t->slot, t->region, total, t->op, t->opLen);
+            {
+                char info[96];
+                snprintf(info, sizeof info, "q%llu->%llu rc0x%x total%llu",
+                         (unsigned long long)q0, (unsigned long long)me->fTxSubmitted,
+                         (unsigned)r, (unsigned long long)total);
+                me->setProperty("TbAccelTxQueued", info);
+            }
         }
         snprintf(stage, sizeof stage, "seq%llu rc0x%x", (unsigned long long)t->seq, (unsigned)r);
         me->setProperty("TbAccelTxStage", stage);
