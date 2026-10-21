@@ -1020,9 +1020,8 @@ static int tbaccel_wait_ack(struct tbaccel_dev *dev, u64 slot, u32 *armed, u64 *
 		list_for_each_entry(ack, &dev->acks, list)
 			have++;
 		spin_unlock(&dev->ctrl_lock);
-		dev_warn(dev->dev,
-			 "tbaccel: no ACK for ARM slot=%llu (queued acks=%d)\n",
-			 (unsigned long long) slot, have);
+		pr_info_ratelimited("tbaccel: no ACK for ARM slot=%llu (queued acks=%d)\n",
+				    (unsigned long long) slot, have);
 		return timeout == 0 ? -ETIMEDOUT : (int) timeout;
 	}
 
@@ -1117,8 +1116,8 @@ static int tbaccel_transfer(struct tbaccel_dev *dev, struct tbaccel_reg *region,
 	ret = tbaccel_send_ctl(dev, TBACCEL_MSG_ARM, peer_slot,
 			       region ? (u32)region->size : 0, op, op_len);
 	if (ret) {
-		dev_warn(dev->dev, "tbaccel: ARM slot=%llu send failed %d\n",
-			 (unsigned long long) peer_slot, ret);
+		pr_info_ratelimited("tbaccel: ARM slot=%llu send failed %d\n",
+				    (unsigned long long) peer_slot, ret);
 		return ret;
 	}
 	ret = tbaccel_wait_ack(dev, peer_slot, &armed, &total);
