@@ -203,6 +203,7 @@ private:
     /* Wire diagnostics: distinguish "the NHI never drained our TX ring" from
      * "the frame went out but the peer never answered". */
     uint32_t fTxSub, fTxDone, fTxSt, fTxLastType;
+    uint32_t fTxDataDone, fTxDataErr;   /* data-frame completions / last error */
     /*
      * Drain fence: every transmit command (control or data frame) bumps
      * fTxSubmitted when it is queued and fTxCompleted when the NHI reports it

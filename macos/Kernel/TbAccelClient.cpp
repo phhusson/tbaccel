@@ -375,6 +375,7 @@ void TbAccelClient::attemptBringup()
     fReady = true;
     fTxSub = fTxDone = fTxSt = fTxLastType = 0;
     fTxSubmitted = fTxCompleted = 0;
+    fTxDataDone = fTxDataErr = 0;
     fRxAll = fRxOk = fRxBad = fRxLastType = fRxLastLen = 0;
     fRxData = 0;
     fRxDataFrames = 0;
@@ -1542,8 +1543,10 @@ void TbAccelClient::ctlTxComplete(void *target, void *refcon, IOReturn status,
 void TbAccelClient::wireStat()
 {
     char v[96];
-    snprintf(v, sizeof v, "sub%u done%u st0x%08x last%u",
-             (unsigned)fTxSub, (unsigned)fTxDone, (unsigned)fTxSt, (unsigned)fTxLastType);
+    snprintf(v, sizeof v, "sub%u done%u st0x%08x last%u q%u c%u err0x%08x",
+             (unsigned)fTxSub, (unsigned)fTxDone, (unsigned)fTxSt, (unsigned)fTxLastType,
+             (unsigned)(fTxSubmitted & 0xffffffff), (unsigned)(fTxDataDone & 0xffffffff),
+             (unsigned)fTxDataErr);
     setProperty("TbAccelTxStat", v);
     snprintf(v, sizeof v, "all%u ok%u bad%u type%u len%u ctlmax%u data%u dfr%u",
              (unsigned)fRxAll, (unsigned)fRxOk, (unsigned)fRxBad,
@@ -1872,7 +1875,10 @@ IOReturn TbAccelClient::streamRegion(TbAccelRegion *region, uint64_t total)
             uint64_t outstanding = fTxSubmitted > fTxCompleted
                                  ? fTxSubmitted - fTxCompleted : 0;
 
-            if (outstanding < (uint64_t)(TBACCEL_RING_SIZE - 2))
+            /* Keep well clear of the ring depth: the family's queue needs
+             * headroom beyond the descriptor count, and a transfer may be many
+             * frames long (69 for a 256 KiB result). */
+            if (outstanding < 16)
                 break;
             if (fGate->commandSleep((void *)&fTxCompleted, deadline, THREAD_UNINT) == THREAD_TIMED_OUT) {
                 xfer->release();
@@ -1911,6 +1917,9 @@ void TbAccelClient::dataTxComplete(void *target, void *refcon, IOReturn status,
     TbAccelXfer *xfer = (TbAccelXfer *)refcon;
     if (me) {
         me->fTxCompleted++;
+        me->fTxDataDone++;
+        if (status != kIOReturnSuccess)
+            me->fTxDataErr = (uint32_t)status;
         if (me->fGate)
             me->fGate->commandWakeup((void *)&me->fTxCompleted);
         me->txAdvanceDrain();
