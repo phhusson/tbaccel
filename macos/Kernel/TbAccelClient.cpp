@@ -297,6 +297,7 @@ bool TbAccelClient::start(IOService *provider)
     fTxReqs = OSArray::withCapacity(16);
     fTxTC   = thread_call_allocate(&TbAccelClient::txWorker, this);
     fTxSeqNext = fTxSeqDone = 0;
+    fTxBusy = false;
     memset(fTxMark, 0, sizeof fTxMark);
     setProperty("TbAccelTxTC", fTxTC ? kOSBooleanTrue : kOSBooleanFalse);
     fPeerBusy = false;
@@ -331,6 +332,16 @@ bool TbAccelClient::start(IOService *provider)
 
 void TbAccelClient::attemptBringup()
 {
+    /*
+     * Never tear down while the async worker is inside the fabric: teardown
+     * releases fTxQ/fTxPath, and a transfer still holding them makes the
+     * family abort (panic in sendCtl from tryPaths).  Defer until quiescent.
+     */
+    if (fTxBusy || (fTxReqs && fTxReqs->getCount())) {
+        setProperty("TbAccelBringupWait", kOSBooleanTrue);
+        armRetry(100);
+        return;
+    }
     if (fReady) {
         /* Rings are up; only the path phase can still be outstanding. It is
          * gated on the peer's hop-id properties (the handshake), so retrying
@@ -2334,6 +2345,7 @@ void TbAccelClient::txWorker(void *self, void *arg)
         if (!t)
             break;
 
+        me->fTxBusy = true;
         uint64_t total = t->region ? t->region->size : 0;
         {
             char info[96];
@@ -2384,6 +2396,7 @@ void TbAccelClient::txWorker(void *self, void *arg)
         m->mark = me->fTxSubmitted;
         m->set = true;
         me->txAdvanceDrain();
+        me->fTxBusy = false;
         t->release();
     }
 }
@@ -2932,6 +2945,10 @@ void TbAccelClient::retryPaths()
 
 IOReturn TbAccelClient::opReset()
 {
+    /* Resetting under an active transfer would free the queue it is using. */
+    if (fTxBusy || (fTxReqs && fTxReqs->getCount()))
+        return kIOReturnBusy;
+
     fReady = false;
     teardown();
 

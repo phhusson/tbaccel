@@ -235,6 +235,7 @@ private:
 #define TBACCEL_TXMARKS  256
     OSArray          *fTxReqs;
     thread_call_t     fTxTC;
+    volatile bool     fTxBusy;   /* a worker transfer is in flight */
     volatile uint64_t fTxSeqNext;
     volatile uint64_t fTxSeqDone;
     struct TxMark {

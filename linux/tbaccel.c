@@ -294,6 +294,7 @@ struct tbaccel_dev {
 	int			in_hopid, out_hopid;
 	struct tbaccel_frame	*rx_frames;
 	bool			rx_data_mode;
+	int			ctrl_posted;	/* control buffers currently posted */
 	struct tbaccel_slot	*rx_slot;
 	struct list_head	rx_pending;	/* ARMs that arrived mid-stream */
 	/* inbound transfer latency (ARM -> completion), no userspace involved */
@@ -344,7 +345,12 @@ static void tbaccel_rx_callback(struct tb_ring *ring, struct ring_frame *frame, 
 /* ------------------------------------------------------------- ring posting */
 
 /* one control buffer, page backed (kept exactly one deep while idle) */
-static void tbaccel_rx_post_ctrl(struct tbaccel_dev *dev)
+/* Control frames must be receivable at any time: an ACK can arrive while a
+ * result is streaming.  A single control buffer (and none while rx_data_mode)
+ * meant the ACKs that answer our ARMs were silently dropped. */
+#define TBACCEL_CTRL_BUFS 8
+
+static bool tbaccel_rx_post_ctrl(struct tbaccel_dev *dev)
 {
 	struct tbaccel_frame *fr;
 
@@ -354,7 +360,7 @@ static void tbaccel_rx_post_ctrl(struct tbaccel_dev *dev)
 		list_del(&fr->node);
 	spin_unlock(&dev->ctrl_lock);
 	if (!fr)
-		return;
+		return false;
 
 	fr->is_data = false;
 	fr->slot = NULL;
@@ -585,7 +591,7 @@ static void tbaccel_rx_complete(struct tbaccel_dev *dev, struct tbaccel_slot *sl
 			return;
 		}
 	}
-	tbaccel_rx_post_ctrl(dev);
+	tbaccel_rx_post_ctrl_refill(dev);
 }
 
 static void tbaccel_rx_control(struct tbaccel_dev *dev, struct tbaccel_wire *w, u32 len)
@@ -681,10 +687,9 @@ static void tbaccel_rx_callback(struct tb_ring *ring, struct ring_frame *frame, 
 		list_add_tail(&tf->node, &dev->rx_free);
 		spin_unlock(&dev->ctrl_lock);
 
+		dev->ctrl_posted--;
 		tbaccel_rx_control(dev, tf->page, chunk);
-
-		if (!dev->rx_data_mode)
-			tbaccel_rx_post_ctrl(dev);
+		tbaccel_rx_post_ctrl_refill(dev);
 		return;
 	}
 
@@ -912,8 +917,8 @@ static int tbaccel_start(struct tbaccel_dev *dev)
 	if (ret)
 		goto err_stop;
 
-	/* arm the single idle control buffer */
-	tbaccel_rx_post_ctrl(dev);
+	/* arm the control buffer pool */
+	tbaccel_rx_post_ctrl_refill(dev);
 
 	/*
 	 * Enable the DMA paths last: arming the idle control buffer above
